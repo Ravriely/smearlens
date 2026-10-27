@@ -40,6 +40,14 @@ export HF_TOKEN=...
 uv run python scripts/sam3_validate.py --limit 10
 ```
 
+Without a local GPU, run it on [Modal](https://modal.com):
+
+```bash
+uv sync --extra modal
+uv run modal secret create huggingface HF_TOKEN=...
+uv run modal run scripts/modal_sam3.py --limit 10
+```
+
 ## Data
 
 SmearLens only uses public datasets with a clear license. See

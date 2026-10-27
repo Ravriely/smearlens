@@ -1,0 +1,30 @@
+[project]
+name = "smearlens"
+version = "0.1.0"
+description = "Blood smear review assistant for lab biologists, built on Meta models"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0",
+    "pillow>=11.0",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+sam = [
+    "sam3 @ git+https://github.com/facebookresearch/sam3.git",
+    "torch>=2.7",
+    "opencv-python-headless>=4.10",
+]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

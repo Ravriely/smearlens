@@ -102,7 +102,7 @@ def main() -> None:
     for decay in (1e-4, 1e-3, 1e-2):
         w, b = fit_logistic(norm["train"], data["train"]["y"], decay)
         p = 1 / (1 + np.exp(-np.clip(norm["val"] @ w + b, -30, 30)))
-        for threshold in (0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99):
+        for threshold in (0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 0.995, 0.998, 0.999, 0.9995):
             result = evaluate(data["val"], p, threshold)
             if best is None or result["f1"] > best[0]:
                 best = (result["f1"], decay, float(threshold), w, b)

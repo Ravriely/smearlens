@@ -33,6 +33,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [04](docs/experiments/04-end-to-end-pipeline.md) | End to end: SAM 3 candidates + Muse Spark labels, 82 test images | WBC F1 0.25 → 0.72, count error 4.98 → 0.55 per image, right type for 58 % of WBCs (70 % of kept cells) |
 | [05](docs/experiments/05-glimmer-linear-probe.md) | Linear probe on frozen Muse Glimmer vision features, PBC | 97.6 % test accuracy (zero-shot: 65 %); immature granulocytes 20 % → 95 %, erythroblasts 35 % → 99 % |
 | [06](docs/experiments/06-pipeline-with-glimmer-probe.md) | Pipeline with the Glimmer probe, crops scaled on red cells | Right type end to end 58 % → 72.7 % (87 % of kept cells), same detection (F1 0.73, count error 0.52) |
+| [07](docs/experiments/07-review-agent.md) | Review agent: Muse Spark with 6 tools prepares the slide review | Second opinions, review list and report in about 1 min per slide, no diagnostic wording; flagged 21/24 disagreements on BCCD (probe domain shift) |
 
 ## Quick start
 

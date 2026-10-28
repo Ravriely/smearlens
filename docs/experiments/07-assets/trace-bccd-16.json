@@ -1,0 +1,436 @@
+{
+  "fields": 16,
+  "white_cells": 24,
+  "seconds": 41.5,
+  "agent_tokens": 18389,
+  "second_opinion_tokens": 7155,
+  "rejected_reports": 0,
+  "flags": [
+    {
+      "cell_id": 1,
+      "field": "13cd097a957e573b84aee503a173dd94.png",
+      "type": "monocyte",
+      "priority": "high",
+      "reason": "Classifier monocyte 0.70 vs detector neutrophil; second opinion neutrophil (segmented bilobed nucleus) - likely misclassified monocyte"
+    },
+    {
+      "cell_id": 5,
+      "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+      "type": "eosinophil",
+      "priority": "high",
+      "reason": "Classifier eosinophil 0.74 vs detector neutrophil; second opinion neutrophil (multilobed segmented nucleus) - review eosinophil vs neutrophil"
+    },
+    {
+      "cell_id": 16,
+      "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+      "type": "eosinophil",
+      "priority": "high",
+      "reason": "Low confidence eosinophil 0.60 vs detector neutrophil; second opinion not_wbc - dense basophilic clump/platelet artifact, possible false detection"
+    },
+    {
+      "cell_id": 17,
+      "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+      "type": "monocyte",
+      "priority": "high",
+      "reason": "Low confidence monocyte 0.62 vs detector neutrophil; second opinion not_wbc - truncated nuclei at edge/false detection, no intact WBC"
+    }
+  ],
+  "steps": [
+    {
+      "tool": "get_slide_summary",
+      "args": {},
+      "result": {
+        "fields": 16,
+        "white_cells": 24,
+        "enough_for_differential": false,
+        "counts": {
+          "monocyte": 17,
+          "eosinophil": 5,
+          "ig": 1,
+          "neutrophil": 1
+        },
+        "differential_percent": {
+          "basophil": 0.0,
+          "eosinophil": 20.8,
+          "erythroblast": 0.0,
+          "ig": 4.2,
+          "lymphocyte": 0.0,
+          "monocyte": 70.8,
+          "neutrophil": 4.2
+        },
+        "outside_reference_ranges": [
+          "eosinophil",
+          "ig",
+          "lymphocyte",
+          "monocyte",
+          "neutrophil"
+        ],
+        "low_confidence_cells": 4,
+        "classifier_and_detector_disagree": 21
+      }
+    },
+    {
+      "tool": "get_reference_ranges",
+      "args": {},
+      "result": {
+        "unit": "percent of white cells",
+        "note": "indicative adult ranges; the lab's own ranges prevail",
+        "ranges": {
+          "neutrophil": [
+            40,
+            75
+          ],
+          "lymphocyte": [
+            20,
+            45
+          ],
+          "monocyte": [
+            2,
+            10
+          ],
+          "eosinophil": [
+            1,
+            6
+          ],
+          "basophil": [
+            0,
+            2
+          ],
+          "ig": [
+            0,
+            1
+          ],
+          "erythroblast": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "tool": "list_cells",
+      "args": {
+        "max_confidence": 0.8
+      },
+      "result": [
+        {
+          "cell_id": 1,
+          "field": "13cd097a957e573b84aee503a173dd94.png",
+          "type": "monocyte",
+          "confidence": 0.699,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 5,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "eosinophil",
+          "confidence": 0.74,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 6,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "monocyte",
+          "confidence": 0.8,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 16,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "eosinophil",
+          "confidence": 0.604,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 17,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "monocyte",
+          "confidence": 0.621,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 18,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "eosinophil",
+          "confidence": 0.609,
+          "detector_label": "neutrophil"
+        }
+      ]
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 1
+      },
+      "result": {
+        "cell_id": 1,
+        "label": "neutrophil",
+        "reasoning": "The central object shows a segmented, bilobed nucleus with pale cytoplasm consistent with a mature polymorphonuclear granulocyte.\nLABEL: neutrophil"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 5
+      },
+      "result": {
+        "cell_id": 5,
+        "label": "neutrophil",
+        "reasoning": "The central object shows a multilobed segmented dark-purple nucleus with light cytoplasm characteristic of a mature neutrophil.\nLABEL: neutrophil"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 16
+      },
+      "result": {
+        "cell_id": 16,
+        "label": "not_wbc",
+        "reasoning": "Dense amorphous basophilic clump without distinct WBC nuclear-cytoplasmic architecture and too small/irregular for a true leukocyte suggests aggregated platelets/debris artifact.\nLABEL: not_wbc"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 17
+      },
+      "result": {
+        "cell_id": 17,
+        "label": "not_wbc",
+        "reasoning": "No intact WBC with distinct nucleus/cytoplasm is centered, only pale background with truncated neutrophil nuclei at the crop edge indicating a false detection.\nLABEL: not_wbc"
+      }
+    },
+    {
+      "tool": "list_cells",
+      "args": {},
+      "result": [
+        {
+          "cell_id": 0,
+          "field": "13cd097a957e573b84aee503a173dd94.png",
+          "type": "monocyte",
+          "confidence": 0.804,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 1,
+          "field": "13cd097a957e573b84aee503a173dd94.png",
+          "type": "monocyte",
+          "confidence": 0.699,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 2,
+          "field": "216e706b9bc2535f8c1b59aceb31a7eb.png",
+          "type": "monocyte",
+          "confidence": 1.0,
+          "detector_label": "lymphocyte"
+        },
+        {
+          "cell_id": 3,
+          "field": "3af3aa6cc3a359a4aca25b09077342cd.png",
+          "type": "eosinophil",
+          "confidence": 0.946,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 4,
+          "field": "3fe0c92f0a295a21bfbc2a8bc2a5afb6.png",
+          "type": "monocyte",
+          "confidence": 0.999,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 5,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "eosinophil",
+          "confidence": 0.74,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 6,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "monocyte",
+          "confidence": 0.8,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 7,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "monocyte",
+          "confidence": 0.861,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 8,
+          "field": "408956b07ab15b499e9d93a4cadf0afc.png",
+          "type": "eosinophil",
+          "confidence": 0.869,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 9,
+          "field": "45f8adfa34315e869de0f752de0f2cda.png",
+          "type": "monocyte",
+          "confidence": 0.997,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 10,
+          "field": "45f8adfa34315e869de0f752de0f2cda.png",
+          "type": "monocyte",
+          "confidence": 0.989,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 11,
+          "field": "45f8adfa34315e869de0f752de0f2cda.png",
+          "type": "monocyte",
+          "confidence": 0.944,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 12,
+          "field": "69382cf7216652f69811f8f0078ef688.png",
+          "type": "monocyte",
+          "confidence": 1.0,
+          "detector_label": "eosinophil"
+        },
+        {
+          "cell_id": 13,
+          "field": "6d1b1d2ceb2653108cae15b2111bb9bc.png",
+          "type": "monocyte",
+          "confidence": 0.999,
+          "detector_label": "monocyte"
+        },
+        {
+          "cell_id": 14,
+          "field": "7f96e833a77559fb8fe76152b2b76660.png",
+          "type": "monocyte",
+          "confidence": 1.0,
+          "detector_label": "monocyte"
+        },
+        {
+          "cell_id": 15,
+          "field": "9bd635d2299d5dd582cd72cfac519168.png",
+          "type": "ig",
+          "confidence": 0.993,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 16,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "eosinophil",
+          "confidence": 0.604,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 17,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "monocyte",
+          "confidence": 0.621,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 18,
+          "field": "a2a35a2cd6c857bbb910390bcf92c78a.png",
+          "type": "eosinophil",
+          "confidence": 0.609,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 19,
+          "field": "bac60b0b98055c6ca9ab5ec0b6e4ec3a.png",
+          "type": "monocyte",
+          "confidence": 0.998,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 20,
+          "field": "bac60b0b98055c6ca9ab5ec0b6e4ec3a.png",
+          "type": "monocyte",
+          "confidence": 1.0,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 21,
+          "field": "c27eebee59d750ecbe51b099ad0ed50f.png",
+          "type": "neutrophil",
+          "confidence": 0.993,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 22,
+          "field": "eb735b6f8eb85029881ac913f6793644.png",
+          "type": "monocyte",
+          "confidence": 0.992,
+          "detector_label": "neutrophil"
+        },
+        {
+          "cell_id": 23,
+          "field": "f4f0852a4bcc5a128b1379ae940683f0.png",
+          "type": "monocyte",
+          "confidence": 0.991,
+          "detector_label": "neutrophil"
+        }
+      ]
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 1,
+        "priority": "high",
+        "reason": "Classifier monocyte 0.70 vs detector neutrophil; second opinion neutrophil (segmented bilobed nucleus) - likely misclassified monocyte"
+      },
+      "result": {
+        "flagged": 1,
+        "review_list_size": 1
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 5,
+        "priority": "high",
+        "reason": "Classifier eosinophil 0.74 vs detector neutrophil; second opinion neutrophil (multilobed segmented nucleus) - review eosinophil vs neutrophil"
+      },
+      "result": {
+        "flagged": 5,
+        "review_list_size": 2
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 16,
+        "priority": "high",
+        "reason": "Low confidence eosinophil 0.60 vs detector neutrophil; second opinion not_wbc - dense basophilic clump/platelet artifact, possible false detection"
+      },
+      "result": {
+        "flagged": 16,
+        "review_list_size": 3
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 17,
+        "priority": "high",
+        "reason": "Low confidence monocyte 0.62 vs detector neutrophil; second opinion not_wbc - truncated nuclei at edge/false detection, no intact WBC"
+      },
+      "result": {
+        "flagged": 17,
+        "review_list_size": 4
+      }
+    },
+    {
+      "tool": "submit_report",
+      "args": {
+        "report": "## Slide Review \u2013 SmearLens\n\n**Sample adequacy:** Only 24 WBCs counted across 16 fields \u2013 *below threshold of 100 cells for a reliable differential*. All percentages are indicative only and require human validation.\n\n**Automated differential (indicative):**\n- Monocyte 70.8% (17/24), Eosinophil 20.8% (5/24), IG 4.2% (1/24), Neutrophil 4.2% (1/24), Basophil 0.0%, Lymphocyte 0.0%, Erythroblast 0.0%\n- Indicative reference (adult): neutrophil 40-75%, lymphocyte 20-45%, monocyte 2-10%, eosinophil 1-6%, basophil 0-2%, IG 0-1%, erythroblast 0-0%\n- Outside reference in automated count: eosinophil, IG, lymphocyte, monocyte, neutrophil (per tool flag)\n\n**Quality flags:** 4 low-confidence cells; 21/24 cells with classifier/detector disagreement \u2013 high risk of misclassification. Manual review required.\n\n**Cells flagged for priority review:**\n- Cell 1 (0.699 monocyte vs neutrophil) \u2013 second opinion: neutrophil bilobed nucleus\n- Cell 5 (0.74 eosinophil vs neutrophil) \u2013 second opinion: neutrophil multilobed nucleus\n- Cell 16 (0.604 eosinophil vs neutrophil) \u2013 second opinion: not WBC, platelet/debris artifact\n- Cell 17 (0.621 monocyte vs neutrophil) \u2013 second opinion: not WBC, truncated edge artifact\n\n**Action:** Please validate differential manually; verify monocyte/eosinophil vs neutrophil distinctions and exclude artifacts in field a2a35a2c.\n"
+      },
+      "result": {
+        "accepted": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "images": 18365,
+  "missing_files": 0,
+  "temperature": 0.867,
+  "review_cutoff_from_pbc_10pct": 0.9598,
+  "known_types": {
+    "cells": 15045,
+    "accuracy": 0.837,
+    "balanced_accuracy": 0.723,
+    "ece": 0.092,
+    "sent_to_review_percent": 28.0,
+    "errors_left_after_review_percent": 5.39,
+    "coverage": [
+      {
+        "reviewed_percent": 0,
+        "reviewed_cells": 0,
+        "errors_left_percent": 16.3,
+        "errors_caught_percent": 0.0
+      },
+      {
+        "reviewed_percent": 5.0,
+        "reviewed_cells": 752,
+        "errors_left_percent": 14.07,
+        "errors_caught_percent": 18.0
+      },
+      {
+        "reviewed_percent": 10.0,
+        "reviewed_cells": 1504,
+        "errors_left_percent": 12.04,
+        "errors_caught_percent": 33.5
+      },
+      {
+        "reviewed_percent": 20.0,
+        "reviewed_cells": 3009,
+        "errors_left_percent": 8.07,
+        "errors_caught_percent": 60.4
+      },
+      {
+        "reviewed_percent": 30.0,
+        "reviewed_cells": 4514,
+        "errors_left_percent": 4.74,
+        "errors_caught_percent": 79.6
+      },
+      {
+        "reviewed_percent": 50.0,
+        "reviewed_cells": 7522,
+        "errors_left_percent": 1.25,
+        "errors_caught_percent": 96.2
+      }
+    ],
+    "per_class": {
+      "basophil": {
+        "cells": 79,
+        "recall": 0.481,
+        "predicted_as": {
+          "basophil": 38,
+          "neutrophil": 18,
+          "platelet": 10
+        }
+      },
+      "eosinophil": {
+        "cells": 424,
+        "recall": 0.406,
+        "predicted_as": {
+          "eosinophil": 172,
+          "neutrophil": 154,
+          "monocyte": 45
+        }
+      },
+      "erythroblast": {
+        "cells": 78,
+        "recall": 0.962,
+        "predicted_as": {
+          "erythroblast": 75,
+          "neutrophil": 1,
+          "monocyte": 1
+        }
+      },
+      "ig": {
+        "cells": 145,
+        "recall": 0.759,
+        "predicted_as": {
+          "ig": 110,
+          "monocyte": 29,
+          "erythroblast": 3
+        }
+      },
+      "lymphocyte": {
+        "cells": 3937,
+        "recall": 0.569,
+        "predicted_as": {
+          "lymphocyte": 2241,
+          "erythroblast": 988,
+          "monocyte": 377
+        }
+      },
+      "monocyte": {
+        "cells": 1789,
+        "recall": 0.916,
+        "predicted_as": {
+          "monocyte": 1638,
+          "ig": 54,
+          "erythroblast": 42
+        }
+      },
+      "neutrophil": {
+        "cells": 8593,
+        "recall": 0.968,
+        "predicted_as": {
+          "neutrophil": 8319,
+          "monocyte": 83,
+          "platelet": 69
+        }
+      }
+    }
+  },
+  "unseen_types": {
+    "myeloblast": {
+      "cells": 3268,
+      "sent_to_review_percent": 71.2,
+      "mean_confidence": 0.807,
+      "predicted_as": {
+        "monocyte": 1571,
+        "lymphocyte": 783,
+        "ig": 492
+      }
+    },
+    "monoblast": {
+      "cells": 26,
+      "sent_to_review_percent": 38.5,
+      "mean_confidence": 0.906,
+      "predicted_as": {
+        "monocyte": 21,
+        "ig": 4,
+        "erythroblast": 1
+      }
+    },
+    "atypical lymphocyte": {
+      "cells": 11,
+      "sent_to_review_percent": 45.5,
+      "mean_confidence": 0.886,
+      "predicted_as": {
+        "monocyte": 5,
+        "erythroblast": 3,
+        "lymphocyte": 3
+      }
+    },
+    "smudge cell": {
+      "cells": 15,
+      "sent_to_review_percent": 60.0,
+      "mean_confidence": 0.877,
+      "predicted_as": {
+        "monocyte": 6,
+        "platelet": 4,
+        "basophil": 3
+      }
+    }
+  }
+}

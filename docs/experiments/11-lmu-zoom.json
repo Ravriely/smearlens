@@ -1,0 +1,86 @@
+[
+  {
+    "zoom": 0.5,
+    "accuracy": 0.6437,
+    "balanced_accuracy": 0.6574,
+    "recall": {
+      "basophil": 0.43,
+      "eosinophil": 0.48,
+      "erythroblast": 0.872,
+      "ig": 0.931,
+      "lymphocyte": 0.57,
+      "monocyte": 0.497,
+      "neutrophil": 0.822
+    }
+  },
+  {
+    "zoom": 0.6,
+    "accuracy": 0.676,
+    "balanced_accuracy": 0.6931,
+    "recall": {
+      "basophil": 0.494,
+      "eosinophil": 0.437,
+      "erythroblast": 0.936,
+      "ig": 0.924,
+      "lymphocyte": 0.587,
+      "monocyte": 0.613,
+      "neutrophil": 0.861
+    }
+  },
+  {
+    "zoom": 0.75,
+    "accuracy": 0.6921,
+    "balanced_accuracy": 0.6941,
+    "recall": {
+      "basophil": 0.38,
+      "eosinophil": 0.477,
+      "erythroblast": 0.962,
+      "ig": 0.924,
+      "lymphocyte": 0.523,
+      "monocyte": 0.693,
+      "neutrophil": 0.9
+    }
+  },
+  {
+    "zoom": 0.9,
+    "accuracy": 0.7182,
+    "balanced_accuracy": 0.7146,
+    "recall": {
+      "basophil": 0.418,
+      "eosinophil": 0.503,
+      "erythroblast": 0.974,
+      "ig": 0.855,
+      "lymphocyte": 0.543,
+      "monocyte": 0.817,
+      "neutrophil": 0.892
+    }
+  },
+  {
+    "zoom": 1.0,
+    "accuracy": 0.7163,
+    "balanced_accuracy": 0.7006,
+    "recall": {
+      "basophil": 0.367,
+      "eosinophil": 0.55,
+      "erythroblast": 0.936,
+      "ig": 0.814,
+      "lymphocyte": 0.47,
+      "monocyte": 0.87,
+      "neutrophil": 0.897
+    }
+  },
+  {
+    "zoom": 1.2,
+    "accuracy": 0.694,
+    "balanced_accuracy": 0.6707,
+    "recall": {
+      "basophil": 0.291,
+      "eosinophil": 0.6,
+      "erythroblast": 0.923,
+      "ig": 0.772,
+      "lymphocyte": 0.307,
+      "monocyte": 0.9,
+      "neutrophil": 0.902
+    }
+  }
+]

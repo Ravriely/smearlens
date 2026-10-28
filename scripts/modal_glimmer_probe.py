@@ -187,6 +187,70 @@ def embed_lmu(resize: int = 0) -> bytes:
     return buffer.getvalue()
 
 
+@app.function(
+    gpu=GPU,
+    image=base_image,
+    cpu=8,
+    timeout=3 * 3600,
+    secrets=[modal.Secret.from_name("huggingface")],
+    volumes={CACHE: cache, "/data": datasets},
+)
+def embed_lmu_zoom(zooms: list[float], per_class: int = 300) -> bytes:
+    import random
+    from concurrent.futures import ThreadPoolExecutor
+
+    import sys
+
+    import numpy as np
+    from PIL import Image
+
+    sys.path.insert(0, REMOTE)
+    from smearlens.pipeline import PBC_FIELD_PX
+
+    root = Path("/data/lmu/PKG - AML-Cytomorphology_LMU")
+    rows = [line.split() for line in (Path("/data/lmu/annotations.dat")).read_text().splitlines() if line.strip()]
+    groups: dict = {}
+    for r in rows:
+        if (root / r[0]).exists():
+            groups.setdefault(r[0].split("/")[0], []).append(root / r[0])
+    rng = random.Random(0)
+    paths = [p for g in groups.values() for p in rng.sample(g, min(per_class, len(g)))]
+
+    def load(path):
+        return Image.open(path).convert("RGB")
+
+    def zoomed(image, zoom):
+        scaled = image.resize((round(image.width * zoom), round(image.height * zoom)), Image.LANCZOS)
+        offset = (scaled.width - PBC_FIELD_PX) // 2
+        pixels = np.asarray(scaled)
+        border = np.concatenate([pixels[0], pixels[-1], pixels[:, 0], pixels[:, -1]])
+        field = Image.new("RGB", (PBC_FIELD_PX, PBC_FIELD_PX), tuple(int(v) for v in np.median(border, axis=0)))
+        field.paste(scaled, (-offset, -offset))
+        buffer = io.BytesIO()
+        field.save(buffer, format="JPEG", quality=92)
+        return buffer.getvalue()
+
+    with ThreadPoolExecutor(16) as pool:
+        images = list(pool.map(load, paths))
+    encoder, processor, merge = load_encoder()
+    out = {"paths": np.array([str(p.relative_to(root)) for p in paths]), "zooms": np.array(zooms)}
+    for zoom in zooms:
+        with ThreadPoolExecutor(16) as pool:
+            crops = list(pool.map(lambda im: zoomed(im, zoom), images))
+        out[f"features_{zoom}"] = embed(encoder, processor, merge, crops).astype(np.float16)
+    buffer = io.BytesIO()
+    np.savez_compressed(buffer, **out)
+    return buffer.getvalue()
+
+
+@app.local_entrypoint()
+def lmu_zoom(zooms: str = "0.5,0.6,0.75,0.9,1.0,1.2", per_class: int = 300):
+    out = REPO / "runs" / "lmu"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "features_zoom.npz").write_bytes(embed_lmu_zoom.remote([float(z) for z in zooms.split(",")], per_class))
+    print(f"wrote {out / 'features_zoom.npz'}")
+
+
 @app.local_entrypoint()
 def lmu(resize: int = 0):
     out = REPO / "runs" / "lmu"

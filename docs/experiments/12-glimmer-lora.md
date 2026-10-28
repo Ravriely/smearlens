@@ -57,6 +57,30 @@ The Munich numbers here use a class-balanced subsample and no temperature,
 so they differ from the full-set numbers of [11](11-external-lab-munich.md).
 Compare the two columns with each other, not with fiche 11.
 
+## LoRA + a few labelled Munich cells
+
+Same protocol as part 4 of [11](11-external-lab-munich.md) (head retrained on
+PBC train + N Munich cells per type, 3 draws, full Munich set of known types),
+on features from the LoRA encoder. Numbers:
+[`12-lora-adaptation.json`](12-lora-adaptation.json).
+
+| Labelled per type | Frozen: accuracy | LoRA: accuracy | Frozen: balanced | LoRA: balanced |
+|---|---|---|---|---|
+| 0 | 83.7 % | **84.7 %** | 72.3 % | **75.0 %** |
+| 5 | 84.8 % | **88.6 %** | 77.5 % | **82.5 %** |
+| 10 | 89.4 % | **90.0 %** | 84.7 % | **87.1 %** |
+| 25 | 89.7 % | 89.2 % | 87.3 % | **88.1 %** |
+| 50 | 91.8 % | 91.6 % | 88.9 % | **89.6 %** |
+| 100 | 92.6 % | **93.1 %** | 88.5 % | 88.4 % |
+
+The two levers add up where labels are scarce: with 5 cells per type the
+LoRA encoder gives +4 points of accuracy and +5 points of balanced accuracy.
+With 25 cells or more per type the two encoders are level, because the head
+then learns the new lab on its own.
+
+For the pitch: "With the fine-tuned encoder, 35 labelled cells (5 per type)
+take a new hospital from 84.7 % to 88.6 %."
+
 ## What it tells us
 
 - **The fine-tune helps a little everywhere it can see**: PBC and
@@ -92,4 +116,6 @@ and sends 89 % of leukaemia blasts to the biologist."
 ```bash
 modal run scripts/modal_glimmer_lora.py --max-steps 20 --eval-per-class 20   # smoke test, ~5 min
 modal run --detach scripts/modal_glimmer_lora.py
+modal run --detach scripts/modal_glimmer_lora.py::features   # LoRA features of all PBC and Munich cells
+modal run scripts/modal_lmu_adapt.py --encoder lora
 ```

@@ -1,0 +1,98 @@
+[
+  {
+    "shots_per_class": 0,
+    "labelled_cells": 0,
+    "accuracy": 0.8473,
+    "accuracy_std": 0.0,
+    "balanced_accuracy": 0.7497,
+    "recall": {
+      "basophil": 0.405,
+      "eosinophil": 0.601,
+      "erythroblast": 0.974,
+      "ig": 0.876,
+      "lymphocyte": 0.636,
+      "monocyte": 0.783,
+      "neutrophil": 0.972
+    }
+  },
+  {
+    "shots_per_class": 5,
+    "labelled_cells": 35,
+    "accuracy": 0.8864,
+    "accuracy_std": 0.0309,
+    "balanced_accuracy": 0.825,
+    "recall": {
+      "basophil": 0.68,
+      "eosinophil": 0.768,
+      "erythroblast": 0.95,
+      "ig": 0.8,
+      "lymphocyte": 0.728,
+      "monocyte": 0.88,
+      "neutrophil": 0.969
+    }
+  },
+  {
+    "shots_per_class": 10,
+    "labelled_cells": 70,
+    "accuracy": 0.8997,
+    "accuracy_std": 0.0219,
+    "balanced_accuracy": 0.8711,
+    "recall": {
+      "basophil": 0.85,
+      "eosinophil": 0.845,
+      "erythroblast": 0.912,
+      "ig": 0.891,
+      "lymphocyte": 0.832,
+      "monocyte": 0.816,
+      "neutrophil": 0.951
+    }
+  },
+  {
+    "shots_per_class": 25,
+    "labelled_cells": 175,
+    "accuracy": 0.8922,
+    "accuracy_std": 0.0111,
+    "balanced_accuracy": 0.8809,
+    "recall": {
+      "basophil": 0.79,
+      "eosinophil": 0.929,
+      "erythroblast": 0.937,
+      "ig": 0.903,
+      "lymphocyte": 0.826,
+      "monocyte": 0.852,
+      "neutrophil": 0.929
+    }
+  },
+  {
+    "shots_per_class": 50,
+    "labelled_cells": 350,
+    "accuracy": 0.9161,
+    "accuracy_std": 0.0067,
+    "balanced_accuracy": 0.8955,
+    "recall": {
+      "basophil": 0.883,
+      "eosinophil": 0.923,
+      "erythroblast": 0.889,
+      "ig": 0.849,
+      "lymphocyte": 0.898,
+      "monocyte": 0.897,
+      "neutrophil": 0.929
+    }
+  },
+  {
+    "shots_per_class": 100,
+    "labelled_cells": 700,
+    "accuracy": 0.9311,
+    "accuracy_std": 0.0056,
+    "balanced_accuracy": 0.8838,
+    "recall": {
+      "basophil": 0.808,
+      "eosinophil": 0.924,
+      "erythroblast": 0.812,
+      "ig": 0.868,
+      "lymphocyte": 0.93,
+      "monocyte": 0.906,
+      "neutrophil": 0.938
+    }
+  }
+]

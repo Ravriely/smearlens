@@ -223,6 +223,80 @@ def train(
     return buffer.getvalue()
 
 
+@app.function(
+    gpu=GPU,
+    cpu=8,
+    memory=65536,
+    timeout=4 * 3600,
+    secrets=[modal.Secret.from_name("huggingface")],
+    volumes={CACHE: cache, "/data": datasets},
+)
+def embed_all() -> bytes:
+    import sys
+    from concurrent.futures import ThreadPoolExecutor
+
+    import numpy as np
+    import torch
+    from peft import PeftModel
+    from PIL import Image
+
+    sys.path.insert(0, REMOTE)
+    from smearlens.pbc import PBC_CLASSES, read_splits
+
+    encoder, processor, merge = load_encoder()
+    model = PeftModel.from_pretrained(encoder, Path(CACHE) / "lora" / "adapter").eval()
+    head = torch.load(Path(CACHE) / "lora" / "head.pt")
+
+    def features(paths):
+        out = []
+        with ThreadPoolExecutor(16) as pool:
+            for i in range(0, len(paths), 256):
+                images = list(pool.map(lambda p: Image.open(p).convert("RGB"), paths[i : i + 256]))
+                for j in range(0, len(images), 32):
+                    inputs = processor(images=images[j : j + 32], return_tensors="pt")
+                    grid = inputs["image_grid_thw"].cuda()
+                    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+                        hidden = model(pixel_values=inputs["pixel_values"].cuda().to(torch.bfloat16), grid_thw=grid).last_hidden_state
+                    sizes = (grid.prod(-1) // merge**2).tolist()
+                    out += [t.float().mean(0).cpu().numpy() for t in torch.split(hidden, sizes)]
+        return np.stack(out).astype(np.float16)
+
+    data = Path(REMOTE) / "data"
+    cells = read_splits(data / "pbc" / "splits.csv", data)
+    rows = [line.split() for line in Path("/data/lmu/annotations.dat").read_text().splitlines() if line.strip()]
+    lmu = [r[0] for r in rows if (LMU / r[0]).exists()]
+    buffer = io.BytesIO()
+    np.savez_compressed(
+        buffer,
+        pbc_features=features([c.path for c in cells]),
+        pbc_labels=np.array([PBC_CLASSES.index(c.label) for c in cells]),
+        pbc_splits=np.array([c.split for c in cells]),
+        lmu_features=features([LMU / p for p in lmu]),
+        lmu_paths=np.array(lmu),
+        weight=head["weight"].cpu().numpy(),
+        bias=head["bias"].cpu().numpy(),
+        classes=np.array(PBC_CLASSES),
+    )
+    return buffer.getvalue()
+
+
+@app.local_entrypoint()
+def features():
+    import numpy as np
+
+    out = REPO / "runs" / "lora"
+    out.mkdir(parents=True, exist_ok=True)
+    blob = np.load(io.BytesIO(embed_all.remote()))
+    pbc = blob["pbc_features"]
+    train = pbc[blob["pbc_splits"] == "train"].astype(np.float32)
+    mean, std = train.mean(0), train.std(0) + 1e-6
+    weight, bias = blob["weight"], blob["bias"]
+    np.savez(out / "pbc_features.npz", features=pbc, labels=blob["pbc_labels"], splits=blob["pbc_splits"])
+    np.savez(out / "lmu_features.npz", features=blob["lmu_features"], paths=blob["lmu_paths"], missing=np.array([]))
+    np.savez(out / "probe_lora.npz", weight=weight * std, bias=bias + weight @ mean, mean=mean, std=std, classes=blob["classes"])
+    print(f"wrote {out}")
+
+
 @app.local_entrypoint()
 def main(epochs: int = 2, rank: int = 16, last_blocks: int = 16, lr: float = 1e-4, max_steps: int = 0, eval_per_class: int = 300):
     blob = train.remote(epochs=epochs, rank=rank, last_blocks=last_blocks, lr=lr, max_steps=max_steps, eval_per_class=eval_per_class)

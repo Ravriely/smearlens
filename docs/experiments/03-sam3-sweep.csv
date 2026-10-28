@@ -1,0 +1,22 @@
+run,version,threshold,wbc_prompt,platelet_prompt,class,truth,predicted,matched,precision,recall,f1,mean_abs_count_error,wbc_box_fill_mean,gpu_seconds
+wbc-white-blood-cell,sam3.1,0.5,white blood cell,platelet,WBC,87,1466,27,0.018,0.31,0.035,17.13,0.201,19.4
+wbc-white-blood-cell,sam3.1,0.5,white blood cell,platelet,RBC,1241,1518,1000,0.659,0.806,0.725,8.65,0.201,19.4
+wbc-white-blood-cell,sam3.1,0.5,white blood cell,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.201,19.4
+wbc-leukocyte,sam3.1,0.5,leukocyte,platelet,WBC,87,0,0,0.0,0.0,0.0,1.06,0.573,18.2
+wbc-leukocyte,sam3.1,0.5,leukocyte,platelet,RBC,1241,1518,1000,0.659,0.806,0.725,8.65,0.573,18.2
+wbc-leukocyte,sam3.1,0.5,leukocyte,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.573,18.2
+wbc-purple-nucleus,sam3.1,0.5,purple nucleus,platelet,WBC,87,934,61,0.065,0.701,0.119,10.7,0.45,12.5
+wbc-purple-nucleus,sam3.1,0.5,purple nucleus,platelet,RBC,1241,1518,1000,0.659,0.806,0.725,8.65,0.45,12.5
+wbc-purple-nucleus,sam3.1,0.5,purple nucleus,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.45,12.5
+wbc-large-purple-nucleus,sam3.1,0.5,cell with a large purple nucleus,platelet,WBC,87,199,46,0.231,0.529,0.322,2.2,0.313,17.9
+wbc-large-purple-nucleus,sam3.1,0.5,cell with a large purple nucleus,platelet,RBC,1241,1518,1000,0.659,0.806,0.725,8.65,0.313,17.9
+wbc-large-purple-nucleus,sam3.1,0.5,cell with a large purple nucleus,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.313,17.9
+thr-0.3,sam3.1,0.3,white blood cell,platelet,WBC,87,1857,57,0.031,0.655,0.059,21.83,0.256,18.4
+thr-0.3,sam3.1,0.3,white blood cell,platelet,RBC,1241,1938,1083,0.559,0.873,0.681,11.89,0.256,18.4
+thr-0.3,sam3.1,0.3,white blood cell,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.256,18.4
+sam3-v1-large-purple-nucleus,sam3,0.5,cell with a large purple nucleus,platelet,WBC,87,207,48,0.232,0.552,0.327,2.27,0.634,17.6
+sam3-v1-large-purple-nucleus,sam3,0.5,cell with a large purple nucleus,platelet,RBC,1241,1504,984,0.654,0.793,0.717,8.77,0.634,17.6
+sam3-v1-large-purple-nucleus,sam3,0.5,cell with a large purple nucleus,platelet,Platelet,47,0,0,0.0,0.0,0.0,0.57,0.634,17.6
+plt-small-purple-dot,sam3.1,0.3,cell with a large purple nucleus,small purple dot,WBC,87,591,67,0.113,0.77,0.198,6.59,0.686,14.3
+plt-small-purple-dot,sam3.1,0.3,cell with a large purple nucleus,small purple dot,RBC,1241,1938,1083,0.559,0.873,0.681,11.89,0.686,14.3
+plt-small-purple-dot,sam3.1,0.3,cell with a large purple nucleus,small purple dot,Platelet,47,153,16,0.105,0.34,0.16,1.41,0.686,14.3

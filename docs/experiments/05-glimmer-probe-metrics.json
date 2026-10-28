@@ -1,0 +1,112 @@
+{
+  "encoder": "meta-models/Muse-Glimmer-30B vision tower (frozen)",
+  "feature_dim": 6144,
+  "train": 11873,
+  "val": 2659,
+  "test": 2560,
+  "weight_decay": 0.1,
+  "val_accuracy": 0.9767,
+  "test_accuracy": 0.9762,
+  "per_class_recall": {
+    "basophil": 0.9728,
+    "eosinophil": 1.0,
+    "erythroblast": 0.9876,
+    "ig": 0.9547,
+    "lymphocyte": 0.9602,
+    "monocyte": 0.9626,
+    "neutrophil": 0.964,
+    "platelet": 0.9971
+  },
+  "confusion": [
+    [
+      179,
+      0,
+      0,
+      5,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      476,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      239,
+      0,
+      0,
+      1,
+      2,
+      0
+    ],
+    [
+      3,
+      0,
+      2,
+      400,
+      1,
+      5,
+      8,
+      0
+    ],
+    [
+      3,
+      0,
+      1,
+      0,
+      169,
+      2,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      2,
+      3,
+      206,
+      1,
+      0
+    ],
+    [
+      2,
+      0,
+      1,
+      14,
+      0,
+      1,
+      482,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      348
+    ]
+  ],
+  "classes": [
+    "basophil",
+    "eosinophil",
+    "erythroblast",
+    "ig",
+    "lymphocyte",
+    "monocyte",
+    "neutrophil",
+    "platelet"
+  ]
+}

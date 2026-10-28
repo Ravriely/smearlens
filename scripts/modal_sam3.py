@@ -73,9 +73,11 @@ def main(
     wbc_prompt: str = "white blood cell",
     platelet_prompt: str = "platelet",
     tag: str = "sam3",
+    upscale_below: int = 0,
 ):
     args = ["--limit", str(limit), "--split", split, "--version", version, "--threshold", str(threshold)]
-    archive = validate.remote([*args, "--wbc-prompt", wbc_prompt, "--platelet-prompt", platelet_prompt], tag)
+    args += ["--wbc-prompt", wbc_prompt, "--platelet-prompt", platelet_prompt, "--upscale-below", str(upscale_below)]
+    archive = validate.remote(args, tag)
     out = REPO / "runs"
     out.mkdir(exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:

@@ -25,10 +25,18 @@ def load_model(version: str):
     return model, Sam3Processor(model)
 
 
-def segment_concept(processor, state, label: str, prompt: str) -> tuple[list[Box], np.ndarray, list[float]]:
+def upscale_factor(image: Image.Image, below: int) -> int:
+    return max(1, -(-below // min(image.size))) if below else 1
+
+
+def segment_concept(
+    processor, state, label: str, prompt: str, factor: int = 1, size: tuple[int, int] | None = None
+) -> tuple[list[Box], np.ndarray, list[float]]:
     output = processor.set_text_prompt(prompt=prompt, state=state)
-    boxes = [Box(label, *map(float, b)) for b in output["boxes"].cpu().numpy()]
+    boxes = [Box(label, *(float(v) / factor for v in b)) for b in output["boxes"].cpu().numpy()]
     masks = output["masks"].cpu().numpy()[:, 0]
+    if factor > 1 and len(masks):
+        masks = np.stack([np.asarray(Image.fromarray(m.astype(np.uint8)).resize(size, Image.NEAREST)) for m in masks])
     scores = [float(x) for x in output["scores"].float().cpu().numpy()]
     return boxes, masks, scores
 
@@ -73,6 +81,7 @@ def main() -> None:
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--wbc-prompt", default=PROMPTS["WBC"])
     parser.add_argument("--platelet-prompt", default=PROMPTS["Platelet"])
+    parser.add_argument("--upscale-below", type=int, default=0, help="upscale images whose short side is below this")
     parser.add_argument("--out", type=Path, default=Path("runs/sam3"))
     args = parser.parse_args()
 
@@ -96,11 +105,12 @@ def main() -> None:
 
     for i, sample in enumerate(samples):
         image = Image.open(sample.image_path).convert("RGB")
-        state = processor.set_image(image)
+        factor = upscale_factor(image, args.upscale_below)
+        state = processor.set_image(image.resize((image.width * factor, image.height * factor), Image.LANCZOS))
         layers, row = [], {"image": sample.image_path.name, "source": sample.source}
         for label in CLASSES:
             truth = [b for b in sample.boxes if b.label == label]
-            predicted, masks, scores = segment_concept(processor, state, label, prompts[label])
+            predicted, masks, scores = segment_concept(processor, state, label, prompts[label], factor, image.size)
             result = match_boxes(predicted, truth)
             totals[label] += result
             center_totals[label] += match_centers(predicted, truth)
@@ -124,6 +134,7 @@ def main() -> None:
         "version": args.version,
         "prompts": prompts,
         "threshold": args.threshold,
+        "upscale_below": args.upscale_below,
         "split": args.split,
         "images": len(per_image),
         "seconds": round(time.perf_counter() - started, 1),

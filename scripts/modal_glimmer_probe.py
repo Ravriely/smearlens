@@ -36,6 +36,7 @@ image = (
 
 app = modal.App("smearlens-glimmer-probe")
 cache = modal.Volume.from_name("smearlens-hf-cache", create_if_missing=True)
+datasets = modal.Volume.from_name("smearlens-data", create_if_missing=True)
 CACHE = "/root/.cache/huggingface"
 
 
@@ -147,6 +148,51 @@ GPU = os.environ.get("SMEARLENS_GPU", "L40S")
 def embed_crops(crops: list[bytes]):
     encoder, processor, merge = load_encoder()
     return embed(encoder, processor, merge, crops)
+
+
+@app.function(
+    gpu=GPU,
+    image=base_image,
+    timeout=3 * 3600,
+    secrets=[modal.Secret.from_name("huggingface")],
+    volumes={CACHE: cache, "/data": datasets},
+)
+def embed_lmu(resize: int = 0) -> bytes:
+    import numpy as np
+    from PIL import Image
+
+    root = Path("/data/lmu/PKG - AML-Cytomorphology_LMU")
+    rows = [line.split() for line in (Path("/data/lmu/annotations.dat")).read_text().splitlines() if line.strip()]
+    paths = [root / r[0] for r in rows if (root / r[0]).exists()]
+
+    def load(path):
+        image = Image.open(path).convert("RGB")
+        if resize:
+            image = image.resize((resize, resize), Image.BICUBIC)
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality=92)
+        return buffer.getvalue()
+
+    encoder, processor, merge = load_encoder()
+    features = []
+    for i in range(0, len(paths), 512):
+        features.append(embed(encoder, processor, merge, [load(p) for p in paths[i : i + 512]]))
+    buffer = io.BytesIO()
+    np.savez_compressed(
+        buffer,
+        features=np.concatenate(features).astype(np.float16),
+        paths=np.array([str(p.relative_to(root)) for p in paths]),
+        missing=np.array([r[0] for r in rows if not (root / r[0]).exists()]),
+    )
+    return buffer.getvalue()
+
+
+@app.local_entrypoint()
+def lmu(resize: int = 0):
+    out = REPO / "runs" / "lmu"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f"features_resize{resize}.npz").write_bytes(embed_lmu.remote(resize))
+    print(f"wrote {out / f'features_resize{resize}.npz'}")
 
 
 @app.function(gpu=GPU, image=image, timeout=3600, secrets=[modal.Secret.from_name("huggingface")], volumes={CACHE: cache})

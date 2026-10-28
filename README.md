@@ -21,7 +21,7 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 
 ## Status
 
-Work in progress. Segmentation uses SAM 3 (`facebook/sam3`); see the experiments below.
+Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Spark); see the experiments below.
 
 ## Experiments
 
@@ -30,6 +30,7 @@ Work in progress. Segmentation uses SAM 3 (`facebook/sam3`); see the experiments
 | [01](docs/experiments/01-zero-shot-baseline.md) | Zero-shot Muse Spark on PBC, 160 cells | 65.0 % accuracy, fails on immature granulocytes (20 %) and erythroblasts (35 %) |
 | [02](docs/experiments/02-sam3-segmentation.md) | SAM 3.1 text-prompt segmentation, 10 TXL-PBC images | RBC F1 0.70; the WBC prompt detects every cell (precision 0.02); no platelets |
 | [03](docs/experiments/03-sam3-prompt-sweep.md) | SAM 3 prompt/threshold sweep, full test split (82 images) | "cell with a large purple nucleus": WBC F1 0.04 → 0.37, count error 17 → 2.2 per image; platelets recall 0.87; SAM 3.1 box prompts are random, SAM 3 is the default |
+| [04](docs/experiments/04-end-to-end-pipeline.md) | End to end: SAM 3 candidates + Muse Spark labels, 82 test images | WBC F1 0.25 → 0.72, count error 4.98 → 0.55 per image, right type for 58 % of WBCs (70 % of kept cells) |
 
 ## Quick start
 

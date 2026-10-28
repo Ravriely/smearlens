@@ -86,3 +86,36 @@ def review_flags(cells: list[Candidate]) -> list[str]:
     if unclear:
         flags.append(f"{unclear} unclear")
     return flags
+
+
+def probe_labels(features, probe) -> list[str]:
+    import numpy as np
+
+    x = (np.asarray(features, dtype=np.float32) - probe["mean"]) / probe["std"]
+    logits = x @ probe["weight"].T + probe["bias"]
+    return [str(probe["classes"][i]) for i in logits.argmax(1)]
+
+
+PBC_RBC_PX = 74.6
+PBC_FIELD_PX = 360
+
+
+def rbc_scale(sizes: list[float], fallback: float = PBC_RBC_PX) -> float:
+    import statistics
+
+    return statistics.median(sizes) if sizes else fallback
+
+
+def crop_at_scale(image: Image.Image, box: Box, rbc_px: float) -> bytes:
+    import numpy as np
+
+    side = round(PBC_FIELD_PX * rbc_px / PBC_RBC_PX)
+    cx, cy = (box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2
+    x0, y0 = int(cx - side / 2), int(cy - side / 2)
+    pixels = np.asarray(image.convert("RGB"))
+    border = np.concatenate([pixels[0], pixels[-1], pixels[:, 0], pixels[:, -1]])
+    field = Image.new("RGB", (side, side), tuple(int(v) for v in np.median(border, axis=0)))
+    field.paste(image.convert("RGB"), (-x0, -y0))
+    buffer = io.BytesIO()
+    field.save(buffer, format="JPEG", quality=92)
+    return buffer.getvalue()

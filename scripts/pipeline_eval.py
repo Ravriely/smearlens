@@ -16,9 +16,12 @@ from smearlens.pipeline import (
     PROMPT,
     Candidate,
     crop,
+    crop_at_scale,
     dedupe,
     differential,
     pbc_label,
+    probe_labels,
+    rbc_scale,
     review_flags,
 )
 
@@ -50,6 +53,21 @@ def cache_key(image: str, box: Box) -> str:
     return f"{image}:{box.x0:.0f},{box.y0:.0f},{box.x1:.0f},{box.y1:.0f}"
 
 
+def glimmer_features(keys: list[str], crops: list[bytes], path: Path) -> dict[str, np.ndarray]:
+    stored = dict(np.load(path)) if path.exists() else {}
+    missing = [(k, c) for k, c in zip(keys, crops) if k not in stored]
+    if missing:
+        import modal
+
+        from modal_glimmer_probe import app, embed_crops
+
+        with modal.enable_output(), app.run():
+            features = embed_crops.remote([c for _, c in missing])
+        stored.update({k: f for (k, _), f in zip(missing, features)})
+        np.savez(path, **stored)
+    return {k: stored[k] for k in keys}
+
+
 def draw(image: Image.Image, cells: list[Candidate], truth: list[Box]) -> Image.Image:
     canvas = image.convert("RGB")
     pen = ImageDraw.Draw(canvas)
@@ -72,11 +90,20 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=4000)
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--max-calls", type=int, default=700)
+    parser.add_argument("--typer", choices=["muse", "glimmer"], default="muse")
+    parser.add_argument("--probe", type=Path, default=Path("runs/glimmer/probe.npz"))
+    parser.add_argument("--glimmer-crop", choices=["tight", "rbc"], default="rbc")
+    parser.add_argument("--recheck-platelets", action="store_true")
     parser.add_argument("--out", type=Path, default=Path("results/pipeline"))
     args = parser.parse_args()
+    suffix = "" if args.typer == "muse" else f"_{args.typer}_{args.glimmer_crop}" + ("_plt" if args.recheck_platelets else "")
 
-    detections = {
-        d["image"]: d for d in json.loads(args.detections.read_text()) if d["label"] == "WBC"
+    raw = json.loads(args.detections.read_text())
+    detections = {d["image"]: d for d in raw if d["label"] == "WBC"}
+    rbc_px = {
+        d["image"]: rbc_scale([max(b[2] - b[0], b[3] - b[1]) for b, s in zip(d["boxes"], d["scores"]) if s >= 0.5])
+        for d in raw
+        if d["label"] == "RBC"
     }
     samples = [s for s in iter_txl_pbc(args.data_dir, args.split) if s.image_path.name in detections]
     samples = samples[: args.images]
@@ -125,6 +152,31 @@ def main() -> None:
             if i % 25 == 0:
                 print(f"  {i}/{len(todo)}", flush=True)
 
+    for sample in samples:
+        name = sample.image_path.name
+        for c in candidates[name]:
+            entry = cache[cache_key(name, c.box)]
+            c.label, c.text = entry["label"], entry["text"]
+
+    muse_labels: dict[str, str] = {}
+    if args.typer == "glimmer":
+        typed = [
+            (s, c)
+            for s in samples
+            for c in candidates[s.image_path.name]
+            if c.label in NUCLEATED or (args.recheck_platelets and c.label == "platelet")
+        ]
+        keys = [cache_key(s.image_path.name, c.box) for s, c in typed]
+        if args.glimmer_crop == "rbc":
+            crops = [crop_at_scale(images[s.image_path.name], c.box, rbc_px[s.image_path.name]) for s, c in typed]
+        else:
+            crops = [crop(images[s.image_path.name], c.box) for s, c in typed]
+        features = glimmer_features(keys, crops, args.out / f"glimmer_features_{args.glimmer_crop}.npz")
+        labels = probe_labels([features[k] for k in keys], dict(np.load(args.probe)))
+        for (s, c), key, new in zip(typed, keys, labels):
+            muse_labels[key] = c.label
+            c.label = new
+
     before, after = MatchResult(), MatchResult()
     errors_before, errors_after = [], []
     subtype = Counter()
@@ -134,8 +186,6 @@ def main() -> None:
     for sample in samples:
         name = sample.image_path.name
         for c in candidates[name]:
-            entry = cache[cache_key(name, c.box)]
-            c.label, c.text = entry["label"], entry["text"]
             labels_seen[c.label] += 1
         cells = [c for c in candidates[name] if c.label in NUCLEATED]
         truth = [b for b in sample.boxes if b.label == "WBC"]
@@ -163,11 +213,21 @@ def main() -> None:
                 "review": review_flags(candidates[name]),
             }
         )
-        draw(images[name], cells, truth).save(args.out / f"{sample.image_path.stem}.jpg")
+        overlays = args.out / f"overlays{suffix}"
+        overlays.mkdir(exist_ok=True)
+        draw(images[name], cells, truth).save(overlays / f"{sample.image_path.stem}.jpg")
 
     total_subtype = subtype["correct"] + subtype["wrong"]
     tokens = sum(cache[cache_key(s.image_path.name, c.box)]["tokens"] for s in samples for c in candidates[s.image_path.name])
+    agreement = sum(
+        muse_labels[cache_key(s.image_path.name, c.box)] == c.label
+        for s in samples
+        for c in candidates[s.image_path.name]
+        if cache_key(s.image_path.name, c.box) in muse_labels
+    )
     summary = {
+        "typer": args.typer,
+        "muse_probe_agreement": f"{agreement}/{len(muse_labels)}" if muse_labels else None,
         "images": len(samples),
         "candidates": sum(len(v) for v in candidates.values()),
         "min_score": args.min_score,
@@ -187,8 +247,8 @@ def main() -> None:
         },
         "tokens": tokens,
     }
-    (args.out / "summary.json").write_text(json.dumps(summary, indent=2))
-    (args.out / "reports.json").write_text(json.dumps(reports, indent=2))
+    (args.out / f"summary{suffix}.json").write_text(json.dumps(summary, indent=2))
+    (args.out / f"reports{suffix}.json").write_text(json.dumps(reports, indent=2))
     print(json.dumps(summary, indent=2))
 
 

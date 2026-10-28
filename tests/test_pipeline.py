@@ -1,7 +1,7 @@
 from PIL import Image
 
 from smearlens.datasets import Box
-from smearlens.pipeline import Candidate, crop, dedupe, differential, pbc_label, review_flags
+from smearlens.pipeline import Candidate, crop, dedupe, differential, pbc_label, probe_labels, review_flags
 
 
 def cand(x0, y0, x1, y1, score=0.5, label=""):
@@ -36,3 +36,31 @@ def test_differential_ignores_non_wbc():
 def test_review_flags_priority_cells_first():
     cells = [cand(0, 0, 1, 1, label=l) for l in ("ig", "neutrophil", "unparsed")]
     assert review_flags(cells) == ["1 ig", "1 unclear"]
+
+
+def test_probe_labels_picks_highest_logit():
+    import numpy as np
+
+    probe = {
+        "mean": np.zeros(2),
+        "std": np.ones(2),
+        "weight": np.array([[1.0, 0.0], [0.0, 1.0]]),
+        "bias": np.zeros(2),
+        "classes": np.array(["neutrophil", "lymphocyte"]),
+    }
+    assert probe_labels([[2.0, 1.0], [0.0, 3.0]], probe) == ["neutrophil", "lymphocyte"]
+
+
+def test_crop_at_scale_keeps_the_cell_centred():
+    import io
+
+    from smearlens.pipeline import PBC_RBC_PX, crop_at_scale
+
+    image = Image.new("RGB", (640, 480), (200, 200, 200))
+    image.paste((255, 0, 0), (0, 0, 20, 20))
+    field = Image.open(io.BytesIO(crop_at_scale(image, Box("WBC", 0, 0, 20, 20), rbc_px=PBC_RBC_PX)))
+    assert field.size == (360, 360)
+    r, g, b = field.getpixel((180, 180))
+    assert r > 200 and g < 60
+    assert abs(field.getpixel((10, 10))[0] - 200) < 10
+    assert Image.open(io.BytesIO(crop_at_scale(image, Box("WBC", 0, 0, 20, 20), rbc_px=PBC_RBC_PX * 2))).size == (720, 720)

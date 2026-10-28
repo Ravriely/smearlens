@@ -38,7 +38,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [09](docs/experiments/09-detection-probe.md) | Glimmer probe for "white cell or not" over all SAM 3 candidates | WBC F1 0.72 → 0.79, precision 0.78 → 0.95, count error 0.55 → 0.38, zero LLM calls per cell |
 | [10](docs/experiments/10-review-coverage.md) | Calibration and review curve of the type probe, 2,560 PBC cells | Calibrated (ECE 0.6 %); reviewing the 10 % least sure cells leaves 0.3 % errors and catches 89 % of them |
 | [11](docs/experiments/11-external-lab-munich.md) | External lab: 15,045 Munich cells + 3,320 blasts and other unseen types | 83.7 % zero-shot, 71 % of myeloblasts sent to review; 70 labelled cells → 89.4 %; magnification is not the cause |
-| [12](docs/experiments/12-glimmer-lora.md) | LoRA fine-tune of the Glimmer encoder on PBC (0.6 % of weights, 25 min) | PBC 97.7 → 98.1 %, simulated other lab 97.0 → 98.2 %, Munich +1.9 points, myeloblasts sent to review 79 → 89 % |
+| [12](docs/experiments/12-glimmer-lora.md) | LoRA fine-tune of the Glimmer encoder on PBC (0.2 % of weights, 25 min) | PBC 97.7 → 98.1 %, simulated other lab 97.0 → 98.2 %, Munich +1.9 points, myeloblasts sent to review 79 → 89 % |
 
 ## Quick start
 

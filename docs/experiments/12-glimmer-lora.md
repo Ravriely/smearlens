@@ -13,7 +13,7 @@ has never seen?
 ## Setup
 
 - LoRA (rank 16, alpha 32, dropout 0.05) on the attention projections
-  (q, k, v, out) of the last 16 of the 50 vision blocks. This trains 0.6 % of
+  (q, k, v, out) of the last 16 of the 50 vision blocks. This trains 3.1 M parameters, 0.2 % of
   the encoder's weights. Earlier blocks stay frozen and need no gradient.
 - Head: linear, warm-started from the augmented probe of
   [08](08-stain-augmented-probe.md) (its standardisation folded into the
@@ -73,7 +73,7 @@ Compare the two columns with each other, not with fiche 11.
   70 cells, [11](11-external-lab-munich.md)), not a fine-tune on the source
   lab.
 
-For the pitch: "We fine-tuned Meta's Glimmer encoder (LoRA, 0.6 % of the
+For the pitch: "We fine-tuned Meta's Glimmer encoder (LoRA, 0.2 % of the
 weights, 25 minutes on one GPU). It is more robust to stain changes (98 %)
 and sends 89 % of leukaemia blasts to the biologist."
 

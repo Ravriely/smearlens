@@ -28,6 +28,7 @@ Work in progress. The first step validates cell segmentation with SAM 3.1.
 | # | What | Result |
 |---|---|---|
 | [01](docs/experiments/01-zero-shot-baseline.md) | Zero-shot Muse Spark on PBC, 160 cells | 65.0 % accuracy, fails on immature granulocytes (20 %) and erythroblasts (35 %) |
+| [02](docs/experiments/02-sam3-segmentation.md) | SAM 3.1 text-prompt segmentation, 10 TXL-PBC images | RBC F1 0.70; the WBC prompt detects every cell (precision 0.02); no platelets |
 
 ## Quick start
 

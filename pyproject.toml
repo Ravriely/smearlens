@@ -16,6 +16,7 @@ sam = [
     "sam3 @ git+https://github.com/facebookresearch/sam3.git",
     "torch>=2.7",
     "opencv-python-headless>=4.10",
+    "pycocotools>=2.0",
 ]
 modal = ["modal>=1.6"]
 dev = ["pytest>=8.3"]

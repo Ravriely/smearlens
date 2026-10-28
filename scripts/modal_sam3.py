@@ -27,6 +27,9 @@ image = (
         "openpyxl",
         "pillow",
         "einops",
+        "pycocotools",
+        "psutil",
+        "scipy",
     )
     .add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
     .add_local_dir(REPO / "scripts", f"{REMOTE}/scripts")

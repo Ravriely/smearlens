@@ -1,0 +1,261 @@
+{
+  "config": {
+    "epochs": 2,
+    "batch": 16,
+    "rank": 16,
+    "last_blocks": 16,
+    "lr": 0.0001
+  },
+  "frozen": {
+    "pbc_test": {
+      "cells": 2560,
+      "accuracy": 0.9773,
+      "balanced_accuracy": 0.9763,
+      "recall": {
+        "basophil": 0.984,
+        "eosinophil": 1.0,
+        "erythroblast": 0.988,
+        "ig": 0.955,
+        "lymphocyte": 0.96,
+        "monocyte": 0.958,
+        "neutrophil": 0.968,
+        "platelet": 0.997
+      }
+    },
+    "pbc_test_shifted": {
+      "cells": 2560,
+      "accuracy": 0.9695,
+      "balanced_accuracy": 0.9664,
+      "recall": {
+        "basophil": 0.967,
+        "eosinophil": 0.996,
+        "erythroblast": 0.967,
+        "ig": 0.938,
+        "lymphocyte": 0.955,
+        "monocyte": 0.939,
+        "neutrophil": 0.972,
+        "platelet": 0.997
+      }
+    },
+    "munich_known": {
+      "cells": 1611,
+      "accuracy": 0.7306,
+      "balanced_accuracy": 0.7213,
+      "recall": {
+        "basophil": 0.43,
+        "eosinophil": 0.517,
+        "erythroblast": 0.949,
+        "ig": 0.834,
+        "lymphocyte": 0.57,
+        "monocyte": 0.857,
+        "neutrophil": 0.892
+      }
+    },
+    "munich_review_cutoff_from_pbc_10pct": 0.937,
+    "munich_known_sent_to_review_percent": 41.4,
+    "myeloblast_sent_to_review_percent": 79.3
+  },
+  "history": [
+    {
+      "step": 50,
+      "loss": 0.006
+    },
+    {
+      "step": 100,
+      "loss": 0.0004
+    },
+    {
+      "step": 150,
+      "loss": 0.242
+    },
+    {
+      "step": 200,
+      "loss": 0.0039
+    },
+    {
+      "step": 250,
+      "loss": 0.1053
+    },
+    {
+      "step": 300,
+      "loss": 0.0004
+    },
+    {
+      "step": 350,
+      "loss": 0.0329
+    },
+    {
+      "step": 400,
+      "loss": 0.0005
+    },
+    {
+      "step": 450,
+      "loss": 0.0002
+    },
+    {
+      "step": 500,
+      "loss": 0.0199
+    },
+    {
+      "step": 550,
+      "loss": 0.0227
+    },
+    {
+      "step": 600,
+      "loss": 0.4684
+    },
+    {
+      "step": 650,
+      "loss": 0.008
+    },
+    {
+      "step": 700,
+      "loss": 0.046
+    },
+    {
+      "epoch": 1,
+      "val": {
+        "cells": 800,
+        "accuracy": 0.9712,
+        "balanced_accuracy": 0.9712,
+        "recall": {
+          "basophil": 0.94,
+          "eosinophil": 1.0,
+          "erythroblast": 1.0,
+          "ig": 0.95,
+          "lymphocyte": 0.98,
+          "monocyte": 0.95,
+          "neutrophil": 0.97,
+          "platelet": 0.98
+        }
+      }
+    },
+    {
+      "step": 750,
+      "loss": 0.0008
+    },
+    {
+      "step": 800,
+      "loss": 0.0022
+    },
+    {
+      "step": 850,
+      "loss": 0.0013
+    },
+    {
+      "step": 900,
+      "loss": 0.0006
+    },
+    {
+      "step": 950,
+      "loss": 0.1493
+    },
+    {
+      "step": 1000,
+      "loss": 0.0
+    },
+    {
+      "step": 1050,
+      "loss": 0.2568
+    },
+    {
+      "step": 1100,
+      "loss": 0.0
+    },
+    {
+      "step": 1150,
+      "loss": 0.0152
+    },
+    {
+      "step": 1200,
+      "loss": 0.0001
+    },
+    {
+      "step": 1250,
+      "loss": 0.0004
+    },
+    {
+      "step": 1300,
+      "loss": 0.0053
+    },
+    {
+      "step": 1350,
+      "loss": 0.0113
+    },
+    {
+      "step": 1400,
+      "loss": 0.3036
+    },
+    {
+      "step": 1450,
+      "loss": 0.0005
+    },
+    {
+      "epoch": 2,
+      "val": {
+        "cells": 800,
+        "accuracy": 0.9762,
+        "balanced_accuracy": 0.9763,
+        "recall": {
+          "basophil": 0.96,
+          "eosinophil": 1.0,
+          "erythroblast": 1.0,
+          "ig": 0.95,
+          "lymphocyte": 0.98,
+          "monocyte": 0.96,
+          "neutrophil": 0.97,
+          "platelet": 0.99
+        }
+      }
+    }
+  ],
+  "lora": {
+    "pbc_test": {
+      "cells": 2560,
+      "accuracy": 0.9809,
+      "balanced_accuracy": 0.9805,
+      "recall": {
+        "basophil": 0.984,
+        "eosinophil": 1.0,
+        "erythroblast": 0.988,
+        "ig": 0.967,
+        "lymphocyte": 0.955,
+        "monocyte": 0.986,
+        "neutrophil": 0.964,
+        "platelet": 1.0
+      }
+    },
+    "pbc_test_shifted": {
+      "cells": 2560,
+      "accuracy": 0.982,
+      "balanced_accuracy": 0.9798,
+      "recall": {
+        "basophil": 0.984,
+        "eosinophil": 0.998,
+        "erythroblast": 0.988,
+        "ig": 0.969,
+        "lymphocyte": 0.955,
+        "monocyte": 0.967,
+        "neutrophil": 0.98,
+        "platelet": 0.997
+      }
+    },
+    "munich_known": {
+      "cells": 1611,
+      "accuracy": 0.7529,
+      "balanced_accuracy": 0.7403,
+      "recall": {
+        "basophil": 0.405,
+        "eosinophil": 0.607,
+        "erythroblast": 0.974,
+        "ig": 0.876,
+        "lymphocyte": 0.66,
+        "monocyte": 0.743,
+        "neutrophil": 0.917
+      }
+    },
+    "munich_review_cutoff_from_pbc_10pct": 0.9985,
+    "munich_known_sent_to_review_percent": 49.8,
+    "myeloblast_sent_to_review_percent": 89.3
+  }
+}

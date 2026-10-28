@@ -6,3 +6,4 @@ data/
 runs/
 *.pt
 .env
+results/

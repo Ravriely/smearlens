@@ -27,6 +27,7 @@ base_image = (
     .apt_install("git")
     .pip_install("torch==2.10.0", "torchvision", index_url="https://download.pytorch.org/whl/cu128")
     .pip_install(TRANSFORMERS, "safetensors", "pillow", "numpy", "requests", "huggingface_hub")
+    .pip_install("peft==0.21.2")
     .add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
 )
 image = (

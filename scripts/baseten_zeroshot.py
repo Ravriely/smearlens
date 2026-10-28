@@ -1,21 +1,14 @@
 import argparse
-import base64
 import csv
-import json
-import os
 import random
-import re
 import time
 import urllib.error
-import urllib.request
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from smearlens.muse import ask_image, parse_label
 from smearlens.pbc import PBC_CLASSES, pbc_root, read_splits
-
-ENDPOINT = "https://inference.baseten.co/v1/chat/completions"
-MODEL = "meta-models/muse-spark-open-1026"
 
 PROMPT = (
     "This is a single-cell crop from a peripheral blood smear (May-Grunwald-Giemsa stain). "
@@ -26,44 +19,16 @@ PROMPT = (
 )
 
 
-def classify(path: Path, api_key: str, max_tokens: int) -> dict:
-    image = base64.b64encode(path.read_bytes()).decode()
-    body = {
-        "model": MODEL,
-        "max_tokens": max_tokens,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": PROMPT},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image}"}},
-                ],
-            }
-        ],
-    }
-    request = urllib.request.Request(
-        ENDPOINT,
-        data=json.dumps(body).encode(),
-        headers={"Authorization": f"Api-Key {api_key}", "Content-Type": "application/json"},
-    )
+def classify(path: Path, max_tokens: int) -> dict:
     start = time.time()
-    for attempt in range(3):
-        try:
-            response = json.load(urllib.request.urlopen(request, timeout=180))
-            break
-        except (urllib.error.URLError, TimeoutError) as error:
-            if attempt == 2:
-                return {"pred": "error", "text": str(error), "tokens": 0, "seconds": time.time() - start}
-            time.sleep(5 * (attempt + 1))
-    text = response["choices"][0]["message"].get("content") or ""
-    match = re.search(r"LABEL:\s*\**\s*([a-z]+)", text, re.IGNORECASE)
-    pred = match.group(1).lower() if match else "unparsed"
-    if pred not in PBC_CLASSES and pred != "unparsed":
-        pred = f"other:{pred}"
+    try:
+        text, tokens = ask_image(path.read_bytes(), PROMPT, max_tokens)
+    except (urllib.error.URLError, TimeoutError) as error:
+        return {"pred": "error", "text": str(error), "tokens": 0, "seconds": time.time() - start}
     return {
-        "pred": pred,
-        "text": text.strip().replace("\n", " "),
-        "tokens": response.get("usage", {}).get("total_tokens", 0),
+        "pred": parse_label(text, PBC_CLASSES),
+        "text": text.replace("\n", " "),
+        "tokens": tokens,
         "seconds": time.time() - start,
     }
 
@@ -79,7 +44,6 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("results/baseten_zeroshot.csv"))
     args = parser.parse_args()
 
-    api_key = os.environ["BASETEN_API_KEY"]
     cells = [c for c in read_splits(pbc_root(args.data_dir).parent / "splits.csv", args.data_dir) if c.split == "test"]
     rng = random.Random(args.seed)
     sample = []
@@ -90,7 +54,7 @@ def main() -> None:
         raise SystemExit(f"{len(sample)} calls planned, above --max-calls {args.max_calls}")
 
     with ThreadPoolExecutor(args.workers) as pool:
-        results = list(pool.map(lambda c: classify(c.path, api_key, args.max_tokens), sample))
+        results = list(pool.map(lambda c: classify(c.path, args.max_tokens), sample))
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", newline="") as f:

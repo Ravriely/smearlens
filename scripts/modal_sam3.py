@@ -68,7 +68,7 @@ def validate(args: list[str], tag: str = "sam3") -> bytes:
 def main(
     limit: int = 10,
     split: str = "test",
-    version: str = "sam3.1",
+    version: str = "sam3",
     threshold: float = 0.5,
     wbc_prompt: str = "white blood cell",
     platelet_prompt: str = "platelet",

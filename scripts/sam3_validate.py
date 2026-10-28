@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from smearlens.datasets import CLASSES, Box, iter_txl_pbc
-from smearlens.metrics import MatchResult, match_boxes
+from smearlens.metrics import MatchResult, match_boxes, match_centers
 
 PROMPTS = {"WBC": "white blood cell", "RBC": "red blood cell", "Platelet": "platelet"}
 COLORS = {"WBC": (124, 58, 237), "RBC": (220, 38, 38), "Platelet": (234, 179, 8)}
@@ -68,7 +68,7 @@ def main() -> None:
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
     parser.add_argument("--split", default="test")
     parser.add_argument("--limit", type=int, default=10)
-    parser.add_argument("--version", default="sam3.1", choices=["sam3.1", "sam3"])
+    parser.add_argument("--version", default="sam3", choices=["sam3", "sam3.1"])
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--wbc-prompt", default=PROMPTS["WBC"])
     parser.add_argument("--platelet-prompt", default=PROMPTS["Platelet"])
@@ -81,14 +81,19 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
 
     totals: dict[str, MatchResult] = defaultdict(MatchResult)
+    center_totals: dict[str, MatchResult] = defaultdict(MatchResult)
     count_errors: dict[str, list[int]] = defaultdict(list)
     wbc_fill: list[float] = []
     per_image = []
     started = time.perf_counter()
 
-    for i, sample in enumerate(iter_txl_pbc(args.data_dir, args.split)):
-        if i >= args.limit:
-            break
+    samples = [s for _, s in zip(range(args.limit), iter_txl_pbc(args.data_dir, args.split))]
+    for sample in samples:
+        state = processor.set_image(Image.open(sample.image_path).convert("RGB"))
+        for box in (b for b in sample.boxes if b.label == "WBC"):
+            wbc_fill.append(fill_ratio(segment_box(model, state, box), box))
+
+    for i, sample in enumerate(samples):
         image = Image.open(sample.image_path).convert("RGB")
         state = processor.set_image(image)
         layers, row = [], {"image": sample.image_path.name, "source": sample.source}
@@ -97,13 +102,11 @@ def main() -> None:
             predicted, masks = segment_concept(processor, state, label, prompts[label])
             result = match_boxes(predicted, truth)
             totals[label] += result
+            center_totals[label] += match_centers(predicted, truth)
             count_errors[label].append(len(predicted) - len(truth))
             row[label] = {"truth": len(truth), "predicted": len(predicted), "tp": result.tp}
             if len(masks):
                 layers.append((label, masks.any(axis=0)))
-        processor.reset_all_prompts(state)
-        for box in (b for b in sample.boxes if b.label == "WBC"):
-            wbc_fill.append(fill_ratio(segment_box(model, state, box), box))
         draw_overlay(image, layers, sample.boxes).save(args.out / f"{sample.image_path.stem}.jpg")
         per_image.append(row)
         print(f"[{i + 1}/{args.limit}] {sample.image_path.name} ({sample.source})", flush=True)
@@ -121,6 +124,9 @@ def main() -> None:
                 "recall": round(totals[label].recall, 3),
                 "f1": round(totals[label].f1, 3),
                 "mean_abs_count_error": round(float(np.mean(np.abs(count_errors[label]))), 2),
+                "center_precision": round(center_totals[label].precision, 3),
+                "center_recall": round(center_totals[label].recall, 3),
+                "center_f1": round(center_totals[label].f1, 3),
             }
             for label in CLASSES
         },

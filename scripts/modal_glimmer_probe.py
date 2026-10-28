@@ -22,17 +22,19 @@ MODEL_ID = "meta-models/Muse-Glimmer-30B"
 SHARD = "model-00001-of-00002.safetensors"
 TRANSFORMERS = "git+https://github.com/huggingface/transformers.git@674c0e396a06aa9d96cdc4741ce9c0853eae64b8"
 
-image = (
+base_image = (
     modal.Image.from_registry("nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04", add_python="3.12")
     .apt_install("git")
     .pip_install("torch==2.10.0", "torchvision", index_url="https://download.pytorch.org/whl/cu128")
     .pip_install(TRANSFORMERS, "safetensors", "pillow", "numpy", "requests", "huggingface_hub")
-    .add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
+)
+image = (
+    base_image.add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
     .add_local_file(REPO / "data" / "pbc" / "splits.csv", f"{REMOTE}/data/pbc/splits.csv")
     .add_local_dir(REPO / "data" / "pbc" / "PBC_dataset_normal_DIB", f"{REMOTE}/data/pbc/PBC_dataset_normal_DIB")
 )
 
-app = modal.App("smearlens-glimmer-probe", image=image)
+app = modal.App("smearlens-glimmer-probe")
 cache = modal.Volume.from_name("smearlens-hf-cache", create_if_missing=True)
 CACHE = "/root/.cache/huggingface"
 
@@ -89,14 +91,19 @@ def load_encoder():
     return encoder.to("cuda", torch.bfloat16).eval(), processor, config.vision_config.merge_size
 
 
-def embed(encoder, processor, merge: int, paths: list, batch: int = 32):
+def embed(encoder, processor, merge: int, sources: list, batch: int = 32):
+    import io
+
     import numpy as np
     import torch
     from PIL import Image
 
+    def load(source):
+        return Image.open(io.BytesIO(source) if isinstance(source, bytes) else source).convert("RGB")
+
     out = []
-    for i in range(0, len(paths), batch):
-        images = [Image.open(p).convert("RGB") for p in paths[i : i + batch]]
+    for i in range(0, len(sources), batch):
+        images = [load(s) for s in sources[i : i + batch]]
         inputs = processor(images=images, return_tensors="pt")
         grid = inputs["image_grid_thw"].cuda()
         with torch.no_grad():
@@ -133,12 +140,16 @@ def train_probe(x, y, x_val, y_val, classes: int):
     return best, mean, std
 
 
-@app.function(
-    gpu=os.environ.get("SMEARLENS_GPU", "L40S"),
-    timeout=3600,
-    secrets=[modal.Secret.from_name("huggingface")],
-    volumes={CACHE: cache},
-)
+GPU = os.environ.get("SMEARLENS_GPU", "L40S")
+
+
+@app.function(gpu=GPU, image=base_image, timeout=1800, secrets=[modal.Secret.from_name("huggingface")], volumes={CACHE: cache})
+def embed_crops(crops: list[bytes]):
+    encoder, processor, merge = load_encoder()
+    return embed(encoder, processor, merge, crops)
+
+
+@app.function(gpu=GPU, image=image, timeout=3600, secrets=[modal.Secret.from_name("huggingface")], volumes={CACHE: cache})
 def run(per_class: int = 0) -> bytes:
     import random
     import sys

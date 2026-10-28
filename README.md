@@ -23,6 +23,12 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 
 Work in progress. The first step validates cell segmentation with SAM 3.1.
 
+## Experiments
+
+| # | What | Result |
+|---|---|---|
+| [01](docs/experiments/01-zero-shot-baseline.md) | Zero-shot Muse Spark on PBC, 160 cells | 65.0 % accuracy, fails on immature granulocytes (20 %) and erythroblasts (35 %) |
+
 ## Quick start
 
 ```bash

@@ -20,7 +20,7 @@ from smearlens.pipeline import (
     dedupe,
     differential,
     pbc_label,
-    probe_labels,
+    probe_predict,
     rbc_scale,
     review_flags,
 )
@@ -172,10 +172,10 @@ def main() -> None:
         else:
             crops = [crop(images[s.image_path.name], c.box) for s, c in typed]
         features = glimmer_features(keys, crops, args.out / f"glimmer_features_{args.glimmer_crop}.npz")
-        labels = probe_labels([features[k] for k in keys], dict(np.load(args.probe)))
-        for (s, c), key, new in zip(typed, keys, labels):
+        predictions = probe_predict([features[k] for k in keys], dict(np.load(args.probe)))
+        for (s, c), key, (new, confidence) in zip(typed, keys, predictions):
             muse_labels[key] = c.label
-            c.label = new
+            c.label, c.confidence = new, confidence
 
     before, after = MatchResult(), MatchResult()
     errors_before, errors_after = [], []
@@ -249,6 +249,22 @@ def main() -> None:
     }
     (args.out / f"summary{suffix}.json").write_text(json.dumps(summary, indent=2))
     (args.out / f"reports{suffix}.json").write_text(json.dumps(reports, indent=2))
+    cells = [
+        {
+            "image": s.image_path.name,
+            "source": s.source,
+            "rbc_px": round(rbc_px.get(s.image_path.name, 0.0), 1),
+            "box": [round(v, 1) for v in (c.box.x0, c.box.y0, c.box.x1, c.box.y1)],
+            "sam_score": round(c.score, 3),
+            "label": c.label,
+            "confidence": None if c.confidence is None else round(c.confidence, 3),
+            "muse_label": muse_labels.get(cache_key(s.image_path.name, c.box), c.label),
+            "muse_text": c.text,
+        }
+        for s in samples
+        for c in candidates[s.image_path.name]
+    ]
+    (args.out / f"cells{suffix}.json").write_text(json.dumps(cells, indent=2))
     print(json.dumps(summary, indent=2))
 
 

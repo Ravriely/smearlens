@@ -64,3 +64,19 @@ def test_crop_at_scale_keeps_the_cell_centred():
     assert r > 200 and g < 60
     assert abs(field.getpixel((10, 10))[0] - 200) < 10
     assert Image.open(io.BytesIO(crop_at_scale(image, Box("WBC", 0, 0, 20, 20), rbc_px=PBC_RBC_PX * 2))).size == (720, 720)
+
+
+def test_probe_predict_returns_softmax_confidence():
+    import numpy as np
+
+    from smearlens.pipeline import probe_predict
+
+    probe = {
+        "mean": np.zeros(2),
+        "std": np.ones(2),
+        "weight": np.eye(2),
+        "bias": np.zeros(2),
+        "classes": np.array(["neutrophil", "lymphocyte"]),
+    }
+    [(label, confidence)] = probe_predict([[0.0, 0.0]], probe)
+    assert label == "neutrophil" and confidence == 0.5

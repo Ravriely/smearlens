@@ -44,6 +44,7 @@ class Candidate:
     score: float
     label: str = ""
     text: str = ""
+    confidence: float | None = None
 
 
 def pbc_label(original_name: str) -> str | None:
@@ -88,12 +89,18 @@ def review_flags(cells: list[Candidate]) -> list[str]:
     return flags
 
 
-def probe_labels(features, probe) -> list[str]:
+def probe_predict(features, probe) -> list[tuple[str, float]]:
     import numpy as np
 
     x = (np.asarray(features, dtype=np.float32) - probe["mean"]) / probe["std"]
     logits = x @ probe["weight"].T + probe["bias"]
-    return [str(probe["classes"][i]) for i in logits.argmax(1)]
+    probs = np.exp(logits - logits.max(1, keepdims=True))
+    probs /= probs.sum(1, keepdims=True)
+    return [(str(probe["classes"][i]), float(p[i])) for i, p in zip(logits.argmax(1), probs)]
+
+
+def probe_labels(features, probe) -> list[str]:
+    return [label for label, _ in probe_predict(features, probe)]
 
 
 PBC_RBC_PX = 74.6

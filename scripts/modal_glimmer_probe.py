@@ -27,10 +27,10 @@ base_image = (
     .apt_install("git")
     .pip_install("torch==2.10.0", "torchvision", index_url="https://download.pytorch.org/whl/cu128")
     .pip_install(TRANSFORMERS, "safetensors", "pillow", "numpy", "requests", "huggingface_hub")
+    .add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
 )
 image = (
-    base_image.add_local_dir(REPO / "smearlens", f"{REMOTE}/smearlens")
-    .add_local_file(REPO / "data" / "pbc" / "splits.csv", f"{REMOTE}/data/pbc/splits.csv")
+    base_image.add_local_file(REPO / "data" / "pbc" / "splits.csv", f"{REMOTE}/data/pbc/splits.csv")
     .add_local_dir(REPO / "data" / "pbc" / "PBC_dataset_normal_DIB", f"{REMOTE}/data/pbc/PBC_dataset_normal_DIB")
 )
 
@@ -223,6 +223,108 @@ def run(per_class: int = 0) -> bytes:
     with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
         tar.add(out, arcname="glimmer")
     return buffer.getvalue()
+
+
+def evaluate(head, mean, std, features, labels, classes: int) -> dict:
+    import numpy as np
+    import torch
+
+    with torch.no_grad():
+        pred = head(torch.tensor((features - mean) / std, device="cuda")).argmax(1).cpu().numpy()
+    confusion = np.zeros((classes, classes), dtype=int)
+    for t, p in zip(labels, pred):
+        confusion[t, p] += 1
+    return {"accuracy": round(float((pred == labels).mean()), 4), "confusion": confusion.tolist()}
+
+
+@app.function(gpu=GPU, image=image, timeout=3 * 3600, secrets=[modal.Secret.from_name("huggingface")], volumes={CACHE: cache})
+def run_augmented(copies: int = 2) -> bytes:
+    import random
+    import sys
+
+    import numpy as np
+    from PIL import Image
+
+    sys.path.insert(0, REMOTE)
+    from smearlens.augment import augment, lab_stats, reinhard
+    from smearlens.pbc import PBC_CLASSES, read_splits
+
+    data = Path(REMOTE) / "data"
+    cells = read_splits(data / "pbc" / "splits.csv", data)
+    clean = np.load(Path(CACHE) / "glimmer" / "pbc_features.npz")
+    if list(clean["paths"]) != [c.path.name for c in cells]:
+        raise RuntimeError("cached features do not match splits.csv")
+    features, labels, splits = clean["features"].astype(np.float32), clean["labels"], clean["splits"]
+    encoder, processor, merge = load_encoder()
+    rng = random.Random(0)
+
+    def jpeg(image):
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality=92)
+        return buffer.getvalue()
+
+    train = [c for c in cells if c.split == "train"]
+    test = [c for c in cells if c.split == "test"]
+    aug_sources = [jpeg(augment(Image.open(c.path).convert("RGB"), rng)) for _ in range(copies) for c in train]
+    aug_features = embed(encoder, processor, merge, aug_sources)
+    aug_labels = np.array([PBC_CLASSES.index(c.label) for _ in range(copies) for c in train])
+
+    shift_rng = random.Random(1)
+    shifted = [augment(Image.open(c.path).convert("RGB"), shift_rng, strength=1.5) for c in test]
+    target_mean, target_std = lab_stats([Image.open(c.path) for c in train[::20]])
+    shifted_features = embed(encoder, processor, merge, [jpeg(i) for i in shifted])
+    normalised_features = embed(encoder, processor, merge, [jpeg(reinhard(i, target_mean, target_std)) for i in shifted])
+    test_labels = labels[splits == "test"]
+
+    n = len(PBC_CLASSES)
+    pick = {s: splits == s for s in ("train", "val", "test")}
+    results = {}
+    heads = {}
+    for name, (x, y) in {
+        "clean": (features[pick["train"]], labels[pick["train"]]),
+        "augmented": (
+            np.concatenate([features[pick["train"]], aug_features]),
+            np.concatenate([labels[pick["train"]], aug_labels]),
+        ),
+    }.items():
+        (val_acc, decay, head), mean, std = train_probe(x, y, features[pick["val"]], labels[pick["val"]], n)
+        heads[name] = (head, mean, std)
+        results[name] = {
+            "train_images": int(len(y)),
+            "weight_decay": decay,
+            "val_accuracy": round(val_acc, 4),
+            "test_clean": evaluate(head, mean, std, features[pick["test"]], test_labels, n),
+            "test_shifted": evaluate(head, mean, std, shifted_features, test_labels, n),
+            "test_shifted_reinhard": evaluate(head, mean, std, normalised_features, test_labels, n),
+        }
+
+    out = Path("/tmp/glimmer-aug")
+    out.mkdir(exist_ok=True)
+    head, mean, std = heads["augmented"]
+    np.savez(
+        out / "probe_aug.npz",
+        weight=head.weight.detach().cpu().numpy(),
+        bias=head.bias.detach().cpu().numpy(),
+        mean=mean,
+        std=std,
+        classes=np.array(PBC_CLASSES),
+        lab_mean=target_mean,
+        lab_std=target_std,
+    )
+    (out / "metrics_aug.json").write_text(json.dumps({"copies": copies, "classes": list(PBC_CLASSES), **results}, indent=2))
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+        tar.add(out, arcname="glimmer-aug")
+    return buffer.getvalue()
+
+
+@app.local_entrypoint()
+def augmented(copies: int = 2):
+    archive = run_augmented.remote(copies)
+    out = REPO / "runs"
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        tar.extractall(out, filter="data")
+    print((out / "glimmer-aug" / "metrics_aug.json").read_text())
 
 
 @app.local_entrypoint()

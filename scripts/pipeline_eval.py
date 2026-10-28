@@ -91,12 +91,15 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--max-calls", type=int, default=700)
     parser.add_argument("--typer", choices=["muse", "glimmer"], default="muse")
-    parser.add_argument("--probe", type=Path, default=Path("runs/glimmer/probe.npz"))
+    parser.add_argument("--probe", type=Path, default=Path("runs/glimmer-aug/probe_aug.npz"))
     parser.add_argument("--glimmer-crop", choices=["tight", "rbc"], default="rbc")
     parser.add_argument("--recheck-platelets", action="store_true")
+    parser.add_argument("--reinhard", action="store_true", help="normalise crop colours to PBC before the probe")
+    parser.add_argument("--tag", default="", help="extra suffix for the output files")
     parser.add_argument("--out", type=Path, default=Path("results/pipeline"))
     args = parser.parse_args()
     suffix = "" if args.typer == "muse" else f"_{args.typer}_{args.glimmer_crop}" + ("_plt" if args.recheck_platelets else "")
+    suffix += ("_reinhard" if args.reinhard else "") + (f"_{args.tag}" if args.tag else "")
 
     raw = json.loads(args.detections.read_text())
     detections = {d["image"]: d for d in raw if d["label"] == "WBC"}
@@ -171,8 +174,21 @@ def main() -> None:
             crops = [crop_at_scale(images[s.image_path.name], c.box, rbc_px[s.image_path.name]) for s, c in typed]
         else:
             crops = [crop(images[s.image_path.name], c.box) for s, c in typed]
-        features = glimmer_features(keys, crops, args.out / f"glimmer_features_{args.glimmer_crop}.npz")
-        predictions = probe_predict([features[k] for k in keys], dict(np.load(args.probe)))
+        probe = dict(np.load(args.probe))
+        if args.reinhard:
+            import io
+
+            from smearlens.augment import reinhard
+
+            def normalise(data: bytes) -> bytes:
+                buffer = io.BytesIO()
+                reinhard(Image.open(io.BytesIO(data)), probe["lab_mean"], probe["lab_std"]).save(buffer, format="JPEG", quality=92)
+                return buffer.getvalue()
+
+            crops = [normalise(c) for c in crops]
+        name = f"glimmer_features_{args.glimmer_crop}" + ("_reinhard" if args.reinhard else "")
+        features = glimmer_features(keys, crops, args.out / f"{name}.npz")
+        predictions = probe_predict([features[k] for k in keys], probe)
         for (s, c), key, (new, confidence) in zip(typed, keys, predictions):
             muse_labels[key] = c.label
             c.label, c.confidence = new, confidence

@@ -1,7 +1,7 @@
 import pytest
 
 from smearlens.datasets import Box
-from smearlens.metrics import MatchResult, iou, match_boxes
+from smearlens.metrics import MatchResult, iou, match_boxes, match_centers
 
 
 def box(x0, y0, x1, y1, label="WBC"):
@@ -46,3 +46,20 @@ def test_scores():
 
 def test_empty_scores_are_zero():
     assert MatchResult().f1 == 0.0
+
+
+def test_center_match_accepts_nucleus_sized_box():
+    truth = [box(0, 0, 40, 40)]
+    predicted = [box(12, 12, 28, 28)]
+    assert match_boxes(predicted, truth) == MatchResult(tp=0, fp=1, fn=1)
+    assert match_centers(predicted, truth) == MatchResult(tp=1, fp=0, fn=0)
+
+
+def test_center_match_pairs_nearest_once():
+    truth = [box(0, 0, 40, 40)]
+    predicted = [box(5, 5, 25, 25), box(15, 15, 25, 25)]
+    assert match_centers(predicted, truth) == MatchResult(tp=1, fp=1, fn=0)
+
+
+def test_center_match_rejects_center_outside():
+    assert match_centers([box(35, 35, 60, 60)], [box(0, 0, 40, 40)]) == MatchResult(tp=0, fp=1, fn=1)

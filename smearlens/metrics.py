@@ -49,3 +49,31 @@ def match_boxes(predicted: list[Box], truth: list[Box], threshold: float = 0.5) 
         used_truth.add(j)
     tp = len(used_pred)
     return MatchResult(tp, len(predicted) - tp, len(truth) - tp)
+
+
+def center_distance(a: Box, b: Box) -> float:
+    ax, ay = (a.x0 + a.x1) / 2, (a.y0 + a.y1) / 2
+    bx, by = (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2
+    return ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5
+
+
+def contains_center(outer: Box, inner: Box) -> bool:
+    cx, cy = (inner.x0 + inner.x1) / 2, (inner.y0 + inner.y1) / 2
+    return outer.x0 <= cx <= outer.x1 and outer.y0 <= cy <= outer.y1
+
+
+def match_centers(predicted: list[Box], truth: list[Box]) -> MatchResult:
+    pairs = sorted(
+        (center_distance(p, t), i, j)
+        for i, p in enumerate(predicted)
+        for j, t in enumerate(truth)
+        if contains_center(t, p)
+    )
+    used_pred, used_truth = set(), set()
+    for _, i, j in pairs:
+        if i in used_pred or j in used_truth:
+            continue
+        used_pred.add(i)
+        used_truth.add(j)
+    tp = len(used_pred)
+    return MatchResult(tp, len(predicted) - tp, len(truth) - tp)

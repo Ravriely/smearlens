@@ -1,0 +1,66 @@
+{
+  "temperature": 0.867,
+  "raw": {
+    "accuracy": 0.9762,
+    "ece": 0.0072,
+    "nll": 0.0752,
+    "mean_confidence": 0.9739
+  },
+  "calibrated": {
+    "accuracy": 0.9762,
+    "ece": 0.0059,
+    "nll": 0.0755,
+    "mean_confidence": 0.9795
+  },
+  "coverage": [
+    {
+      "reviewed_percent": 0,
+      "reviewed_cells": 0,
+      "errors_left_percent": 2.38,
+      "errors_caught_percent": 0.0
+    },
+    {
+      "reviewed_percent": 1.0,
+      "reviewed_cells": 26,
+      "errors_left_percent": 1.93,
+      "errors_caught_percent": 19.7
+    },
+    {
+      "reviewed_percent": 2.0,
+      "reviewed_cells": 51,
+      "errors_left_percent": 1.71,
+      "errors_caught_percent": 29.5
+    },
+    {
+      "reviewed_percent": 5.0,
+      "reviewed_cells": 128,
+      "errors_left_percent": 0.86,
+      "errors_caught_percent": 65.6
+    },
+    {
+      "reviewed_percent": 10.0,
+      "reviewed_cells": 256,
+      "errors_left_percent": 0.3,
+      "errors_caught_percent": 88.5
+    },
+    {
+      "reviewed_percent": 15.0,
+      "reviewed_cells": 384,
+      "errors_left_percent": 0.18,
+      "errors_caught_percent": 93.4
+    },
+    {
+      "reviewed_percent": 20.0,
+      "reviewed_cells": 512,
+      "errors_left_percent": 0.1,
+      "errors_caught_percent": 96.7
+    },
+    {
+      "reviewed_percent": 30.0,
+      "reviewed_cells": 768,
+      "errors_left_percent": 0.06,
+      "errors_caught_percent": 98.4
+    }
+  ],
+  "test_cells": 2560
+}

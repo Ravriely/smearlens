@@ -36,6 +36,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [07](docs/experiments/07-review-agent.md) | Review agent: Muse Spark with 6 tools prepares the slide review | Second opinions, review list and report in about 1 min per slide, no diagnostic wording; flagged 21/24 disagreements on BCCD (probe domain shift) |
 | [08](docs/experiments/08-stain-augmented-probe.md) | Stain/colour/scale augmentation of the probe | Simulated other lab 91.8 % → 97.4 % (lymphocytes 49 % → 95 %), clean unchanged (97.6 %); BCCD monocyte collapse fixed (65 % → 27 %) |
 | [09](docs/experiments/09-detection-probe.md) | Glimmer probe for "white cell or not" over all SAM 3 candidates | WBC F1 0.72 → 0.79, precision 0.78 → 0.95, count error 0.55 → 0.38, zero LLM calls per cell |
+| [10](docs/experiments/10-review-coverage.md) | Calibration and review curve of the type probe, 2,560 PBC cells | Calibrated (ECE 0.6 %); reviewing the 10 % least sure cells leaves 0.3 % errors and catches 89 % of them |
 
 ## Quick start
 

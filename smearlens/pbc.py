@@ -59,7 +59,7 @@ def build_splits(data_dir: Path) -> list[Cell]:
     pinned = txl_pbc_splits(data_dir)
     cells = []
     for label in PBC_CLASSES:
-        for path in sorted((pbc_root(data_dir) / label).glob("*.jpg")):
+        for path in sorted((pbc_root(data_dir) / label).glob("[!.]*.jpg")):
             split = pinned.get(path.name) or hash_split(path.name)
             cells.append(Cell(path, label, split))
     return cells

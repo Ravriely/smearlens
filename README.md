@@ -34,6 +34,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [05](docs/experiments/05-glimmer-linear-probe.md) | Linear probe on frozen Muse Glimmer vision features, PBC | 97.6 % test accuracy (zero-shot: 65 %); immature granulocytes 20 % → 95 %, erythroblasts 35 % → 99 % |
 | [06](docs/experiments/06-pipeline-with-glimmer-probe.md) | Pipeline with the Glimmer probe, crops scaled on red cells | Right type end to end 58 % → 72.7 % (87 % of kept cells), same detection (F1 0.73, count error 0.52) |
 | [07](docs/experiments/07-review-agent.md) | Review agent: Muse Spark with 6 tools prepares the slide review | Second opinions, review list and report in about 1 min per slide, no diagnostic wording; flagged 21/24 disagreements on BCCD (probe domain shift) |
+| [08](docs/experiments/08-stain-augmented-probe.md) | Stain/colour/scale augmentation of the probe | Simulated other lab 91.8 % → 97.4 % (lymphocytes 49 % → 95 %), clean unchanged (97.6 %); BCCD monocyte collapse fixed (65 % → 27 %) |
 
 ## Quick start
 

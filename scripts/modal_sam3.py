@@ -2,11 +2,13 @@
 
     modal secret create huggingface HF_TOKEN=...
     modal run scripts/modal_sam3.py --limit 10
+    SMEARLENS_GPU=L4 modal run scripts/modal_sam3.py  # other GPU type
 
 Results are copied back to runs/sam3.
 """
 
 import io
+import os
 import tarfile
 from pathlib import Path
 
@@ -36,7 +38,7 @@ hf_cache = modal.Volume.from_name("smearlens-hf-cache", create_if_missing=True)
 
 
 @app.function(
-    gpu="L40S",
+    gpu=os.environ.get("SMEARLENS_GPU", "L40S"),
     timeout=1800,
     secrets=[modal.Secret.from_name("huggingface")],
     volumes={"/root/.cache/huggingface": hf_cache},

@@ -25,8 +25,8 @@ def load_model(version: str):
     return model, Sam3Processor(model)
 
 
-def segment_concept(processor, state, label: str) -> tuple[list[Box], np.ndarray]:
-    output = processor.set_text_prompt(prompt=PROMPTS[label], state=state)
+def segment_concept(processor, state, label: str, prompt: str) -> tuple[list[Box], np.ndarray]:
+    output = processor.set_text_prompt(prompt=prompt, state=state)
     boxes = [Box(label, *map(float, b)) for b in output["boxes"].cpu().numpy()]
     masks = output["masks"].cpu().numpy()[:, 0]
     return boxes, masks
@@ -70,9 +70,12 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--version", default="sam3.1", choices=["sam3.1", "sam3"])
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--wbc-prompt", default=PROMPTS["WBC"])
+    parser.add_argument("--platelet-prompt", default=PROMPTS["Platelet"])
     parser.add_argument("--out", type=Path, default=Path("runs/sam3"))
     args = parser.parse_args()
 
+    prompts = {**PROMPTS, "WBC": args.wbc_prompt, "Platelet": args.platelet_prompt}
     model, processor = load_model(args.version)
     processor.set_confidence_threshold(args.threshold)
     args.out.mkdir(parents=True, exist_ok=True)
@@ -91,7 +94,7 @@ def main() -> None:
         layers, row = [], {"image": sample.image_path.name, "source": sample.source}
         for label in CLASSES:
             truth = [b for b in sample.boxes if b.label == label]
-            predicted, masks = segment_concept(processor, state, label)
+            predicted, masks = segment_concept(processor, state, label, prompts[label])
             result = match_boxes(predicted, truth)
             totals[label] += result
             count_errors[label].append(len(predicted) - len(truth))
@@ -107,6 +110,8 @@ def main() -> None:
 
     summary = {
         "version": args.version,
+        "prompts": prompts,
+        "threshold": args.threshold,
         "split": args.split,
         "images": len(per_image),
         "seconds": round(time.perf_counter() - started, 1),

@@ -4,7 +4,7 @@
     modal run scripts/modal_sam3.py --limit 10
     SMEARLENS_GPU=L4 modal run scripts/modal_sam3.py  # other GPU type
 
-Results are copied back to runs/sam3.
+Results are copied back to runs/<tag> (default runs/sam3).
 """
 
 import io
@@ -46,13 +46,13 @@ hf_cache = modal.Volume.from_name("smearlens-hf-cache", create_if_missing=True)
     secrets=[modal.Secret.from_name("huggingface")],
     volumes={"/root/.cache/huggingface": hf_cache},
 )
-def validate(args: list[str]) -> bytes:
+def validate(args: list[str], tag: str = "sam3") -> bytes:
     import os
     import subprocess
 
     env = {**os.environ, "PYTHONPATH": REMOTE}
     subprocess.run(
-        ["python", "scripts/sam3_validate.py", "--out", "runs/sam3", *args],
+        ["python", "scripts/sam3_validate.py", "--out", f"runs/{tag}", *args],
         cwd=REMOTE,
         env=env,
         check=True,
@@ -60,17 +60,24 @@ def validate(args: list[str]) -> bytes:
     hf_cache.commit()
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
-        tar.add(f"{REMOTE}/runs/sam3", arcname="sam3")
+        tar.add(f"{REMOTE}/runs/{tag}", arcname=tag)
     return buffer.getvalue()
 
 
 @app.local_entrypoint()
-def main(limit: int = 10, split: str = "test", version: str = "sam3.1", threshold: float = 0.5):
-    archive = validate.remote(
-        ["--limit", str(limit), "--split", split, "--version", version, "--threshold", str(threshold)]
-    )
+def main(
+    limit: int = 10,
+    split: str = "test",
+    version: str = "sam3.1",
+    threshold: float = 0.5,
+    wbc_prompt: str = "white blood cell",
+    platelet_prompt: str = "platelet",
+    tag: str = "sam3",
+):
+    args = ["--limit", str(limit), "--split", split, "--version", version, "--threshold", str(threshold)]
+    archive = validate.remote([*args, "--wbc-prompt", wbc_prompt, "--platelet-prompt", platelet_prompt], tag)
     out = REPO / "runs"
     out.mkdir(exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(out, filter="data")
-    print(f"Results in {out / 'sam3'}")
+    print(f"Results in {out / tag}")

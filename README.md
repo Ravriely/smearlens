@@ -12,7 +12,7 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 
 ## How it works
 
-1. **Segment.** SAM 3.1 finds and segments every cell on the smear image.
+1. **Segment.** SAM 3 finds and segments every cell on the smear image.
 2. **Classify.** A fine-tuned Meta open-weights model labels each white blood
    cell (neutrophil, lymphocyte, monocyte, eosinophil, basophil, ...).
 3. **Review.** An agent drafts the differential count and lists what the
@@ -21,7 +21,7 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 
 ## Status
 
-Work in progress. The first step validates cell segmentation with SAM 3.1.
+Work in progress. Segmentation uses SAM 3 (`facebook/sam3`); see the experiments below.
 
 ## Experiments
 
@@ -29,7 +29,7 @@ Work in progress. The first step validates cell segmentation with SAM 3.1.
 |---|---|---|
 | [01](docs/experiments/01-zero-shot-baseline.md) | Zero-shot Muse Spark on PBC, 160 cells | 65.0 % accuracy, fails on immature granulocytes (20 %) and erythroblasts (35 %) |
 | [02](docs/experiments/02-sam3-segmentation.md) | SAM 3.1 text-prompt segmentation, 10 TXL-PBC images | RBC F1 0.70; the WBC prompt detects every cell (precision 0.02); no platelets |
-| [03](docs/experiments/03-sam3-prompt-sweep.md) | SAM 3 prompt/threshold sweep, full test split (82 images) | "cell with a large purple nucleus": WBC F1 0.04 → 0.32, count error 17 → 2.2 per image; SAM 3 = 3.1 |
+| [03](docs/experiments/03-sam3-prompt-sweep.md) | SAM 3 prompt/threshold sweep, full test split (82 images) | "cell with a large purple nucleus": WBC F1 0.04 → 0.37, count error 17 → 2.2 per image; platelets recall 0.87; SAM 3.1 box prompts are random, SAM 3 is the default |
 
 ## Quick start
 
@@ -40,7 +40,7 @@ uv run pytest
 ```
 
 Segmentation needs a CUDA GPU and access to the gated
-[`facebook/sam3.1`](https://huggingface.co/facebook/sam3.1) checkpoint:
+[`facebook/sam3`](https://huggingface.co/facebook/sam3) checkpoint (or `facebook/sam3.1` with `--version sam3.1`):
 
 ```bash
 uv sync --extra sam

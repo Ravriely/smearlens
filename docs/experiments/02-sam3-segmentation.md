@@ -30,8 +30,9 @@ cell the classifier never sees.
 | Platelet | 4 | 0 | 0 | 0 | 0 | **0** | 0.4 |
 
 Box mode (WBC): the mask fills on average **29 %** of the true box (minimum 21 %).
-**Not reliable, see [03](03-sam3-prompt-sweep.md#notes-and-limits):** the box
-step did not start from a fresh image state.
+**Not reliable, see [03](03-sam3-prompt-sweep.md#notes-and-limits):** SAM 3.1
+box prompts are random from one run to the next (missing weights in the
+interactive head). SAM 3 gives a stable 0.63.
 
 Speed: 3.9 s for the 10 images on the L40S, about 0.4 s per image with the
 three prompts. The container image builds in about 30-45 s.
@@ -53,7 +54,8 @@ ground truth, tinted areas are SAM masks):
 - **Platelets are never found** at threshold 0.5. They are small (about 10 px)
   and few (4 in total), so this needs more images before any conclusion.
 - **With a box, SAM seemed to segment the nucleus, not the whole cell** (29 %
-  of the box; this number turned out to be unreliable, see 03). The nucleus is the most visible object in a WBC. For classification we
+  of the box). Wrong: SAM 3.1 box prompts are random, see 03. With SAM 3 the
+  mask covers most of the cell. The nucleus is the most visible object in a WBC. For classification we
   crop on the box, so this does not block the pipeline, but it matters if we
   want cell area or the nucleus/cytoplasm ratio.
 

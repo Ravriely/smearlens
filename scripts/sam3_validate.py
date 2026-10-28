@@ -25,11 +25,12 @@ def load_model(version: str):
     return model, Sam3Processor(model)
 
 
-def segment_concept(processor, state, label: str, prompt: str) -> tuple[list[Box], np.ndarray]:
+def segment_concept(processor, state, label: str, prompt: str) -> tuple[list[Box], np.ndarray, list[float]]:
     output = processor.set_text_prompt(prompt=prompt, state=state)
     boxes = [Box(label, *map(float, b)) for b in output["boxes"].cpu().numpy()]
     masks = output["masks"].cpu().numpy()[:, 0]
-    return boxes, masks
+    scores = [float(x) for x in output["scores"].float().cpu().numpy()]
+    return boxes, masks, scores
 
 
 def segment_box(model, state, box: Box) -> np.ndarray:
@@ -84,7 +85,7 @@ def main() -> None:
     center_totals: dict[str, MatchResult] = defaultdict(MatchResult)
     count_errors: dict[str, list[int]] = defaultdict(list)
     wbc_fill: list[float] = []
-    per_image = []
+    per_image, detections = [], []
     started = time.perf_counter()
 
     samples = [s for _, s in zip(range(args.limit), iter_txl_pbc(args.data_dir, args.split))]
@@ -99,12 +100,20 @@ def main() -> None:
         layers, row = [], {"image": sample.image_path.name, "source": sample.source}
         for label in CLASSES:
             truth = [b for b in sample.boxes if b.label == label]
-            predicted, masks = segment_concept(processor, state, label, prompts[label])
+            predicted, masks, scores = segment_concept(processor, state, label, prompts[label])
             result = match_boxes(predicted, truth)
             totals[label] += result
             center_totals[label] += match_centers(predicted, truth)
             count_errors[label].append(len(predicted) - len(truth))
             row[label] = {"truth": len(truth), "predicted": len(predicted), "tp": result.tp}
+            detections.append(
+                {
+                    "image": sample.image_path.name,
+                    "label": label,
+                    "boxes": [[b.x0, b.y0, b.x1, b.y1] for b in predicted],
+                    "scores": scores,
+                }
+            )
             if len(masks):
                 layers.append((label, masks.any(axis=0)))
         draw_overlay(image, layers, sample.boxes).save(args.out / f"{sample.image_path.stem}.jpg")
@@ -137,6 +146,7 @@ def main() -> None:
         "per_image": per_image,
     }
     (args.out / "metrics.json").write_text(json.dumps(summary, indent=2))
+    (args.out / "detections.json").write_text(json.dumps(detections))
     print(json.dumps({k: v for k, v in summary.items() if k != "per_image"}, indent=2))
 
 

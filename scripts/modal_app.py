@@ -1,6 +1,11 @@
 """SmearLens inference on Modal: SAM 3 candidates, Glimmer features, two linear probes.
 
     modal run scripts/modal_app.py --image field.png [--image other.jpg ...] [--out runs/analyze.json]
+    modal deploy scripts/modal_app.py
+
+The deployed app also serves the web demo (web/) and POST /api/analyze from a small CPU
+container. That endpoint checks the token of the Modal secret smearlens-web, then the size of
+the image, before it calls the GPU class, so a refused request never starts a GPU.
 
 The deployed app scales to zero. To keep one container warm, see scripts/modal_warm.py,
 or deploy with SMEARLENS_WARM=1.
@@ -50,11 +55,23 @@ for name, path in PROBES.items():
 
 app = modal.App("smearlens-app", image=image)
 
+MAX_BYTES = 12 * 1024 * 1024
+MAX_PIXELS = 4096 * 4096
+TOKEN_HEADER = "x-smearlens-token"
+web_image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .pip_install("fastapi==0.115.12", "pillow")
+    .env({"PYTHONPATH": "/root/scripts"})
+    .add_local_file(REPO / "scripts" / "modal_glimmer_probe.py", "/root/scripts/modal_glimmer_probe.py")
+    .add_local_dir(REPO / "web", "/root/web")
+)
+
 
 @app.cls(
     gpu=os.environ.get("SMEARLENS_GPU", "L40S"),
     timeout=600,
     scaledown_window=15 * 60,
+    max_containers=1,
     min_containers=1 if os.environ.get("SMEARLENS_WARM") == "1" else 0,
     secrets=[modal.Secret.from_name("huggingface")],
     volumes={CACHE: cache},
@@ -107,7 +124,75 @@ class Analyzer:
         result = report(field.size, detections, rbc_px, cells, timing)
         result["candidates"] = len(cands)
         result["timing_s"]["model_load"] = round(self.load_s, 3)
+        result["review_cutoff"] = self.probes["review_cutoff"]
         return result
+
+
+@app.function(
+    image=web_image,
+    secrets=[modal.Secret.from_name("smearlens-web")],
+    max_containers=1,
+    scaledown_window=60,
+    timeout=300,
+)
+@modal.concurrent(max_inputs=8)
+@modal.asgi_app()
+def web():
+    import hmac
+    import io
+
+    from fastapi import FastAPI, Request
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse
+    from fastapi.staticfiles import StaticFiles
+    from PIL import Image
+
+    token = os.environ["SMEARLENS_WEB_TOKEN"].encode()
+    api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+    api.add_middleware(
+        CORSMiddleware, allow_origins=["*"], allow_methods=["POST"], allow_headers=[TOKEN_HEADER, "content-type"]
+    )
+
+    @api.middleware("http")
+    async def no_stale_page(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["cache-control"] = "no-cache"
+        return response
+
+    def error(status: int, code: str, message: str) -> JSONResponse:
+        return JSONResponse({"error": code, "message": message}, status_code=status)
+
+    @api.post("/api/analyze")
+    async def analyze(request: Request):
+        given = request.headers.get(TOKEN_HEADER, "").encode()
+        if not given or not hmac.compare_digest(given, token):
+            return error(401, "unauthorized", "Missing or wrong access token.")
+        declared = request.headers.get("content-length")
+        if declared and declared.isdigit() and int(declared) > MAX_BYTES:
+            return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > MAX_BYTES:
+                return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
+        try:
+            with Image.open(io.BytesIO(body)) as field:
+                size = field.size
+                field.verify()
+        except Exception:
+            return error(415, "not_an_image", "The file is not a readable JPG, PNG or WebP image.")
+        if size[0] * size[1] > MAX_PIXELS:
+            return error(413, "too_many_pixels", f"Image of {size[0]}x{size[1]} px, the limit is 4096x4096.")
+        started = time.perf_counter()
+        try:
+            result = await Analyzer().analyze.remote.aio(bytes(body))
+        except Exception as exc:
+            return error(502, "analysis_failed", f"The analysis failed: {type(exc).__name__}.")
+        result["round_trip_s"] = round(time.perf_counter() - started, 3)
+        return result
+
+    api.mount("/", StaticFiles(directory="/root/web", html=True), name="web")
+    return api
 
 
 @app.local_entrypoint()

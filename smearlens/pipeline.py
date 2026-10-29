@@ -89,11 +89,11 @@ def review_flags(cells: list[Candidate]) -> list[str]:
     return flags
 
 
-def probe_predict(features, probe) -> list[tuple[str, float]]:
+def probe_predict(features, probe, temperature: float = 1.0) -> list[tuple[str, float]]:
     import numpy as np
 
     x = (np.asarray(features, dtype=np.float32) - probe["mean"]) / probe["std"]
-    logits = x @ probe["weight"].T + probe["bias"]
+    logits = (x @ probe["weight"].T + probe["bias"]) / temperature
     probs = np.exp(logits - logits.max(1, keepdims=True))
     probs /= probs.sum(1, keepdims=True)
     return [(str(probe["classes"][i]), float(p[i])) for i, p in zip(logits.argmax(1), probs)]

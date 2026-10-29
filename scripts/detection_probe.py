@@ -9,30 +9,11 @@ from PIL import Image
 
 from smearlens.augment import augment
 from smearlens.datasets import Box, iter_txl_pbc
-from smearlens.metrics import MatchResult, center_distance, contains_center, match_centers
-from smearlens.pipeline import Candidate, crop_at_scale, dedupe, rbc_scale
+from smearlens.analyze import candidates_for, merge_kept, rbc_sizes
+from smearlens.metrics import MatchResult, contains_center, match_centers
+from smearlens.pipeline import Candidate, crop_at_scale
 
 SPLITS = ("train", "val", "test")
-
-
-def candidates_for(detections: list[dict], wbc_min: float, rbc_min: float) -> dict[str, list[Candidate]]:
-    found: dict[str, list[Candidate]] = {}
-    for d in detections:
-        if d["label"] == "Platelet":
-            continue
-        threshold = wbc_min if d["label"] == "WBC" else rbc_min
-        found.setdefault(d["image"], []).extend(
-            Candidate(Box("WBC", *b), s) for b, s in zip(d["boxes"], d["scores"]) if s >= threshold
-        )
-    return {image: dedupe(c) for image, c in found.items()}
-
-
-def rbc_sizes(detections: list[dict]) -> dict[str, float]:
-    return {
-        d["image"]: rbc_scale([max(b[2] - b[0], b[3] - b[1]) for b, s in zip(d["boxes"], d["scores"]) if s >= 0.5])
-        for d in detections
-        if d["label"] == "RBC"
-    }
 
 
 def is_wbc(c: Candidate, truth: list[Box]) -> bool:
@@ -156,17 +137,6 @@ def main() -> None:
             i += 1
     (args.out / "test_candidates.json").write_text(json.dumps(test_rows))
     print(json.dumps(summary, indent=2))
-
-
-def merge_kept(cands: list[Candidate], probs: np.ndarray, threshold: float, rbc_px: float) -> list[Box]:
-    kept: list[Candidate] = []
-    for c, p in sorted(zip(cands, probs), key=lambda t: -t[1]):
-        if p < threshold:
-            break
-        if any(contains_center(k.box, c.box) or center_distance(k.box, c.box) < rbc_px for k in kept):
-            continue
-        kept.append(c)
-    return [k.box for k in kept]
 
 
 def evaluate(split: dict, probs: np.ndarray, threshold: float, source: str | None = None) -> dict:

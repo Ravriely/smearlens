@@ -1,0 +1,110 @@
+import json
+from pathlib import Path
+
+import numpy as np
+
+from smearlens.datasets import Box
+from smearlens.metrics import center_distance, contains_center
+from smearlens.pipeline import Candidate, dedupe, differential, probe_predict, rbc_scale
+
+PROMPTS = (
+    ("WBC", "cell with a large purple nucleus"),
+    ("WBC", "neutrophil"),
+    ("RBC", "red blood cell"),
+    ("Platelet", "small purple dot"),
+)
+SAM_THRESHOLD = 0.3
+WBC_MIN = 0.3
+RBC_MIN = 0.5
+UPSCALE_BELOW = 512
+
+
+def candidates_for(detections: list[dict], wbc_min: float, rbc_min: float) -> dict[str, list[Candidate]]:
+    found: dict[str, list[Candidate]] = {}
+    for d in detections:
+        if d["label"] == "Platelet":
+            continue
+        threshold = wbc_min if d["label"] == "WBC" else rbc_min
+        found.setdefault(d["image"], []).extend(
+            Candidate(Box("WBC", *b), s) for b, s in zip(d["boxes"], d["scores"]) if s >= threshold
+        )
+    return {image: dedupe(c) for image, c in found.items()}
+
+
+def rbc_sizes(detections: list[dict]) -> dict[str, float]:
+    return {
+        d["image"]: rbc_scale([max(b[2] - b[0], b[3] - b[1]) for b, s in zip(d["boxes"], d["scores"]) if s >= 0.5])
+        for d in detections
+        if d["label"] == "RBC"
+    }
+
+
+def merge_kept(cands: list[Candidate], probs: np.ndarray, threshold: float, rbc_px: float) -> list[Box]:
+    kept: list[Candidate] = []
+    for c, p in sorted(zip(cands, probs), key=lambda t: -t[1]):
+        if p < threshold:
+            break
+        if any(contains_center(k.box, c.box) or center_distance(k.box, c.box) < rbc_px for k in kept):
+            continue
+        kept.append(c)
+    return [k.box for k in kept]
+
+
+def wbc_probability(features: np.ndarray, probe: dict) -> np.ndarray:
+    x = (np.asarray(features, dtype=np.float32) - probe["mean"]) / probe["std"]
+    return 1 / (1 + np.exp(-np.clip(x @ probe["weight"] + probe["bias"], -30, 30)))
+
+
+def load_probes(detection: Path, types: Path, coverage: Path, lmu_eval: Path) -> dict:
+    return {
+        "detection": dict(np.load(detection)),
+        "type": dict(np.load(types)),
+        "temperature": json.loads(coverage.read_text())["temperature"],
+        "review_cutoff": json.loads(lmu_eval.read_text())["review_cutoff_from_pbc_10pct"],
+    }
+
+
+def count_outside(detections: list[dict], label: str, min_score: float, cells: list[Box]) -> int:
+    boxes = [
+        Candidate(Box(label, *b), s)
+        for d in detections
+        if d["label"] == label
+        for b, s in zip(d["boxes"], d["scores"])
+        if s >= min_score
+    ]
+    return sum(not any(contains_center(w, c.box) for w in cells) for c in dedupe(boxes))
+
+
+def white_cells(cands: list[Candidate], features: np.ndarray, rbc_px: float, probes: dict) -> list[dict]:
+    detection = probes["detection"]
+    p_wbc = wbc_probability(features, detection)
+    kept = merge_kept(cands, p_wbc, float(detection["threshold"]), rbc_px)
+    index = {c.box: i for i, c in enumerate(cands)}
+    rows = [index[b] for b in kept]
+    types = probe_predict(features[rows], probes["type"], probes["temperature"]) if rows else []
+    return [
+        {
+            "box": [round(v, 1) for v in (b.x0, b.y0, b.x1, b.y1)],
+            "p_wbc": round(float(p_wbc[i]), 5),
+            "type": label,
+            "confidence": round(confidence, 4),
+            "needs_review": confidence < probes["review_cutoff"],
+        }
+        for b, i, (label, confidence) in zip(kept, rows, types)
+    ]
+
+
+def report(size: tuple[int, int], detections: list[dict], rbc_px: float, cells: list[dict], timing: dict) -> dict:
+    boxes = [Box("WBC", *c["box"]) for c in cells]
+    formula = differential([Candidate(b, 0.0, c["type"]) for b, c in zip(boxes, cells)])
+    return {
+        "image": {"width": size[0], "height": size[1]},
+        "rbc_px": round(rbc_px, 1),
+        "white_cells": cells,
+        "white_cell_count": len(cells),
+        "needs_review_count": sum(c["needs_review"] for c in cells),
+        "red_cell_count": count_outside(detections, "RBC", RBC_MIN, boxes),
+        "platelet_count": count_outside(detections, "Platelet", SAM_THRESHOLD, boxes),
+        "differential_percent": {k: round(100 * v, 1) for k, v in formula.items() if v},
+        "timing_s": {k: round(v, 3) for k, v in timing.items()},
+    }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SmearLens, review workspace (mockup)</title>
+<title>SmearLens, review workspace</title>
 <style>
 :root {
   --paper: #f5f1ea;
@@ -24,6 +24,8 @@
   --t-basophil: #36479a;
   --t-ig: #2b8a5f;
   --t-erythroblast: #b23a7a;
+  --t-platelet: #6b7280;
+  --ok: #2b7a4b;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
@@ -48,9 +50,12 @@
     --t-basophil: #7b8cf0;
     --t-ig: #52c795;
     --t-erythroblast: #e873b2;
+    --t-platelet: #a3a9b5;
+    --ok: #5fcf8f;
   }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--paper);
@@ -73,6 +78,10 @@ header {
   padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: transparent;
 }
 .pill.mock { color: var(--review); border-color: currentColor; }
+.pill.live { color: var(--ok); border-color: currentColor; }
+.pill.key { display: inline-flex; align-items: center; gap: 6px; }
+.pill.key i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.pill.key.set i { background: var(--ok); }
 button.pill { cursor: pointer; }
 button.pill:hover { color: var(--ink); }
 
@@ -98,9 +107,18 @@ main {
 .formula { grid-area: formula; display: flex; flex-direction: column; }
 .review { grid-area: review; display: flex; flex-direction: column; }
 .review .hint { margin-top: auto; padding-top: 10px; }
+@media (min-width: 701px) {
+  .review { contain: size; min-height: 100%; }
+  .review .rlist { flex: 1 1 0; min-height: 0; overflow-y: auto; align-content: start; padding-right: 2px; }
+  .rlist.dense { gap: 8px; }
+  .rlist.dense .item { grid-template-columns: 54px 1fr; gap: 10px; padding: 6px 8px; }
+  .rlist.dense .item canvas { width: 54px; height: 54px; }
+  .rlist.dense .meter { margin-top: 5px; }
+}
 .agent { grid-area: agent; }
 
 .drop {
+  position: relative; cursor: pointer;
   display: flex; align-items: center; gap: 12px; padding: 10px 14px;
   border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: 8px;
   background: var(--accent-soft); color: var(--ink);
@@ -108,10 +126,47 @@ main {
 .drop svg { width: 26px; height: 26px; flex: none; color: var(--accent); }
 .drop b { font-weight: 600; }
 .drop span { color: var(--ink-2); font-size: 13px; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.drop:hover, .drop:focus-within, .drop.over { border-color: var(--accent); }
+.drop.over { background: color-mix(in srgb, var(--accent) 22%, var(--card)); }
+.drop.busy { opacity: .6; pointer-events: none; }
 .drop .file { margin-left: auto; font: 12px/1.3 var(--mono); color: var(--ink-2); text-align: right; white-space: nowrap; }
 
 .stage { position: relative; flex: 1; min-height: 0; border-radius: 8px; overflow: hidden; background: #000; line-height: 0; }
-.stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.veil {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 10px;
+  padding: 24px; text-align: center; line-height: 1.4; color: #fff;
+  background: rgba(15,12,22,.72); backdrop-filter: blur(2px);
+}
+.veil b { font: 600 18px/1.25 var(--serif); }
+.veil span { font-size: 13px; color: #d9d3e6; max-width: 34em; }
+.veil .el { font: 12px var(--mono); color: #b9b1cc; }
+.spin { width: 30px; height: 30px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; animation: sp 0.9s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+.alert {
+  display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4;
+  background: var(--review-soft); color: var(--ink); border: 1px solid color-mix(in srgb, var(--review) 45%, var(--line));
+}
+.alert b { color: var(--review); }
+.alert button { margin-left: auto; flex: none; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+dialog {
+  border: 1px solid var(--line); border-radius: 12px; padding: 20px; width: min(440px, calc(100vw - 32px));
+  background: var(--card); color: var(--ink); box-shadow: 0 20px 50px -20px rgba(0,0,0,.6);
+}
+dialog::backdrop { background: rgba(15,12,22,.55); }
+dialog h3 { margin: 0 0 6px; font: 600 18px/1.2 var(--serif); }
+dialog p { margin: 0 0 12px; font-size: 13px; color: var(--ink-2); }
+dialog input {
+  width: 100%; padding: 9px 11px; border-radius: 7px; border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  font: 13px var(--mono);
+}
+dialog input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.btn { font: 600 13px var(--sans); padding: 8px 14px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--card); }
 .stage svg.boxes { position: absolute; inset: 0; width: 100%; height: 100%; }
 .box { fill: transparent; stroke: var(--c); stroke-width: 2.5; vector-effect: non-scaling-stroke; cursor: pointer; }
 .box.rev { stroke-dasharray: 7 5; stroke-width: 3; }
@@ -127,7 +182,7 @@ main {
   padding: 6px 9px; border-radius: 6px; font-size: 12.5px; box-shadow: 0 6px 18px rgba(0,0,0,.35);
   white-space: nowrap; transform: translate(12px, 12px);
 }
-.tip b { text-transform: capitalize; }
+
 .tip .rv { color: var(--review); font-weight: 600; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
@@ -141,7 +196,7 @@ main {
 }
 .row:hover, .row.on { background: color-mix(in srgb, var(--c) 14%, transparent); }
 .row .sw { width: 10px; height: 10px; border-radius: 2px; background: var(--c); }
-.row .n { text-transform: capitalize; }
+
 .row .pc { white-space: nowrap; font: 600 17px/1 var(--serif); font-variant-numeric: tabular-nums; text-align: right; }
 .row .ct { font: 12px var(--mono); color: var(--ink-2); text-align: right; }
 .row.zero { opacity: .45; }
@@ -155,7 +210,7 @@ main {
 .item:hover, .item.on { background: var(--review-soft); }
 .item canvas { width: 76px; height: 76px; border-radius: 6px; background: #000; display: block; }
 .item .no { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--review); color: #fff; font: 700 12px var(--sans); margin-right: 6px; }
-.item .ty { font-weight: 600; text-transform: capitalize; }
+.item .ty { font-weight: 600; }
 .item .sub { font: 12px var(--mono); color: var(--ink-2); margin-top: 3px; }
 .meter { height: 5px; border-radius: 3px; background: var(--line); margin-top: 7px; position: relative; overflow: hidden; }
 .meter i { position: absolute; inset: 0 auto 0 0; background: var(--c); }
@@ -180,7 +235,7 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 
 @media (max-width: 1100px) {
   main { grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-template-areas: "viewer viewer" "formula review" "agent agent"; }
-  .stage { flex: none; aspect-ratio: 1024 / 960; }
+  .stage { flex: none; aspect-ratio: var(--ar, 1024 / 960); }
 }
 @media (max-width: 700px) {
   header { padding: 10px 16px; flex-wrap: wrap; }
@@ -202,21 +257,25 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
     SmearLens <small data-i="tagline"></small>
   </div>
   <div class="spacer"></div>
-  <span class="pill mock" data-i="mock"></span>
+  <span class="pill mock" id="mode"></span>
+  <button class="pill key" id="keybtn" type="button"><i></i><span id="keylbl"></span></button>
   <button class="pill" id="lang" type="button" aria-label="Language">FR</button>
 </header>
 
 <main>
   <section class="card viewer" aria-label="Analysed image">
-    <div class="drop">
+    <label class="drop" id="drop">
+      <input type="file" id="pick" accept="image/jpeg,image/png,image/webp">
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 20V6m0 0l-5 5m5-5l5 5"/><path d="M5 20v2a2 2 0 002 2h14a2 2 0 002-2v-2"/></svg>
       <div><b data-i="drop1"></b> <span data-i="drop2"></span></div>
       <div class="file" id="file"></div>
-    </div>
+    </label>
+    <div class="alert" id="alert" hidden></div>
     <div class="stage" id="stage">
       <img id="img" alt="Blood smear field with detected white blood cells">
       <svg class="boxes" id="boxes"></svg>
       <div class="tip" id="tip" hidden></div>
+      <div class="veil" id="veil" hidden><div class="spin"></div><b id="vtitle"></b><span id="vtext"></span><span class="el" id="vel"></span></div>
     </div>
     <div class="legend" id="legend"></div>
   </section>
@@ -240,24 +299,61 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
   </section>
 </main>
 
+<dialog id="keydlg">
+  <form method="dialog" id="keyform">
+    <h3 data-i="keyTitle"></h3>
+    <p data-i="keyText"></p>
+    <input id="keyin" type="password" autocomplete="off" spellcheck="false" aria-label="Access token">
+    <div class="acts">
+      <button class="btn" value="clear" type="submit" data-i="keyClear"></button>
+      <button class="btn" value="cancel" type="submit" data-i="cancel"></button>
+      <button class="btn primary" value="save" type="submit" data-i="save"></button>
+    </div>
+  </form>
+</dialog>
+
 <footer>
   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.6v.1" stroke-linecap="round"/></svg>
   <span data-i="disclaimer"></span>
 </footer>
 
 <script>
+const DEFAULT_API = "https://ravriely--smearlens-app-web.us-east.modal.run";
 const T = {
   en: {
-    tagline: "Blood smear review", mock: "Static mockup", lang: "FR",
-    drop1: "Drop a smear image here", drop2: "or browse. JPG or PNG, one field of view.",
+    tagline: "Blood smear review", lang: "FR",
+    modeDemo: "Offline demo", modeLive: "Live analysis",
+    key: "Access token", keySet: "Token set",
+    keyTitle: "Access token", keyText: "The live analysis runs on a GPU and needs the access token you were given. It is kept in this browser only.",
+    keyClear: "Forget", cancel: "Cancel", save: "Save",
+    drop1: "Drop a smear image here", drop2: "or browse. JPG, PNG or WebP, one field of view, up to 12 MB.",
     formula: "Differential count", review: "To review", agent: "Agent report", example: "Example text",
+    exampleLive: "Example, sample image",
     cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
     legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
+    backToSample: "Show the offline sample",
     revhint: (c) => `Types shown are the proposed ones. Cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
     revnone: "No cell below the confidence cutoff.",
     nCells: (n) => `${n} cells`,
-    types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast" },
-    file: (j) => `sample.jpg · ${j.image.width}×${j.image.height} · ${j.timing_s.total.toFixed(1)} s`,
+    types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast", platelet: "platelet" },
+    file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1)} s`,
+    sending: "Sending the image…", analysing: "Analysing on the GPU…", waking: "Waking up the GPU…",
+    loadText: "The first image after a pause waits for the GPU to start, about 45 s. The next ones take a few seconds.",
+    elapsed: (s) => `${s} s`,
+    errTitle: "Analysis not done.",
+    errors: {
+      unauthorized: "The access token is missing or wrong.",
+      too_large: "The image is larger than 12 MB.",
+      too_many_pixels: "The image is larger than 4096×4096 px.",
+      not_an_image: "The file is not a readable JPG, PNG or WebP image.",
+      bad_type: "Choose a JPG, PNG or WebP image.",
+      analysis_failed: "The analysis failed on the server. Try again, or try another image.",
+      network: "Cannot reach the backend. Check the connection, then try again.",
+      timeout: "No answer after 3 min. Try again in a moment.",
+      no_api: "No backend address set: only the offline demo works here.",
+      other: (s) => `Unexpected answer from the backend (HTTP ${s}).`
+    },
+    retry: "Try again", setKey: "Enter the token",
     disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate.",
     agentBody: (j) => [
       ["Summary", `<p>${j.white_cell_count} white cells found. The draft count is dominated by neutrophils, with lymphocytes and one monocyte. ${j.needs_review_count} cells are below the confidence cutoff and need a human look.</p>`],
@@ -267,16 +363,39 @@ const T = {
     ]
   },
   fr: {
-    tagline: "Revue de frottis", mock: "Maquette statique", lang: "EN",
-    drop1: "Dépose une image de frottis ici", drop2: "ou parcours. JPG ou PNG, un champ.",
+    tagline: "Revue de frottis", lang: "EN",
+    modeDemo: "Démo hors ligne", modeLive: "Analyse réelle",
+    key: "Jeton d'accès", keySet: "Jeton enregistré",
+    keyTitle: "Jeton d'accès", keyText: "L'analyse réelle tourne sur un GPU et demande le jeton d'accès qu'on t'a donné. Il reste dans ce navigateur.",
+    keyClear: "Oublier", cancel: "Annuler", save: "Enregistrer",
+    drop1: "Dépose une image de frottis ici", drop2: "ou parcours. JPG, PNG ou WebP, un champ, 12 Mo max.",
     formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent", example: "Texte d'exemple",
+    exampleLive: "Exemple, image témoin",
     cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
     legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
+    backToSample: "Revoir l'exemple hors ligne",
     revhint: (c) => `Types proposés. Cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
     revnone: "Aucune cellule sous le seuil de confiance.",
     nCells: (n) => `${n} cellules`,
-    types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste" },
-    file: (j) => `sample.jpg · ${j.image.width}×${j.image.height} · ${j.timing_s.total.toFixed(1)} s`,
+    types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste", platelet: "plaquette" },
+    file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1).replace(".", ",")} s`,
+    sending: "Envoi de l'image…", analysing: "Analyse sur le GPU…", waking: "Réveil du GPU…",
+    loadText: "La première image après une pause attend le démarrage du GPU, environ 45 s. Les suivantes prennent quelques secondes.",
+    elapsed: (s) => `${s} s`,
+    errTitle: "Analyse non faite.",
+    errors: {
+      unauthorized: "Le jeton d'accès manque ou n'est pas le bon.",
+      too_large: "L'image dépasse 12 Mo.",
+      too_many_pixels: "L'image dépasse 4096×4096 px.",
+      not_an_image: "Le fichier n'est pas une image JPG, PNG ou WebP lisible.",
+      bad_type: "Choisis une image JPG, PNG ou WebP.",
+      analysis_failed: "L'analyse a échoué côté serveur. Réessaie, ou essaie une autre image.",
+      network: "Impossible de joindre le backend. Vérifie la connexion, puis réessaie.",
+      timeout: "Pas de réponse après 3 min. Réessaie dans un moment.",
+      no_api: "Aucune adresse de backend : seule la démo hors ligne marche ici.",
+      other: (s) => `Réponse inattendue du backend (HTTP ${s}).`
+    },
+    retry: "Réessayer", setKey: "Saisir le jeton",
     disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste.",
     agentBody: (j) => [
       ["Résumé", `<p>${j.white_cell_count} globules blancs trouvés. Le décompte brouillon est dominé par les neutrophiles, avec des lymphocytes et un monocyte. ${j.needs_review_count} cellules sont sous le seuil de confiance et demandent un regard humain.</p>`],
@@ -286,14 +405,26 @@ const T = {
     ]
   }
 };
-const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast"];
-const REVIEW_CUTOFF = 0.9598;
-let lang = (new URLSearchParams(location.search).get("lang") || "en") === "fr" ? "fr" : "en";
-let data = null;
+const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "platelet"];
+const DEFAULT_CUTOFF = 0.9598;
+const MAX_BYTES = 12 * 1024 * 1024;
+const TIMEOUT_MS = 180000;
+const TOKEN_KEY = "smearlens.token";
+const params = new URLSearchParams(location.search);
+const API = (params.get("api") || (location.hostname.endsWith(".modal.run") ? location.origin : DEFAULT_API)).replace(/\/$/, "");
+let lang = (params.get("lang") || "en") === "fr" ? "fr" : "en";
+let data = null, sample = null, live = false, lastFile = null, lastError = null, imgUrl = null;
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const col = (t) => `var(--t-${t})`;
-const pct = (x) => (x * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".") + " %";
+const num = (x, d = 1) => x.toFixed(d).replace(".", lang === "fr" ? "," : ".");
+const pct = (x) => num(x * 100) + " %";
+const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+
+const store = {
+  get() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; } },
+  set(v) { try { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); } catch {} }
+};
 
 function mk(tag, attrs = {}, parent) {
   const e = document.createElementNS(NS, tag);
@@ -306,17 +437,33 @@ function highlight(i, on) {
   document.querySelectorAll(`[data-idx="${i}"]`).forEach((e) => e.classList.toggle("on", on));
 }
 
-function render() {
-  const t = T[lang], j = data;
+function chrome() {
+  const t = T[lang];
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i]").forEach((e) => { const v = t[e.dataset.i]; if (typeof v === "string") e.textContent = v; });
   $("lang").textContent = t.lang;
+  const m = $("mode");
+  m.textContent = live ? t.modeLive : t.modeDemo;
+  m.className = "pill " + (live ? "live" : "mock");
+  const has = !!store.get();
+  $("keybtn").classList.toggle("set", has);
+  $("keylbl").textContent = has ? t.keySet : t.key;
+  showError(lastError);
+}
+
+function render() {
+  chrome();
+  if (!data) return;
+  const t = T[lang], j = data;
+  const cutoff = j.review_cutoff ?? DEFAULT_CUTOFF;
   $("file").textContent = t.file(j);
   $("wbcn").textContent = t.nCells(j.white_cell_count);
+  document.querySelector(".agent .tag").textContent = live ? t.exampleLive : t.example;
 
   const W = j.image.width, H = j.image.height, svg = $("boxes");
+  $("stage").style.setProperty("--ar", `${W} / ${H}`);
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   svg.replaceChildren();
   const revs = [];
   j.white_cells.forEach((c, i) => { if (c.needs_review) revs.push(i); });
@@ -340,15 +487,15 @@ function render() {
 
   const counts = {};
   j.white_cells.forEach((c) => counts[c.type] = (counts[c.type] || 0) + 1);
-  const total = j.white_cell_count || 1;
+  const shown = ORDER.filter((k) => k !== "platelet" || counts[k]);
   $("stack").replaceChildren(...ORDER.filter((k) => counts[k]).map((k) => {
     const d = document.createElement("div"); d.style.cssText = `--c:${col(k)};flex:${counts[k]}`; d.title = t.types[k]; return d;
   }));
-  $("rows").replaceChildren(...ORDER.map((k) => {
+  $("rows").replaceChildren(...shown.map((k) => {
     const d = document.createElement("div");
     d.className = "row" + (counts[k] ? "" : " zero"); d.style.setProperty("--c", col(k));
     const p = j.differential_percent[k] || 0;
-    d.innerHTML = `<span class="sw"></span><span class="n">${t.types[k]}</span><span class="ct">${counts[k] || 0} / ${j.white_cell_count}</span><span class="pc">${pct(p / 100)}</span>`;
+    d.innerHTML = `<span class="sw"></span><span class="n">${cap(t.types[k])}</span><span class="ct">${counts[k] || 0} / ${j.white_cell_count}</span><span class="pc">${pct(p / 100)}</span>`;
     d.addEventListener("mouseenter", () => j.white_cells.forEach((c, i) => c.type === k && highlight(i, true)));
     d.addEventListener("mouseleave", () => j.white_cells.forEach((c, i) => highlight(i, false)));
     return d;
@@ -360,26 +507,33 @@ function render() {
     const s = document.createElement("span"); s.style.setProperty("--c", col(k)); s.innerHTML = `<i></i>${t.types[k]}`; return s;
   }));
   const dl = document.createElement("span"); dl.className = "dash"; dl.innerHTML = `<i></i>${t.legendReview}`; $("legend").appendChild(dl);
+  if (live && sample) {
+    const back = Object.assign(document.createElement("button"), { type: "button", className: "linkish", textContent: t.backToSample });
+    back.style.marginLeft = "auto";
+    back.addEventListener("click", showSample);
+    $("legend").appendChild(back);
+  }
 
   $("revn").textContent = revs.length ? `${revs.length} / ${j.white_cell_count}` : "0";
+  $("rlist").classList.toggle("dense", revs.length > 2);
   $("rlist").replaceChildren(...(revs.length ? revs.map((idx, n) => {
     const c = j.white_cells[idx], d = document.createElement("div");
     d.className = "item"; d.dataset.idx = idx; d.style.setProperty("--c", col(c.type));
     const cv = document.createElement("canvas"); cv.width = cv.height = 152;
     d.appendChild(cv);
     const info = document.createElement("div");
-    info.innerHTML = `<div><span class="no">${n + 1}</span><span class="ty">${t.types[c.type]}</span></div>
-      <div class="sub">${(c.confidence * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".")} % ${t.conf}</div>
-      <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${REVIEW_CUTOFF * 100}%"></u></div>`;
+    info.innerHTML = `<div><span class="no">${n + 1}</span><span class="ty">${cap(t.types[c.type])}</span></div>
+      <div class="sub">${num(c.confidence * 100)} % ${t.conf}</div>
+      <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${cutoff * 100}%"></u></div>`;
     d.appendChild(info);
     d.addEventListener("mouseenter", () => highlight(idx, true));
     d.addEventListener("mouseleave", () => highlight(idx, false));
     drawCrop(cv, c.box);
     return d;
   }) : [Object.assign(document.createElement("p"), { className: "empty", textContent: t.revnone })]));
-  $("revhint").textContent = t.revhint(Math.round(REVIEW_CUTOFF * 100));
+  $("revhint").textContent = t.revhint(num(cutoff * 100, 0));
 
-  $("agentbody").innerHTML = t.agentBody(j).map(([h, b]) => `<div><h3>${h}</h3>${b}</div>`).join("");
+  $("agentbody").innerHTML = t.agentBody(sample || j).map(([h, b]) => `<div><h3>${h}</h3>${b}</div>`).join("");
 }
 
 function drawCrop(cv, box) {
@@ -397,18 +551,115 @@ function drawCrop(cv, box) {
 function showTip(ev, c) {
   const tip = $("tip"), r = $("stage").getBoundingClientRect(), t = T[lang];
   tip.style.setProperty("--c", col(c.type));
-  tip.innerHTML = `<b>${t.types[c.type]}</b> · ${(c.confidence * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".")} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
+  tip.innerHTML = `<b>${cap(t.types[c.type])}</b> · ${num(c.confidence * 100)} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
   tip.hidden = false;
   let x = ev.clientX - r.left, y = ev.clientY - r.top;
   tip.style.left = Math.min(x, r.width - tip.offsetWidth - 20) + "px";
   tip.style.top = Math.min(y, r.height - tip.offsetHeight - 20) + "px";
 }
 
-$("lang").addEventListener("click", () => { lang = lang === "en" ? "fr" : "en"; render(); });
-fetch("sample.json").then((r) => r.json()).then((j) => {
-  data = Array.isArray(j) ? j[0] : j;
-  $("img").src = data.path || "sample.jpg";
+function showError(code, status) {
+  lastError = code ? { code: code.code || code, status: code.status ?? status } : null;
+  const box = $("alert");
+  if (!lastError) { box.hidden = true; box.replaceChildren(); return; }
+  const t = T[lang], e = t.errors[lastError.code];
+  const msg = typeof e === "function" ? e(lastError.status) : e || t.errors.other(lastError.status);
+  box.innerHTML = `<span><b>${t.errTitle}</b> ${msg}</span>`;
+  const act = lastError.code === "unauthorized" ? [t.setKey, openKey] : lastFile && lastError.code !== "bad_type" && lastError.code !== "no_api" ? [t.retry, () => analyse(lastFile)] : null;
+  if (act) {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "btn", textContent: act[0] });
+    b.addEventListener("click", act[1]);
+    box.appendChild(b);
+  }
+  box.hidden = false;
+}
+
+let ticker = null;
+function busy(on) {
+  const t = T[lang];
+  $("drop").classList.toggle("busy", on);
+  $("veil").hidden = !on;
+  clearInterval(ticker);
+  if (!on) return;
+  const started = Date.now();
+  const tick = () => {
+    const s = Math.round((Date.now() - started) / 1000), tt = T[lang];
+    $("vtitle").textContent = s < 2 ? tt.sending : s < 8 ? tt.analysing : tt.waking;
+    $("vtext").textContent = tt.loadText;
+    $("vel").textContent = tt.elapsed(s);
+  };
+  tick();
+  ticker = setInterval(tick, 500);
+}
+
+function openKey() {
+  $("keyin").value = store.get();
+  $("keydlg").showModal();
+  $("keyin").focus();
+}
+
+$("keydlg").addEventListener("close", () => {
+  const v = $("keydlg").returnValue;
+  if (v === "save") store.set($("keyin").value.trim());
+  if (v === "clear") store.set("");
+  if (v === "save" && store.get() && lastError?.code === "unauthorized" && lastFile) { chrome(); analyse(lastFile); return; }
+  chrome();
+});
+
+async function analyse(file) {
+  lastFile = file;
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showError("bad_type");
+  if (file.size > MAX_BYTES) return showError("too_large");
+  if (!API) return showError("no_api");
+  const token = store.get();
+  if (!token) { showError("unauthorized"); return openKey(); }
+  showError(null);
+  busy(true);
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: "POST", body: file, signal: ctrl.signal,
+      headers: { "content-type": file.type, "x-smearlens-token": token }
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body || !Array.isArray(body.white_cells)) return showError({ code: body?.error || "other", status: res.status });
+    const url = URL.createObjectURL(file);
+    await new Promise((ok) => { $("img").onload = ok; $("img").onerror = ok; $("img").src = url; });
+    if (imgUrl) URL.revokeObjectURL(imgUrl);
+    imgUrl = url;
+    data = { ...body, name: file.name };
+    live = true;
+    render();
+  } catch (err) {
+    showError(err.name === "AbortError" ? "timeout" : "network");
+  } finally {
+    clearTimeout(timer);
+    busy(false);
+  }
+}
+
+function showSample() {
+  if (!sample) return;
+  live = false;
+  showError(null);
+  data = sample;
+  $("img").src = "sample.jpg";
   render();
+}
+
+$("pick").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) analyse(f); });
+const viewer = document.querySelector(".viewer");
+["dragenter", "dragover"].forEach((ev) => viewer.addEventListener(ev, (e) => { e.preventDefault(); $("drop").classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => viewer.addEventListener(ev, (e) => { e.preventDefault(); if (ev === "drop" || !viewer.contains(e.relatedTarget)) $("drop").classList.remove("over"); }));
+viewer.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f && !$("drop").classList.contains("busy")) analyse(f); });
+$("keybtn").addEventListener("click", openKey);
+$("lang").addEventListener("click", () => { lang = lang === "en" ? "fr" : "en"; render(); });
+
+chrome();
+fetch("sample.json").then((r) => r.json()).then((j) => {
+  const { round_trip_s, path, ...rest } = Array.isArray(j) ? j[0] : j;
+  sample = { ...rest, name: "sample.jpg" };
+  if (!data) showSample();
 }).catch(() => { document.body.insertAdjacentHTML("afterbegin", "<p style='padding:20px'>Cannot load sample.json. Serve this folder with: python3 -m http.server</p>"); });
 </script>
 </body>

@@ -105,3 +105,5 @@ uv run python scripts/review_slide.py --source BCCD    # one source
 ```
 
 Needs `results/pipeline/cells_glimmer_rbc.json` from `scripts/pipeline_eval.py --typer glimmer`.
+These commands match commit 5cb64b0; the agent now reads the demo backend output instead
+(see [15](15-review-agent-on-backend.md)).

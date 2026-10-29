@@ -1,0 +1,843 @@
+{
+  "model": "meta-models/muse-spark-open-1026",
+  "report": "**Sample adequacy**\n132 white cells across 147 fields (15 fields without white cell) \u2014 enough for differential (\u2265100). 1,341 red cells and 71 platelets detected.\n\n**Differential (indicative adult ranges prevail)**\nOverall pattern is unusual: 6/7 types outside indicative ranges \u2014 check slide quality and field selection before using differential.\n- Basophil 20.5% (27/132) \u2014 above 0\u20132%\n- Eosinophil 15.2% (20/132) \u2014 above 1\u20136%\n- Monocyte 25.0% (33/132) \u2014 above 2\u201310%\n- IG 1.5% (2/132) \u2014 above 0\u20131%\n- Neutrophil 19.7% (26/132) \u2014 below 40\u201375%\n- Lymphocyte 18.2% (24/132) \u2014 below 20\u201345%\n\n**Review list**\n15 cells marked for review (3 with confidence <0.70). Flagged for opening first (9):\n- High priority: IG 84 (0.77) and 42 (0.90) \u2014 rare type + second-opinion disagreement; monocytes 40 (0.58) and 86 (0.65) \u2014 low confidence + disagreement.\n- Normal priority: monocyte 23 (0.43), neutrophils 100 (0.86) and 58 (0.88), lymphocytes 19 (0.92) and 6 (0.94) \u2014 classifier uncertain or disagreement; all need human morphology check. Counts unchanged; disagreements are for attention only.\n\n**Limits**\nSecond-opinion model is generalist (65% on single cells, weak on IG/erythroblasts) vs classifier 97.6% (exp.05); red cells undercounted on crowded fields (exp.14) \u2014 indicative only.\n",
+  "accepted": true,
+  "summary": {
+    "fields": 147,
+    "fields_without_white_cell": 15,
+    "white_cells": 132,
+    "enough_for_differential": true,
+    "counts": {
+      "neutrophil": 26,
+      "monocyte": 33,
+      "basophil": 27,
+      "lymphocyte": 24,
+      "eosinophil": 20,
+      "ig": 2
+    },
+    "differential_percent": {
+      "basophil": 20.5,
+      "eosinophil": 15.2,
+      "erythroblast": 0.0,
+      "ig": 1.5,
+      "lymphocyte": 18.2,
+      "monocyte": 25.0,
+      "neutrophil": 19.7
+    },
+    "outside_reference_ranges": [
+      "basophil",
+      "eosinophil",
+      "ig",
+      "lymphocyte",
+      "monocyte",
+      "neutrophil"
+    ],
+    "marked_for_review": 15,
+    "marked_for_review_by_type": {
+      "neutrophil": 3,
+      "lymphocyte": 3,
+      "monocyte": 6,
+      "ig": 2,
+      "basophil": 1
+    },
+    "below_confidence_0.7": 3,
+    "red_cells": 1341,
+    "platelets": 71,
+    "second_opinion_budget": 12,
+    "known_limits": [
+      "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
+      "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
+      "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+    ]
+  },
+  "flags": [
+    {
+      "cell_id": 84,
+      "field": "6bc4d558f88451fe9c83e6e61283d522.png",
+      "box": [
+        118.5,
+        122.4,
+        243.7,
+        244.3
+      ],
+      "type": "ig",
+      "confidence": 0.7686,
+      "priority": "high",
+      "reason": "rare type ig (conf 0.77) - second opinion differs, needs human check"
+    },
+    {
+      "cell_id": 42,
+      "field": "f414782e3a225f738cf39067da1f60ed.png",
+      "box": [
+        110.9,
+        113.7,
+        249.8,
+        249.5
+      ],
+      "type": "ig",
+      "confidence": 0.896,
+      "priority": "high",
+      "reason": "rare type ig (conf 0.90) - second opinion differs, needs human check"
+    },
+    {
+      "cell_id": 40,
+      "field": "e00d89fd5c8b5d869f50938e1789324e.png",
+      "box": [
+        98.1,
+        106.6,
+        263.1,
+        292.8
+      ],
+      "type": "monocyte",
+      "confidence": 0.581,
+      "priority": "high",
+      "reason": "low-confidence monocyte (0.58) with second-opinion disagreement, needs human check"
+    },
+    {
+      "cell_id": 86,
+      "field": "6f15b520160d516297b86d7710a3f4fe.png",
+      "box": [
+        97.6,
+        98.1,
+        263.8,
+        259.5
+      ],
+      "type": "monocyte",
+      "confidence": 0.6485,
+      "priority": "high",
+      "reason": "low-confidence monocyte (0.65) with second-opinion disagreement, needs human check"
+    },
+    {
+      "cell_id": 23,
+      "field": "9fb5c69771b9542da0396d45ff21c6f7.png",
+      "box": [
+        82.3,
+        87.2,
+        276.8,
+        277.4
+      ],
+      "type": "monocyte",
+      "confidence": 0.4309,
+      "priority": "normal",
+      "reason": "low-confidence monocyte (0.43) marked for review, confirm morphology"
+    },
+    {
+      "cell_id": 100,
+      "field": "974ff330abb75986abf60c462fb8ee03.png",
+      "box": [
+        100.5,
+        100.0,
+        262.3,
+        264.3
+      ],
+      "type": "neutrophil",
+      "confidence": 0.861,
+      "priority": "normal",
+      "reason": "neutrophil (0.86) with second-opinion disagreement, needs human look"
+    },
+    {
+      "cell_id": 58,
+      "field": "21dae53f8bbc5ab9af2fee9d59b750fe.png",
+      "box": [
+        114.2,
+        103.1,
+        245.7,
+        259.4
+      ],
+      "type": "neutrophil",
+      "confidence": 0.883,
+      "priority": "normal",
+      "reason": "neutrophil (0.88) with second-opinion disagreement, needs human look"
+    },
+    {
+      "cell_id": 19,
+      "field": "81803eb0499a5778ba6c3bb36a1e3c8b.png",
+      "box": [
+        122.0,
+        122.4,
+        240.4,
+        240.2
+      ],
+      "type": "lymphocyte",
+      "confidence": 0.9186,
+      "priority": "normal",
+      "reason": "lymphocyte (0.92) with second-opinion disagreement, needs human look"
+    },
+    {
+      "cell_id": 6,
+      "field": "23d158d35ff55562ba7bc6ffaeff006d.png",
+      "box": [
+        117.9,
+        120.6,
+        244.5,
+        244.5
+      ],
+      "type": "lymphocyte",
+      "confidence": 0.9432,
+      "priority": "normal",
+      "reason": "lymphocyte (0.94) with second-opinion disagreement, needs human look"
+    }
+  ],
+  "second_opinions": [
+    {
+      "cell_id": 84,
+      "field": "6bc4d558f88451fe9c83e6e61283d522.png",
+      "box": [
+        118.5,
+        122.4,
+        243.7,
+        244.3
+      ],
+      "classifier": "ig",
+      "confidence": 0.7686,
+      "second_opinion": "erythroblast",
+      "agrees": false,
+      "reasoning": "The central cell shows a round, hyperchromatic condensed nucleus with coarse chromatin and a narrow intensely basophilic cytoplasmic rim without granules or segmentation, most consistent with a basophilic erythroblast rather than a mature lymphocyte.\nLABEL: erythroblast"
+    },
+    {
+      "cell_id": 42,
+      "field": "f414782e3a225f738cf39067da1f60ed.png",
+      "box": [
+        110.9,
+        113.7,
+        249.8,
+        249.5
+      ],
+      "classifier": "ig",
+      "confidence": 0.896,
+      "second_opinion": "neutrophil",
+      "agrees": false,
+      "reasoning": "The central cell shows a segmented/bilobed dark nucleus with condensed chromatin and pale cytoplasm with fine neutrophilic granules surrounded by mature erythrocytes.\nLABEL: neutrophil"
+    },
+    {
+      "cell_id": 23,
+      "field": "9fb5c69771b9542da0396d45ff21c6f7.png",
+      "box": [
+        82.3,
+        87.2,
+        276.8,
+        277.4
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.4309,
+      "second_opinion": "monocyte",
+      "agrees": true,
+      "reasoning": "Large cell with abundant blue-gray vacuolated cytoplasm and an oval slightly indented nucleus lacking specific granules is characteristic of a monocyte.\nLABEL: monocyte"
+    },
+    {
+      "cell_id": 40,
+      "field": "e00d89fd5c8b5d869f50938e1789324e.png",
+      "box": [
+        98.1,
+        106.6,
+        263.1,
+        292.8
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.581,
+      "second_opinion": "lymphocyte",
+      "agrees": false,
+      "reasoning": "Central nucleated cell shows high N:C ratio with a dense dark chromatin mass and scant pale basophilic non-granular cytoplasm without segmentation, consistent with a lymphocyte.\nLABEL: lymphocyte"
+    },
+    {
+      "cell_id": 86,
+      "field": "6f15b520160d516297b86d7710a3f4fe.png",
+      "box": [
+        97.6,
+        98.1,
+        263.8,
+        259.5
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.6485,
+      "second_opinion": "platelet",
+      "agrees": false,
+      "reasoning": "The central object shows an irregular aggregate of basophilic granular cytoplasm without a well-defined WBC nuclear pattern, most consistent with a platelet clump overlying debris.\n\nLABEL: platelet"
+    },
+    {
+      "cell_id": 100,
+      "field": "974ff330abb75986abf60c462fb8ee03.png",
+      "box": [
+        100.5,
+        100.0,
+        262.3,
+        264.3
+      ],
+      "classifier": "neutrophil",
+      "confidence": 0.861,
+      "second_opinion": "monocyte",
+      "agrees": false,
+      "reasoning": "Large cell with an indented bilobed nucleus showing moderately condensed chromatin and abundant gray-blue cytoplasm lacking large specific granules is consistent with a monocyte.\nLABEL: monocyte"
+    },
+    {
+      "cell_id": 58,
+      "field": "21dae53f8bbc5ab9af2fee9d59b750fe.png",
+      "box": [
+        114.2,
+        103.1,
+        245.7,
+        259.4
+      ],
+      "classifier": "neutrophil",
+      "confidence": 0.883,
+      "second_opinion": "eosinophil",
+      "agrees": false,
+      "reasoning": "The central cell shows a bilobed segmented nucleus with coarse reddish-orange specific granules filling pale cytoplasm consistent with a mature eosinophilic granulocyte.\nLABEL: eosinophil"
+    },
+    {
+      "cell_id": 19,
+      "field": "81803eb0499a5778ba6c3bb36a1e3c8b.png",
+      "box": [
+        122.0,
+        122.4,
+        240.4,
+        240.2
+      ],
+      "classifier": "lymphocyte",
+      "confidence": 0.9186,
+      "second_opinion": "monocyte",
+      "agrees": false,
+      "reasoning": "Large cell with indented kidney-shaped nucleus, lacy chromatin and abundant pale blue-gray cytoplasm without specific granules consistent with monocyte.\nLABEL: monocyte"
+    },
+    {
+      "cell_id": 103,
+      "field": "a076bf9b3cfb5e02bfee0bec86fcef6d.png",
+      "box": [
+        113.8,
+        127.6,
+        247.9,
+        236.5
+      ],
+      "classifier": "lymphocyte",
+      "confidence": 0.9315,
+      "second_opinion": "lymphocyte",
+      "agrees": true,
+      "reasoning": "The central nucleated cell has abundant deeply basophilic vacuolated cytoplasm with an eccentric irregular condensed nucleus without specific neutrophilic/eosinophilic granules. \nLABEL: lymphocyte"
+    },
+    {
+      "cell_id": 22,
+      "field": "9ef5ac081e6d5bb79400670c3458d5cb.png",
+      "box": [
+        106.0,
+        112.3,
+        256.2,
+        252.2
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.9342,
+      "second_opinion": "monocyte",
+      "agrees": true,
+      "reasoning": "The large cell shows abundant basophilic cytoplasm and a folded/bilobed nucleus with open chromatin without neutrophilic/eosinophilic granules or dense lymphoid clumping.\n\nLABEL: monocyte"
+    },
+    {
+      "cell_id": 91,
+      "field": "7ca874e3d01d55f8a1f49e31f038a358.png",
+      "box": [
+        115.6,
+        116.8,
+        245.3,
+        246.7
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.941,
+      "second_opinion": "monocyte",
+      "agrees": true,
+      "reasoning": "Large WBC ~2-3x RBC size with abundant pale blue cytoplasm and a folded/lobated dark nucleus without specific eosinophilic/basophilic granules consistent with monocytic morphology.\nLABEL: monocyte"
+    },
+    {
+      "cell_id": 6,
+      "field": "23d158d35ff55562ba7bc6ffaeff006d.png",
+      "box": [
+        117.9,
+        120.6,
+        244.5,
+        244.5
+      ],
+      "classifier": "lymphocyte",
+      "confidence": 0.9432,
+      "second_opinion": "erythroblast",
+      "agrees": false,
+      "reasoning": "The central cell shows a hyperchromatic round pyknotic nucleus with coarsely condensed chromatin and a thin rim of deeply basophilic agranular cytoplasm without neutrophilic/eosinophilic/basophilic granules or segmentation, most consistent with a nucleated erythroid precursor mimicking a small lymphocyte.\n\nLABEL: erythroblast"
+    }
+  ],
+  "steps": [
+    {
+      "tool": "get_slide_summary",
+      "args": {},
+      "result": {
+        "fields": 147,
+        "fields_without_white_cell": 15,
+        "white_cells": 132,
+        "enough_for_differential": true,
+        "counts": {
+          "neutrophil": 26,
+          "monocyte": 33,
+          "basophil": 27,
+          "lymphocyte": 24,
+          "eosinophil": 20,
+          "ig": 2
+        },
+        "differential_percent": {
+          "basophil": 20.5,
+          "eosinophil": 15.2,
+          "erythroblast": 0.0,
+          "ig": 1.5,
+          "lymphocyte": 18.2,
+          "monocyte": 25.0,
+          "neutrophil": 19.7
+        },
+        "outside_reference_ranges": [
+          "basophil",
+          "eosinophil",
+          "ig",
+          "lymphocyte",
+          "monocyte",
+          "neutrophil"
+        ],
+        "marked_for_review": 15,
+        "marked_for_review_by_type": {
+          "neutrophil": 3,
+          "lymphocyte": 3,
+          "monocyte": 6,
+          "ig": 2,
+          "basophil": 1
+        },
+        "below_confidence_0.7": 3,
+        "red_cells": 1341,
+        "platelets": 71,
+        "second_opinion_budget": 12,
+        "known_limits": [
+          "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
+          "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
+          "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+        ]
+      }
+    },
+    {
+      "tool": "get_reference_ranges",
+      "args": {},
+      "result": {
+        "unit": "percent of white cells",
+        "note": "indicative adult ranges; the lab's own ranges prevail",
+        "ranges": {
+          "neutrophil": [
+            40,
+            75
+          ],
+          "lymphocyte": [
+            20,
+            45
+          ],
+          "monocyte": [
+            2,
+            10
+          ],
+          "eosinophil": [
+            1,
+            6
+          ],
+          "basophil": [
+            0,
+            2
+          ],
+          "ig": [
+            0,
+            1
+          ],
+          "erythroblast": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "tool": "list_cells",
+      "args": {
+        "needs_review_only": true
+      },
+      "result": {
+        "matching": 15,
+        "cells": [
+          {
+            "cell_id": 23,
+            "field": "9fb5c69771b9542da0396d45ff21c6f7.png",
+            "type": "monocyte",
+            "confidence": 0.4309,
+            "needs_review": true
+          },
+          {
+            "cell_id": 40,
+            "field": "e00d89fd5c8b5d869f50938e1789324e.png",
+            "type": "monocyte",
+            "confidence": 0.581,
+            "needs_review": true
+          },
+          {
+            "cell_id": 86,
+            "field": "6f15b520160d516297b86d7710a3f4fe.png",
+            "type": "monocyte",
+            "confidence": 0.6485,
+            "needs_review": true
+          },
+          {
+            "cell_id": 84,
+            "field": "6bc4d558f88451fe9c83e6e61283d522.png",
+            "type": "ig",
+            "confidence": 0.7686,
+            "needs_review": true
+          },
+          {
+            "cell_id": 100,
+            "field": "974ff330abb75986abf60c462fb8ee03.png",
+            "type": "neutrophil",
+            "confidence": 0.861,
+            "needs_review": true
+          },
+          {
+            "cell_id": 58,
+            "field": "21dae53f8bbc5ab9af2fee9d59b750fe.png",
+            "type": "neutrophil",
+            "confidence": 0.883,
+            "needs_review": true
+          },
+          {
+            "cell_id": 42,
+            "field": "f414782e3a225f738cf39067da1f60ed.png",
+            "type": "ig",
+            "confidence": 0.896,
+            "needs_review": true
+          },
+          {
+            "cell_id": 19,
+            "field": "81803eb0499a5778ba6c3bb36a1e3c8b.png",
+            "type": "lymphocyte",
+            "confidence": 0.9186,
+            "needs_review": true
+          },
+          {
+            "cell_id": 103,
+            "field": "a076bf9b3cfb5e02bfee0bec86fcef6d.png",
+            "type": "lymphocyte",
+            "confidence": 0.9315,
+            "needs_review": true
+          },
+          {
+            "cell_id": 22,
+            "field": "9ef5ac081e6d5bb79400670c3458d5cb.png",
+            "type": "monocyte",
+            "confidence": 0.9342,
+            "needs_review": true
+          },
+          {
+            "cell_id": 91,
+            "field": "7ca874e3d01d55f8a1f49e31f038a358.png",
+            "type": "monocyte",
+            "confidence": 0.941,
+            "needs_review": true
+          },
+          {
+            "cell_id": 6,
+            "field": "23d158d35ff55562ba7bc6ffaeff006d.png",
+            "type": "lymphocyte",
+            "confidence": 0.9432,
+            "needs_review": true
+          },
+          {
+            "cell_id": 104,
+            "field": "a4873cc41c535b45ab7bf7f23b48f238.png",
+            "type": "basophil",
+            "confidence": 0.9467,
+            "needs_review": true
+          },
+          {
+            "cell_id": 109,
+            "field": "b42f9a04ecc65816abd5ca28fe72abfe.png",
+            "type": "monocyte",
+            "confidence": 0.9483,
+            "needs_review": true
+          },
+          {
+            "cell_id": 0,
+            "field": "00bb17f0c091599da3f97aeeef49bec6.png",
+            "type": "neutrophil",
+            "confidence": 0.956,
+            "needs_review": true
+          }
+        ]
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 84
+      },
+      "result": {
+        "cell_id": 84,
+        "classifier": "ig",
+        "label": "erythroblast",
+        "reasoning": "The central cell shows a round, hyperchromatic condensed nucleus with coarse chromatin and a narrow intensely basophilic cytoplasmic rim without granules or segmentation, most consistent with a basophilic erythroblast rather than a mature lymphocyte.\nLABEL: erythroblast"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 42
+      },
+      "result": {
+        "cell_id": 42,
+        "classifier": "ig",
+        "label": "neutrophil",
+        "reasoning": "The central cell shows a segmented/bilobed dark nucleus with condensed chromatin and pale cytoplasm with fine neutrophilic granules surrounded by mature erythrocytes.\nLABEL: neutrophil"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 23
+      },
+      "result": {
+        "cell_id": 23,
+        "classifier": "monocyte",
+        "label": "monocyte",
+        "reasoning": "Large cell with abundant blue-gray vacuolated cytoplasm and an oval slightly indented nucleus lacking specific granules is characteristic of a monocyte.\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 40
+      },
+      "result": {
+        "cell_id": 40,
+        "classifier": "monocyte",
+        "label": "lymphocyte",
+        "reasoning": "Central nucleated cell shows high N:C ratio with a dense dark chromatin mass and scant pale basophilic non-granular cytoplasm without segmentation, consistent with a lymphocyte.\nLABEL: lymphocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 86
+      },
+      "result": {
+        "cell_id": 86,
+        "classifier": "monocyte",
+        "label": "platelet",
+        "reasoning": "The central object shows an irregular aggregate of basophilic granular cytoplasm without a well-defined WBC nuclear pattern, most consistent with a platelet clump overlying debris.\n\nLABEL: platelet"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 100
+      },
+      "result": {
+        "cell_id": 100,
+        "classifier": "neutrophil",
+        "label": "monocyte",
+        "reasoning": "Large cell with an indented bilobed nucleus showing moderately condensed chromatin and abundant gray-blue cytoplasm lacking large specific granules is consistent with a monocyte.\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 58
+      },
+      "result": {
+        "cell_id": 58,
+        "classifier": "neutrophil",
+        "label": "eosinophil",
+        "reasoning": "The central cell shows a bilobed segmented nucleus with coarse reddish-orange specific granules filling pale cytoplasm consistent with a mature eosinophilic granulocyte.\nLABEL: eosinophil"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 19
+      },
+      "result": {
+        "cell_id": 19,
+        "classifier": "lymphocyte",
+        "label": "monocyte",
+        "reasoning": "Large cell with indented kidney-shaped nucleus, lacy chromatin and abundant pale blue-gray cytoplasm without specific granules consistent with monocyte.\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 103
+      },
+      "result": {
+        "cell_id": 103,
+        "classifier": "lymphocyte",
+        "label": "lymphocyte",
+        "reasoning": "The central nucleated cell has abundant deeply basophilic vacuolated cytoplasm with an eccentric irregular condensed nucleus without specific neutrophilic/eosinophilic granules. \nLABEL: lymphocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 22
+      },
+      "result": {
+        "cell_id": 22,
+        "classifier": "monocyte",
+        "label": "monocyte",
+        "reasoning": "The large cell shows abundant basophilic cytoplasm and a folded/bilobed nucleus with open chromatin without neutrophilic/eosinophilic granules or dense lymphoid clumping.\n\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 91
+      },
+      "result": {
+        "cell_id": 91,
+        "classifier": "monocyte",
+        "label": "monocyte",
+        "reasoning": "Large WBC ~2-3x RBC size with abundant pale blue cytoplasm and a folded/lobated dark nucleus without specific eosinophilic/basophilic granules consistent with monocytic morphology.\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 6
+      },
+      "result": {
+        "cell_id": 6,
+        "classifier": "lymphocyte",
+        "label": "erythroblast",
+        "reasoning": "The central cell shows a hyperchromatic round pyknotic nucleus with coarsely condensed chromatin and a thin rim of deeply basophilic agranular cytoplasm without neutrophilic/eosinophilic/basophilic granules or segmentation, most consistent with a nucleated erythroid precursor mimicking a small lymphocyte.\n\nLABEL: erythroblast"
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 84,
+        "priority": "high",
+        "reason": "rare type ig (conf 0.77) - second opinion differs, needs human check"
+      },
+      "result": {
+        "flagged": 84,
+        "review_list_size": 1
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 42,
+        "priority": "high",
+        "reason": "rare type ig (conf 0.90) - second opinion differs, needs human check"
+      },
+      "result": {
+        "flagged": 42,
+        "review_list_size": 2
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 40,
+        "priority": "high",
+        "reason": "low-confidence monocyte (0.58) with second-opinion disagreement, needs human check"
+      },
+      "result": {
+        "flagged": 40,
+        "review_list_size": 3
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 86,
+        "priority": "high",
+        "reason": "low-confidence monocyte (0.65) with second-opinion disagreement, needs human check"
+      },
+      "result": {
+        "flagged": 86,
+        "review_list_size": 4
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 23,
+        "priority": "normal",
+        "reason": "low-confidence monocyte (0.43) marked for review, confirm morphology"
+      },
+      "result": {
+        "flagged": 23,
+        "review_list_size": 5
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 100,
+        "priority": "normal",
+        "reason": "neutrophil (0.86) with second-opinion disagreement, needs human look"
+      },
+      "result": {
+        "flagged": 100,
+        "review_list_size": 6
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 58,
+        "priority": "normal",
+        "reason": "neutrophil (0.88) with second-opinion disagreement, needs human look"
+      },
+      "result": {
+        "flagged": 58,
+        "review_list_size": 7
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 19,
+        "priority": "normal",
+        "reason": "lymphocyte (0.92) with second-opinion disagreement, needs human look"
+      },
+      "result": {
+        "flagged": 19,
+        "review_list_size": 8
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 6,
+        "priority": "normal",
+        "reason": "lymphocyte (0.94) with second-opinion disagreement, needs human look"
+      },
+      "result": {
+        "flagged": 6,
+        "review_list_size": 9
+      }
+    },
+    {
+      "tool": "submit_report",
+      "args": {
+        "report": "**Sample adequacy**\n132 white cells across 147 fields (15 fields without white cell) \u2014 enough for differential (\u2265100). 1,341 red cells and 71 platelets detected.\n\n**Differential (indicative adult ranges prevail)**\nOverall pattern is unusual: 6/7 types outside indicative ranges \u2014 check slide quality and field selection before using differential.\n- Basophil 20.5% (27/132) \u2014 above 0\u20132%\n- Eosinophil 15.2% (20/132) \u2014 above 1\u20136%\n- Monocyte 25.0% (33/132) \u2014 above 2\u201310%\n- IG 1.5% (2/132) \u2014 above 0\u20131%\n- Neutrophil 19.7% (26/132) \u2014 below 40\u201375%\n- Lymphocyte 18.2% (24/132) \u2014 below 20\u201345%\n\n**Review list**\n15 cells marked for review (3 with confidence <0.70). Flagged for opening first (9):\n- High priority: IG 84 (0.77) and 42 (0.90) \u2014 rare type + second-opinion disagreement; monocytes 40 (0.58) and 86 (0.65) \u2014 low confidence + disagreement.\n- Normal priority: monocyte 23 (0.43), neutrophils 100 (0.86) and 58 (0.88), lymphocytes 19 (0.92) and 6 (0.94) \u2014 classifier uncertain or disagreement; all need human morphology check. Counts unchanged; disagreements are for attention only.\n\n**Limits**\nSecond-opinion model is generalist (65% on single cells, weak on IG/erythroblasts) vs classifier 97.6% (exp.05); red cells undercounted on crowded fields (exp.14) \u2014 indicative only.\n"
+      },
+      "result": {
+        "accepted": true
+      }
+    }
+  ],
+  "tokens": {
+    "agent_prompt": 16644,
+    "agent_completion": 6177,
+    "agent": 22821,
+    "second_opinions": 21949,
+    "total": 44770
+  },
+  "llm_calls": 5,
+  "seconds": 122.0,
+  "rejected_reports": 0,
+  "rejected_flags": 0
+}

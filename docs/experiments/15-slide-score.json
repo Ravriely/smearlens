@@ -1,0 +1,104 @@
+{
+  "test": {
+    "fields": 50,
+    "white_cells_truth": 55,
+    "white_cells_found": 47,
+    "found_on_a_truth_box": 47,
+    "labelled_cells": 50,
+    "labelled_cells_missed": 3,
+    "type_accuracy": 0.9574,
+    "wrong_type": 2,
+    "wrong_type_marked_for_review": 2,
+    "labelled_marked_for_review": 7,
+    "differential_predicted": {
+      "basophil": 25.5,
+      "eosinophil": 19.1,
+      "erythroblast": 0.0,
+      "ig": 2.1,
+      "lymphocyte": 17.0,
+      "monocyte": 21.3,
+      "neutrophil": 14.9
+    },
+    "differential_truth": {
+      "basophil": 24.0,
+      "eosinophil": 20.0,
+      "erythroblast": 0.0,
+      "ig": 0.0,
+      "lymphocyte": 16.0,
+      "monocyte": 24.0,
+      "neutrophil": 16.0
+    },
+    "count_error_per_field": {
+      "red_cells": 4.42,
+      "platelets": 0.16
+    }
+  },
+  "val": {
+    "fields": 97,
+    "white_cells_truth": 101,
+    "white_cells_found": 85,
+    "found_on_a_truth_box": 85,
+    "labelled_cells": 97,
+    "labelled_cells_missed": 12,
+    "type_accuracy": 0.9647,
+    "wrong_type": 3,
+    "wrong_type_marked_for_review": 2,
+    "labelled_marked_for_review": 8,
+    "differential_predicted": {
+      "basophil": 17.6,
+      "eosinophil": 12.9,
+      "erythroblast": 0.0,
+      "ig": 1.2,
+      "lymphocyte": 18.8,
+      "monocyte": 27.1,
+      "neutrophil": 22.4
+    },
+    "differential_truth": {
+      "basophil": 17.5,
+      "eosinophil": 16.5,
+      "erythroblast": 0.0,
+      "ig": 0.0,
+      "lymphocyte": 19.6,
+      "monocyte": 24.7,
+      "neutrophil": 21.6
+    },
+    "count_error_per_field": {
+      "red_cells": 4.87,
+      "platelets": 0.21
+    }
+  },
+  "all": {
+    "fields": 147,
+    "white_cells_truth": 156,
+    "white_cells_found": 132,
+    "found_on_a_truth_box": 132,
+    "labelled_cells": 147,
+    "labelled_cells_missed": 15,
+    "type_accuracy": 0.9621,
+    "wrong_type": 5,
+    "wrong_type_marked_for_review": 4,
+    "labelled_marked_for_review": 15,
+    "differential_predicted": {
+      "basophil": 20.5,
+      "eosinophil": 15.2,
+      "erythroblast": 0.0,
+      "ig": 1.5,
+      "lymphocyte": 18.2,
+      "monocyte": 25.0,
+      "neutrophil": 19.7
+    },
+    "differential_truth": {
+      "basophil": 19.7,
+      "eosinophil": 17.7,
+      "erythroblast": 0.0,
+      "ig": 0.0,
+      "lymphocyte": 18.4,
+      "monocyte": 24.5,
+      "neutrophil": 19.7
+    },
+    "count_error_per_field": {
+      "red_cells": 4.71,
+      "platelets": 0.19
+    }
+  }
+}

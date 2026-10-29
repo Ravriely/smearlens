@@ -1,0 +1,380 @@
+{
+  "filter": {
+    "rbc_min_score": 0.3,
+    "rbc_size": [
+      0.85,
+      1.6
+    ],
+    "platelet_size": [
+      0.22,
+      0.6
+    ]
+  },
+  "val_grid_best": {
+    "rbc": [
+      {
+        "mae": 3.747,
+        "min_score": 0.3,
+        "size": [
+          0.85,
+          1.6
+        ]
+      },
+      {
+        "mae": 3.753,
+        "min_score": 0.3,
+        "size": [
+          0.85,
+          1.4
+        ]
+      },
+      {
+        "mae": 3.805,
+        "min_score": 0.3,
+        "size": [
+          0.85,
+          2.0
+        ]
+      },
+      {
+        "mae": 3.825,
+        "min_score": 0.3,
+        "size": [
+          0.85,
+          99
+        ]
+      },
+      {
+        "mae": 4.013,
+        "min_score": 0.3,
+        "size": [
+          0.8,
+          1.6
+        ]
+      },
+      {
+        "mae": 4.026,
+        "min_score": 0.3,
+        "size": [
+          0.8,
+          1.4
+        ]
+      },
+      {
+        "mae": 4.032,
+        "min_score": 0.3,
+        "size": [
+          0.9,
+          99
+        ]
+      },
+      {
+        "mae": 4.039,
+        "min_score": 0.3,
+        "size": [
+          0.9,
+          1.6
+        ]
+      }
+    ],
+    "platelet": [
+      {
+        "mae": 0.253,
+        "size": [
+          0.22,
+          0.6
+        ]
+      },
+      {
+        "mae": 0.253,
+        "size": [
+          0.22,
+          99
+        ]
+      },
+      {
+        "mae": 0.266,
+        "size": [
+          0.22,
+          0.4
+        ]
+      },
+      {
+        "mae": 0.299,
+        "size": [
+          0.2,
+          0.4
+        ]
+      },
+      {
+        "mae": 0.299,
+        "size": [
+          0.2,
+          0.6
+        ]
+      },
+      {
+        "mae": 0.299,
+        "size": [
+          0.2,
+          99
+        ]
+      },
+      {
+        "mae": 0.305,
+        "size": [
+          0.18,
+          0.4
+        ]
+      },
+      {
+        "mae": 0.305,
+        "size": [
+          0.18,
+          0.6
+        ]
+      }
+    ]
+  },
+  "val": {
+    "before": {
+      "all": {
+        "WBC": {
+          "mae": 0.32,
+          "bias": -0.14,
+          "truth_mean": 1.0
+        },
+        "RBC": {
+          "mae": 7.31,
+          "bias": -2.02,
+          "truth_mean": 15.4
+        },
+        "Platelet": {
+          "mae": 1.32,
+          "bias": 1.1,
+          "truth_mean": 0.7
+        }
+      },
+      "images": 154,
+      "PBC": {
+        "RBC": {
+          "mae": 8.31,
+          "bias": -4.93,
+          "truth_mean": 12.7
+        },
+        "Platelet": {
+          "mae": 1.0,
+          "bias": 0.79,
+          "truth_mean": 0.6
+        },
+        "images": 97
+      },
+      "BCCD": {
+        "RBC": {
+          "mae": 5.71,
+          "bias": 2.0,
+          "truth_mean": 21.0
+        },
+        "Platelet": {
+          "mae": 2.59,
+          "bias": 2.24,
+          "truth_mean": 1.1
+        },
+        "images": 41
+      },
+      "BCDD": {
+        "RBC": {
+          "mae": 5.31,
+          "bias": 5.31,
+          "truth_mean": 17.3
+        },
+        "Platelet": {
+          "mae": 0.0,
+          "bias": 0.0,
+          "truth_mean": 0.0
+        },
+        "images": 16
+      }
+    },
+    "after": {
+      "all": {
+        "WBC": {
+          "mae": 0.32,
+          "bias": -0.14,
+          "truth_mean": 1.0
+        },
+        "RBC": {
+          "mae": 3.75,
+          "bias": -2.38,
+          "truth_mean": 15.4
+        },
+        "Platelet": {
+          "mae": 0.25,
+          "bias": -0.07,
+          "truth_mean": 0.7
+        }
+      },
+      "images": 154,
+      "PBC": {
+        "RBC": {
+          "mae": 4.87,
+          "bias": -3.84,
+          "truth_mean": 12.7
+        },
+        "Platelet": {
+          "mae": 0.21,
+          "bias": -0.12,
+          "truth_mean": 0.6
+        },
+        "images": 97
+      },
+      "BCCD": {
+        "RBC": {
+          "mae": 2.12,
+          "bias": -0.02,
+          "truth_mean": 21.0
+        },
+        "Platelet": {
+          "mae": 0.46,
+          "bias": 0.02,
+          "truth_mean": 1.1
+        },
+        "images": 41
+      },
+      "BCDD": {
+        "RBC": {
+          "mae": 1.12,
+          "bias": 0.38,
+          "truth_mean": 17.3
+        },
+        "Platelet": {
+          "mae": 0.0,
+          "bias": 0.0,
+          "truth_mean": 0.0
+        },
+        "images": 16
+      }
+    }
+  },
+  "test": {
+    "before": {
+      "all": {
+        "WBC": {
+          "mae": 0.34,
+          "bias": -0.17,
+          "truth_mean": 1.1
+        },
+        "RBC": {
+          "mae": 6.51,
+          "bias": 0.66,
+          "truth_mean": 15.1
+        },
+        "Platelet": {
+          "mae": 1.33,
+          "bias": 1.16,
+          "truth_mean": 0.6
+        }
+      },
+      "images": 82,
+      "PBC": {
+        "RBC": {
+          "mae": 6.94,
+          "bias": -2.5,
+          "truth_mean": 12.7
+        },
+        "Platelet": {
+          "mae": 1.58,
+          "bias": 1.38,
+          "truth_mean": 0.6
+        },
+        "images": 50
+      },
+      "BCCD": {
+        "RBC": {
+          "mae": 5.11,
+          "bias": 4.89,
+          "truth_mean": 20.9
+        },
+        "Platelet": {
+          "mae": 1.67,
+          "bias": 1.44,
+          "truth_mean": 1.1
+        },
+        "images": 18
+      },
+      "BCDD": {
+        "RBC": {
+          "mae": 6.79,
+          "bias": 6.5,
+          "truth_mean": 16.4
+        },
+        "Platelet": {
+          "mae": 0.0,
+          "bias": 0.0,
+          "truth_mean": 0.0
+        },
+        "images": 14
+      }
+    },
+    "after": {
+      "all": {
+        "WBC": {
+          "mae": 0.34,
+          "bias": -0.17,
+          "truth_mean": 1.1
+        },
+        "RBC": {
+          "mae": 3.41,
+          "bias": -1.49,
+          "truth_mean": 15.1
+        },
+        "Platelet": {
+          "mae": 0.21,
+          "bias": -0.04,
+          "truth_mean": 0.6
+        }
+      },
+      "images": 82,
+      "PBC": {
+        "RBC": {
+          "mae": 4.42,
+          "bias": -3.06,
+          "truth_mean": 12.7
+        },
+        "Platelet": {
+          "mae": 0.16,
+          "bias": -0.16,
+          "truth_mean": 0.6
+        },
+        "images": 50
+      },
+      "BCCD": {
+        "RBC": {
+          "mae": 2.0,
+          "bias": 0.89,
+          "truth_mean": 20.9
+        },
+        "Platelet": {
+          "mae": 0.5,
+          "bias": 0.28,
+          "truth_mean": 1.1
+        },
+        "images": 18
+      },
+      "BCDD": {
+        "RBC": {
+          "mae": 1.64,
+          "bias": 1.07,
+          "truth_mean": 16.4
+        },
+        "Platelet": {
+          "mae": 0.0,
+          "bias": 0.0,
+          "truth_mean": 0.0
+        },
+        "images": 14
+      }
+    }
+  },
+  "test_wbc_counts_identical": true
+}

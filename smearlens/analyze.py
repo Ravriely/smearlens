@@ -17,6 +17,9 @@ SAM_THRESHOLD = 0.3
 WBC_MIN = 0.3
 RBC_MIN = 0.5
 UPSCALE_BELOW = 512
+RBC_COUNT_MIN = 0.3
+RBC_SIZE = (0.85, 1.6)
+PLATELET_SIZE = (0.22, 0.6)
 
 
 def candidates_for(detections: list[dict], wbc_min: float, rbc_min: float) -> dict[str, list[Candidate]]:
@@ -75,6 +78,25 @@ def count_outside(detections: list[dict], label: str, min_score: float, cells: l
     return sum(not any(contains_center(w, c.box) for w in cells) for c in dedupe(boxes))
 
 
+def relative_size(box: Box, rbc_px: float) -> float:
+    return max(box.x1 - box.x0, box.y1 - box.y0) / rbc_px
+
+
+def count_cells(
+    detections: list[dict], label: str, min_score: float, cells: list[Box], rbc_px: float, size: tuple[float, float]
+) -> int:
+    boxes = [
+        Candidate(Box(label, *b), s)
+        for d in detections
+        if d["label"] == label
+        for b, s in zip(d["boxes"], d["scores"])
+        if s >= min_score and size[0] <= relative_size(Box(label, *b), rbc_px) <= size[1]
+    ]
+    return sum(
+        not any(contains_center(w, c.box) or contains_center(c.box, w) for w in cells) for c in dedupe(boxes)
+    )
+
+
 def white_cells(cands: list[Candidate], features: np.ndarray, rbc_px: float, probes: dict) -> list[dict]:
     detection = probes["detection"]
     p_wbc = wbc_probability(features, detection)
@@ -103,8 +125,8 @@ def report(size: tuple[int, int], detections: list[dict], rbc_px: float, cells: 
         "white_cells": cells,
         "white_cell_count": len(cells),
         "needs_review_count": sum(c["needs_review"] for c in cells),
-        "red_cell_count": count_outside(detections, "RBC", RBC_MIN, boxes),
-        "platelet_count": count_outside(detections, "Platelet", SAM_THRESHOLD, boxes),
+        "red_cell_count": count_cells(detections, "RBC", RBC_COUNT_MIN, boxes, rbc_px, RBC_SIZE),
+        "platelet_count": count_cells(detections, "Platelet", SAM_THRESHOLD, boxes, rbc_px, PLATELET_SIZE),
         "differential_percent": {k: round(100 * v, 1) for k, v in formula.items() if v},
         "timing_s": {k: round(v, 3) for k, v in timing.items()},
     }

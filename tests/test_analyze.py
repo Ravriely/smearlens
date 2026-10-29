@@ -2,7 +2,17 @@ import json
 
 import numpy as np
 
-from smearlens.analyze import candidates_for, count_outside, load_probes, merge_kept, rbc_sizes, report, white_cells
+from smearlens.analyze import (
+    candidates_for,
+    count_cells,
+    count_outside,
+    load_probes,
+    merge_kept,
+    rbc_sizes,
+    relative_size,
+    report,
+    white_cells,
+)
 from smearlens.datasets import Box
 from smearlens.pipeline import Candidate
 
@@ -52,8 +62,9 @@ def test_white_cells_apply_both_probes():
 
 def test_report_counts_cells_outside_white_cells():
     cells = [{"box": [0, 0, 40, 40], "p_wbc": 1.0, "type": "neutrophil", "confidence": 0.9, "needs_review": True}]
-    out = report((320, 240), detections(), 30.0, cells, {"total": 1.23456})
-    assert out["red_cell_count"] == 1
+    dets = detections() + [{"image": "f", "label": "Platelet", "boxes": [[300, 0, 308, 8]], "scores": [0.5]}]
+    out = report((320, 240), dets, 30.0, cells, {"total": 1.23456})
+    assert out["red_cell_count"] == 2
     assert out["platelet_count"] == 1
     assert out["differential_percent"] == {"neutrophil": 100.0}
     assert out["needs_review_count"] == 1
@@ -70,3 +81,33 @@ def test_load_probes(tmp_path):
     loaded = load_probes(tmp_path / "d.npz", tmp_path / "t.npz", tmp_path / "c.json", tmp_path / "l.json")
     assert loaded["temperature"] == 0.8 and loaded["review_cutoff"] == 0.96
     assert float(loaded["detection"]["threshold"]) == 0.5
+
+
+def test_relative_size_uses_longest_side():
+    assert relative_size(Box("RBC", 0, 0, 30, 15), 20.0) == 1.5
+
+
+def test_count_cells_rejects_boxes_outside_size_range():
+    dets = [{"image": "f", "label": "Platelet", "scores": [0.9, 0.9, 0.9, 0.9],
+             "boxes": [[0, 0, 2, 2], [10, 0, 18, 8], [30, 0, 48, 18], [60, 0, 90, 30]]}]
+    assert count_cells(dets, "Platelet", 0.3, [], 30.0, (0.22, 0.6)) == 2
+    assert count_outside(dets, "Platelet", 0.3, []) == 4
+
+
+def test_count_cells_drops_red_cells_on_white_cells_and_nested_boxes():
+    white = [Box("WBC", 0, 0, 40, 40)]
+    dets = [{"image": "f", "label": "RBC", "scores": [0.9, 0.8, 0.7, 0.6],
+             "boxes": [[5, 5, 35, 35], [100, 0, 130, 30], [105, 5, 133, 33], [200, 0, 230, 30]]}]
+    assert count_cells(dets, "RBC", 0.3, white, 30.0, (0.85, 1.6)) == 2
+
+
+def test_count_cells_drops_red_cell_box_that_covers_a_white_cell():
+    white = [Box("WBC", 20, 20, 30, 30)]
+    dets = [{"image": "f", "label": "RBC", "scores": [0.9], "boxes": [[0, 0, 30, 30]]}]
+    assert count_cells(dets, "RBC", 0.3, white, 30.0, (0.85, 1.6)) == 0
+    assert count_outside(dets, "RBC", 0.3, white) == 1
+
+
+def test_count_cells_uses_score_floor():
+    dets = [{"image": "f", "label": "RBC", "scores": [0.9, 0.2], "boxes": [[0, 0, 30, 30], [100, 0, 130, 30]]}]
+    assert count_cells(dets, "RBC", 0.3, [], 30.0, (0.85, 1.6)) == 1

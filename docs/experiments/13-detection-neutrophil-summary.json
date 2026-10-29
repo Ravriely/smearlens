@@ -1,0 +1,51 @@
+{
+  "candidates": {
+    "train": 9348,
+    "val": 2713,
+    "test": 1529
+  },
+  "positives": {
+    "train": 800,
+    "val": 205,
+    "test": 135
+  },
+  "weight_decay": 0.0001,
+  "threshold": 0.9999,
+  "val": {
+    "images": 154,
+    "precision": 0.875,
+    "recall": 0.753,
+    "f1": 0.81,
+    "count_mean_abs_error": 0.32
+  },
+  "test": {
+    "images": 82,
+    "precision": 0.89,
+    "recall": 0.747,
+    "f1": 0.812,
+    "count_mean_abs_error": 0.34
+  },
+  "test_by_source": {
+    "PBC": {
+      "images": 50,
+      "precision": 1.0,
+      "recall": 0.836,
+      "f1": 0.911,
+      "count_mean_abs_error": 0.18
+    },
+    "BCCD": {
+      "images": 18,
+      "precision": 0.722,
+      "recall": 0.722,
+      "f1": 0.722,
+      "count_mean_abs_error": 0.56
+    },
+    "BCDD": {
+      "images": 14,
+      "precision": 0.667,
+      "recall": 0.429,
+      "f1": 0.522,
+      "count_mean_abs_error": 0.64
+    }
+  }
+}

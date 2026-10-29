@@ -1,0 +1,674 @@
+[
+  {
+    "source": "BCCD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.74,
+    "boxes_per_image": 5.51
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.527,
+    "boxes_per_image": 2.06
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.185,
+    "boxes_per_image": 0.38
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.041,
+    "boxes_per_image": 0.05
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 86.12
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 53.01
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.973,
+    "boxes_per_image": 27.19
+  },
+  {
+    "source": "BCCD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.938,
+    "boxes_per_image": 9.53
+  },
+  {
+    "source": "BCCD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.76,
+    "boxes_per_image": 5.52
+  },
+  {
+    "source": "BCCD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.527,
+    "boxes_per_image": 0.85
+  },
+  {
+    "source": "BCCD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.24,
+    "boxes_per_image": 0.27
+  },
+  {
+    "source": "BCCD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.096,
+    "boxes_per_image": 0.1
+  },
+  {
+    "source": "BCCD",
+    "prompt": "leukocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 0.11,
+    "boxes_per_image": 2.37
+  },
+  {
+    "source": "BCCD",
+    "prompt": "leukocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 0.027,
+    "boxes_per_image": 0.49
+  },
+  {
+    "source": "BCCD",
+    "prompt": "leukocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCCD",
+    "prompt": "leukocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCCD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 125.0
+  },
+  {
+    "source": "BCCD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 77.87
+  },
+  {
+    "source": "BCCD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 52.22
+  },
+  {
+    "source": "BCCD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 36.23
+  },
+  {
+    "source": "BCCD",
+    "prompt": "neutrophil",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 56.7
+  },
+  {
+    "source": "BCCD",
+    "prompt": "neutrophil",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 32.77
+  },
+  {
+    "source": "BCCD",
+    "prompt": "neutrophil",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 7.35
+  },
+  {
+    "source": "BCCD",
+    "prompt": "neutrophil",
+    "cutoff": 0.3,
+    "candidate_recall": 0.945,
+    "boxes_per_image": 4.73
+  },
+  {
+    "source": "BCCD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 167.67
+  },
+  {
+    "source": "BCCD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 105.8
+  },
+  {
+    "source": "BCCD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 58.26
+  },
+  {
+    "source": "BCCD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.3,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 45.67
+  },
+  {
+    "source": "BCCD",
+    "prompt": "white blood cell",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 125.7
+  },
+  {
+    "source": "BCCD",
+    "prompt": "white blood cell",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 70.05
+  },
+  {
+    "source": "BCCD",
+    "prompt": "white blood cell",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 45.9
+  },
+  {
+    "source": "BCCD",
+    "prompt": "white blood cell",
+    "cutoff": 0.3,
+    "candidate_recall": 0.993,
+    "boxes_per_image": 37.14
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.593,
+    "boxes_per_image": 3.36
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.326,
+    "boxes_per_image": 1.3
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.128,
+    "boxes_per_image": 0.17
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.023,
+    "boxes_per_image": 0.02
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.802,
+    "boxes_per_image": 10.43
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.57,
+    "boxes_per_image": 3.14
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.105,
+    "boxes_per_image": 0.33
+  },
+  {
+    "source": "BCDD",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.023,
+    "boxes_per_image": 0.08
+  },
+  {
+    "source": "BCDD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.523,
+    "boxes_per_image": 1.23
+  },
+  {
+    "source": "BCDD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.233,
+    "boxes_per_image": 0.34
+  },
+  {
+    "source": "BCDD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.058,
+    "boxes_per_image": 0.06
+  },
+  {
+    "source": "BCDD",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.035,
+    "boxes_per_image": 0.03
+  },
+  {
+    "source": "BCDD",
+    "prompt": "leukocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCDD",
+    "prompt": "leukocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCDD",
+    "prompt": "leukocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCDD",
+    "prompt": "leukocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "BCDD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 66.74
+  },
+  {
+    "source": "BCDD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 40.47
+  },
+  {
+    "source": "BCDD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 0.988,
+    "boxes_per_image": 17.49
+  },
+  {
+    "source": "BCDD",
+    "prompt": "lymphocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 0.977,
+    "boxes_per_image": 6.95
+  },
+  {
+    "source": "BCDD",
+    "prompt": "neutrophil",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 24.79
+  },
+  {
+    "source": "BCDD",
+    "prompt": "neutrophil",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 8.19
+  },
+  {
+    "source": "BCDD",
+    "prompt": "neutrophil",
+    "cutoff": 0.2,
+    "candidate_recall": 0.988,
+    "boxes_per_image": 4.8
+  },
+  {
+    "source": "BCDD",
+    "prompt": "neutrophil",
+    "cutoff": 0.3,
+    "candidate_recall": 0.919,
+    "boxes_per_image": 3.06
+  },
+  {
+    "source": "BCDD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 147.79
+  },
+  {
+    "source": "BCDD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 82.93
+  },
+  {
+    "source": "BCDD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 44.07
+  },
+  {
+    "source": "BCDD",
+    "prompt": "nucleated cell",
+    "cutoff": 0.3,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 37.35
+  },
+  {
+    "source": "BCDD",
+    "prompt": "white blood cell",
+    "cutoff": 0.05,
+    "candidate_recall": 0.953,
+    "boxes_per_image": 56.7
+  },
+  {
+    "source": "BCDD",
+    "prompt": "white blood cell",
+    "cutoff": 0.1,
+    "candidate_recall": 0.86,
+    "boxes_per_image": 34.17
+  },
+  {
+    "source": "BCDD",
+    "prompt": "white blood cell",
+    "cutoff": 0.2,
+    "candidate_recall": 0.721,
+    "boxes_per_image": 21.47
+  },
+  {
+    "source": "BCDD",
+    "prompt": "white blood cell",
+    "cutoff": 0.3,
+    "candidate_recall": 0.535,
+    "boxes_per_image": 13.63
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.287,
+    "boxes_per_image": 0.68
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.072,
+    "boxes_per_image": 0.17
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.011,
+    "boxes_per_image": 0.02
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a blue nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.002,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 56.2
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 29.18
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.994,
+    "boxes_per_image": 19.74
+  },
+  {
+    "source": "PBC",
+    "prompt": "cell with a large purple nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.983,
+    "boxes_per_image": 12.23
+  },
+  {
+    "source": "PBC",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.05,
+    "candidate_recall": 0.998,
+    "boxes_per_image": 24.01
+  },
+  {
+    "source": "PBC",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.1,
+    "candidate_recall": 0.994,
+    "boxes_per_image": 11.12
+  },
+  {
+    "source": "PBC",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.2,
+    "candidate_recall": 0.941,
+    "boxes_per_image": 1.66
+  },
+  {
+    "source": "PBC",
+    "prompt": "large cell with a dark nucleus",
+    "cutoff": 0.3,
+    "candidate_recall": 0.843,
+    "boxes_per_image": 1.13
+  },
+  {
+    "source": "PBC",
+    "prompt": "leukocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 0.142,
+    "boxes_per_image": 1.33
+  },
+  {
+    "source": "PBC",
+    "prompt": "leukocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 0.025,
+    "boxes_per_image": 0.19
+  },
+  {
+    "source": "PBC",
+    "prompt": "leukocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 0.002,
+    "boxes_per_image": 0.07
+  },
+  {
+    "source": "PBC",
+    "prompt": "leukocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 0.0,
+    "boxes_per_image": 0.0
+  },
+  {
+    "source": "PBC",
+    "prompt": "lymphocyte",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 74.38
+  },
+  {
+    "source": "PBC",
+    "prompt": "lymphocyte",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 33.9
+  },
+  {
+    "source": "PBC",
+    "prompt": "lymphocyte",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 25.21
+  },
+  {
+    "source": "PBC",
+    "prompt": "lymphocyte",
+    "cutoff": 0.3,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 21.46
+  },
+  {
+    "source": "PBC",
+    "prompt": "neutrophil",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 30.35
+  },
+  {
+    "source": "PBC",
+    "prompt": "neutrophil",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 19.83
+  },
+  {
+    "source": "PBC",
+    "prompt": "neutrophil",
+    "cutoff": 0.2,
+    "candidate_recall": 0.989,
+    "boxes_per_image": 4.62
+  },
+  {
+    "source": "PBC",
+    "prompt": "neutrophil",
+    "cutoff": 0.3,
+    "candidate_recall": 0.934,
+    "boxes_per_image": 2.21
+  },
+  {
+    "source": "PBC",
+    "prompt": "nucleated cell",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 127.68
+  },
+  {
+    "source": "PBC",
+    "prompt": "nucleated cell",
+    "cutoff": 0.1,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 64.91
+  },
+  {
+    "source": "PBC",
+    "prompt": "nucleated cell",
+    "cutoff": 0.2,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 30.64
+  },
+  {
+    "source": "PBC",
+    "prompt": "nucleated cell",
+    "cutoff": 0.3,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 24.66
+  },
+  {
+    "source": "PBC",
+    "prompt": "white blood cell",
+    "cutoff": 0.05,
+    "candidate_recall": 1.0,
+    "boxes_per_image": 67.33
+  },
+  {
+    "source": "PBC",
+    "prompt": "white blood cell",
+    "cutoff": 0.1,
+    "candidate_recall": 0.998,
+    "boxes_per_image": 32.73
+  },
+  {
+    "source": "PBC",
+    "prompt": "white blood cell",
+    "cutoff": 0.2,
+    "candidate_recall": 0.938,
+    "boxes_per_image": 23.01
+  },
+  {
+    "source": "PBC",
+    "prompt": "white blood cell",
+    "cutoff": 0.3,
+    "candidate_recall": 0.722,
+    "boxes_per_image": 19.73
+  }
+]

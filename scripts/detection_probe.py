@@ -71,6 +71,7 @@ def main() -> None:
     parser.add_argument("--tag", default="up512")
     parser.add_argument("--wbc-min", type=float, default=0.3)
     parser.add_argument("--rbc-min", type=float, default=0.5)
+    parser.add_argument("--extra-tags", default="", help="comma-separated SAM runs whose WBC boxes are added as candidates")
     parser.add_argument("--out", type=Path, default=Path("runs/detection-probe"))
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -78,6 +79,9 @@ def main() -> None:
     data = {}
     for split in SPLITS:
         detections = json.loads((args.runs / f"detect-{split}-{args.tag}" / "detections.json").read_text())
+        for extra in filter(None, args.extra_tags.split(",")):
+            more = json.loads((args.runs / f"detect-{split}-{extra}" / "detections.json").read_text())
+            detections += [d for d in more if d["label"] == "WBC"]
         candidates = candidates_for(detections, args.wbc_min, args.rbc_min)
         scales = rbc_sizes(detections)
         samples = list(iter_txl_pbc(args.data_dir, split))
@@ -102,7 +106,7 @@ def main() -> None:
     for decay in (1e-4, 1e-3, 1e-2):
         w, b = fit_logistic(norm["train"], data["train"]["y"], decay)
         p = 1 / (1 + np.exp(-np.clip(norm["val"] @ w + b, -30, 30)))
-        for threshold in (0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 0.995, 0.998, 0.999, 0.9995):
+        for threshold in (0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99, 0.995, 0.998, 0.999, 0.9995, 0.9998, 0.9999, 0.99995):
             result = evaluate(data["val"], p, threshold)
             if best is None or result["f1"] > best[0]:
                 best = (result["f1"], decay, float(threshold), w, b)
@@ -113,7 +117,7 @@ def main() -> None:
         "candidates": {s: int(len(data[s]["y"])) for s in SPLITS},
         "positives": {s: int(data[s]["y"].sum()) for s in SPLITS},
         "weight_decay": decay,
-        "threshold": round(threshold, 2),
+        "threshold": round(threshold, 5),
         "val": evaluate(data["val"], probs["val"], threshold),
         "test": evaluate(data["test"], probs["test"], threshold),
         "test_by_source": {

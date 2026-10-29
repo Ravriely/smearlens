@@ -81,7 +81,8 @@ more recall (0.81) and less precision (0.82; BCCD precision 0.59).
   [08](08-stain-augmented-probe.md), `--augment-copies 2`) gives val F1 0.77
   (vs 0.81) and test F1 0.75: BCCD precision falls to 0.42 and BCDD F1 to
   0.48 ([`13-detection-neutrophil-aug-summary.json`](13-detection-neutrophil-aug-summary.json)).
-  Augmented background crops start to look like pale white cells. The
+  A likely reason (not checked): augmented background crops start to look
+  like pale white cells. The
   default stays without augmentation.
 - The sweep measures recall on train and val only; the test split is used
   only for the final table above.

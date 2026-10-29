@@ -67,6 +67,29 @@ uv run modal secret create huggingface HF_TOKEN=...
 uv run modal run scripts/modal_sam3.py --limit 10
 ```
 
+## Demo backend (Modal)
+
+`scripts/modal_app.py` serves the whole analysis (SAM 3, Glimmer, both probes) on one L40S GPU:
+
+```bash
+uv run modal run scripts/modal_app.py --image field.png   # one-off, the app stops after the run
+```
+
+The deployed app scales to zero: the first request after a pause waits for a cold start (about 40 s),
+then a container stays up 15 min after the last request. For filming or the jury, keep one container
+warm, and turn it off right after:
+
+```bash
+uv run python scripts/modal_warm.py on       # one L40S always up
+uv run python scripts/modal_warm.py status
+uv run python scripts/modal_warm.py off      # back to zero; the container stops after 15 min idle
+```
+
+A warm L40S costs about 2 $/h, idle or not (about 50 $ per day if left on). `off` leaves at most
+15 min of idle time (about 0.50 $); `modal container list` then `modal container stop <id>` stops it at
+once. A new `modal deploy` resets the override; `SMEARLENS_WARM=1 modal deploy scripts/modal_app.py`
+deploys with one container warm from the start.
+
 ## Data
 
 SmearLens only uses public datasets with a clear license. See

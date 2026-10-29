@@ -1,6 +1,9 @@
 """SmearLens inference on Modal: SAM 3 candidates, Glimmer features, two linear probes.
 
     modal run scripts/modal_app.py --image field.png [--image other.jpg ...] [--out runs/analyze.json]
+
+The deployed app scales to zero. To keep one container warm, see scripts/modal_warm.py,
+or deploy with SMEARLENS_WARM=1.
 """
 
 import argparse
@@ -51,7 +54,8 @@ app = modal.App("smearlens-app", image=image)
 @app.cls(
     gpu=os.environ.get("SMEARLENS_GPU", "L40S"),
     timeout=600,
-    scaledown_window=120,
+    scaledown_window=15 * 60,
+    min_containers=1 if os.environ.get("SMEARLENS_WARM") == "1" else 0,
     secrets=[modal.Secret.from_name("huggingface")],
     volumes={CACHE: cache},
 )

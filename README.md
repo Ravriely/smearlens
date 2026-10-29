@@ -91,6 +91,44 @@ A warm L40S costs about 2 $/h, idle or not (about 50 $ per day if left on). `off
 once. A new `modal deploy` resets the override; `SMEARLENS_WARM=1 modal deploy scripts/modal_app.py`
 deploys with one container warm from the start.
 
+## Web demo
+
+The deployed app serves the review page and its API from one URL:
+
+**https://ravriely--smearlens-app-web.us-east.modal.run**
+
+The page opens on an offline demo (`web/sample.json`, no GPU). To analyse your own image, click
+**Access token**, paste the token you were given, then drop a JPG, PNG or WebP field of view
+(12 MB and 4096×4096 px at most). The token stays in the browser (localStorage). The agent report
+panel still shows example text from the sample image.
+
+The API is `POST /api/analyze` with the image as the raw body and the token in the
+`x-smearlens-token` header; it returns the JSON of `smearlens/analyze.py:report` plus
+`review_cutoff` and `round_trip_s`:
+
+```bash
+curl -X POST --data-binary @field.jpg -H "content-type: image/jpeg" \
+  -H "x-smearlens-token: $SMEARLENS_WEB_TOKEN" \
+  https://ravriely--smearlens-app-web.us-east.modal.run/api/analyze
+```
+
+Cost guards, since the URL is public:
+
+- A small CPU container checks the token, the size and the pixel count of the image before it
+  calls the GPU class. A refused request (401, 413, 415) never starts a GPU.
+- The token lives in the Modal secret `smearlens-web` (key `SMEARLENS_WEB_TOKEN`), never in the
+  repo. To change it: `modal secret create --force smearlens-web SMEARLENS_WEB_TOKEN=...`, then
+  `modal deploy scripts/modal_app.py`.
+- One GPU container at most (`max_containers=1`), none at rest (`min_containers=0`).
+
+At rest the demo costs nothing. A request after a pause waits for a cold start (about 45 s,
+shown in the page as "Waking up the GPU"), then the L40S stays up 15 min after the last
+request, about 2 $/h while it is up (about 0.50 $ per idle window). For filming or the jury,
+`scripts/modal_warm.py on` keeps it warm and `off` lets it scale to zero again (see above).
+
+To run the page from a local copy, serve `web/` (`python3 -m http.server -d web`); it calls the
+deployed URL, or the one given with `?api=https://...`. Add `?lang=fr` for French.
+
 ## Data
 
 SmearLens only uses public datasets with a clear license. See

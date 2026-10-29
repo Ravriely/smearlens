@@ -1,10 +1,13 @@
 import argparse
+import io
 import json
+import random
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 
+from smearlens.augment import augment
 from smearlens.datasets import Box, iter_txl_pbc
 from smearlens.metrics import MatchResult, center_distance, contains_center, match_centers
 from smearlens.pipeline import Candidate, crop_at_scale, dedupe, rbc_scale
@@ -52,6 +55,12 @@ def embed(keys: list[str], crops: list[bytes], path: Path) -> np.ndarray:
     return np.stack([stored[k] for k in keys]).astype(np.float32)
 
 
+def jpeg(image: Image.Image) -> bytes:
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=92)
+    return buffer.getvalue()
+
+
 def fit_logistic(x: np.ndarray, y: np.ndarray, decay: float, steps: int = 400, lr: float = 0.1) -> tuple[np.ndarray, float]:
     w, b = np.zeros(x.shape[1], dtype=np.float32), 0.0
     pos = y.mean()
@@ -72,6 +81,7 @@ def main() -> None:
     parser.add_argument("--wbc-min", type=float, default=0.3)
     parser.add_argument("--rbc-min", type=float, default=0.5)
     parser.add_argument("--extra-tags", default="", help="comma-separated SAM runs whose WBC boxes are added as candidates")
+    parser.add_argument("--augment-copies", type=int, default=0, help="stain-augmented copies of each train crop")
     parser.add_argument("--out", type=Path, default=Path("runs/detection-probe"))
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -97,6 +107,15 @@ def main() -> None:
                 owners.append(sample.image_path.name)
         print(f"{split}: {len(samples)} images, {len(keys)} candidates, {sum(labels)} on a true white cell", flush=True)
         features = embed(keys, crops, args.out / f"features_{split}.npz")
+        if split == "train" and args.augment_copies:
+            rng = random.Random(0)
+            aug_keys, aug_crops = [], []
+            for i in range(args.augment_copies):
+                for k, c in zip(keys, crops):
+                    aug_keys.append(f"{k}:aug{i}")
+                    aug_crops.append(jpeg(augment(Image.open(io.BytesIO(c)).convert("RGB"), rng)))
+            features = np.concatenate([features, embed(aug_keys, aug_crops, args.out / "features_train_aug.npz")])
+            labels = labels * (1 + args.augment_copies)
         data[split] = {"x": features, "y": np.array(labels, dtype=np.float32), "samples": samples,
                        "candidates": candidates, "owners": owners, "scales": scales}
 

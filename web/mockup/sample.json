@@ -1,0 +1,125 @@
+[
+  {
+    "path": "sample.jpg",
+    "round_trip_s": 21.4,
+    "image": {
+      "width": 1280,
+      "height": 960
+    },
+    "rbc_px": 105.3,
+    "white_cells": [
+      {
+        "box": [
+          67.0,
+          330.0,
+          276.0,
+          477.0
+        ],
+        "p_wbc": 0.99871,
+        "type": "neutrophil",
+        "confidence": 0.9812,
+        "needs_review": false
+      },
+      {
+        "box": [
+          170.0,
+          24.0,
+          357.0,
+          207.0
+        ],
+        "p_wbc": 0.99968,
+        "type": "neutrophil",
+        "confidence": 0.9934,
+        "needs_review": false
+      },
+      {
+        "box": [
+          744.0,
+          375.0,
+          899.0,
+          477.0
+        ],
+        "p_wbc": 0.99412,
+        "type": "lymphocyte",
+        "confidence": 0.9117,
+        "needs_review": true
+      },
+      {
+        "box": [
+          844.0,
+          219.0,
+          1044.0,
+          450.0
+        ],
+        "p_wbc": 0.99954,
+        "type": "neutrophil",
+        "confidence": 0.9876,
+        "needs_review": false
+      },
+      {
+        "box": [
+          9.0,
+          605.0,
+          226.0,
+          848.0
+        ],
+        "p_wbc": 0.99937,
+        "type": "neutrophil",
+        "confidence": 0.9781,
+        "needs_review": false
+      },
+      {
+        "box": [
+          179.0,
+          765.0,
+          397.0,
+          951.0
+        ],
+        "p_wbc": 0.99203,
+        "type": "neutrophil",
+        "confidence": 0.8742,
+        "needs_review": true
+      },
+      {
+        "box": [
+          757.0,
+          517.0,
+          966.0,
+          715.0
+        ],
+        "p_wbc": 0.99788,
+        "type": "monocyte",
+        "confidence": 0.9431,
+        "needs_review": true
+      },
+      {
+        "box": [
+          950.0,
+          576.0,
+          1109.0,
+          724.0
+        ],
+        "p_wbc": 0.99961,
+        "type": "lymphocyte",
+        "confidence": 0.9927,
+        "needs_review": false
+      }
+    ],
+    "white_cell_count": 8,
+    "needs_review_count": 3,
+    "red_cell_count": 76,
+    "platelet_count": 3,
+    "differential_percent": {
+      "lymphocyte": 25.0,
+      "monocyte": 12.5,
+      "neutrophil": 62.5
+    },
+    "timing_s": {
+      "sam": 4.812,
+      "glimmer_and_probes": 0.774,
+      "total": 5.586,
+      "model_load": 9.2
+    },
+    "candidates": 19
+  }
+]

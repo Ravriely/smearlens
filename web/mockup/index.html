@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmearLens, review workspace (mockup)</title>
+<style>
+:root {
+  --paper: #f5f1ea;
+  --card: #fdfbf7;
+  --ink: #1d1a2b;
+  --ink-2: #565066;
+  --line: #ded7ca;
+  --accent: #5b2f91;
+  --accent-soft: #ebe3f5;
+  --review: #c2410c;
+  --review-soft: #fdeadc;
+  --example-bg: #f3efe6;
+  --shadow: 0 1px 0 rgba(29,26,43,.04), 0 6px 18px -12px rgba(29,26,43,.25);
+  --t-neutrophil: #1f7a99;
+  --t-lymphocyte: #7a3fb5;
+  --t-monocyte: #b7791f;
+  --t-eosinophil: #c4453a;
+  --t-basophil: #36479a;
+  --t-ig: #2b8a5f;
+  --t-erythroblast: #b23a7a;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #15121d;
+    --card: #1d1929;
+    --ink: #ece8f4;
+    --ink-2: #a39cb5;
+    --line: #342e45;
+    --accent: #b894ef;
+    --accent-soft: #2c2342;
+    --review: #fb9a5c;
+    --review-soft: #3a2619;
+    --example-bg: #221e2f;
+    --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -14px rgba(0,0,0,.7);
+    --t-neutrophil: #4fb8d8;
+    --t-lymphocyte: #b48af0;
+    --t-monocyte: #e8b04a;
+    --t-eosinophil: #ef7d72;
+    --t-basophil: #7b8cf0;
+    --t-ig: #52c795;
+    --t-erythroblast: #e873b2;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 14px/1.45 var(--sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 28px; border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; font: 600 22px/1 var(--serif); letter-spacing: -.01em; }
+.brand svg { width: 28px; height: 28px; color: var(--accent); }
+.brand small { font: 500 11px/1 var(--mono); color: var(--ink-2); letter-spacing: .08em; text-transform: uppercase; padding-left: 12px; border-left: 1px solid var(--line); }
+.spacer { flex: 1; }
+.pill {
+  font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: transparent;
+}
+.pill.mock { color: var(--review); border-color: currentColor; }
+button.pill { cursor: pointer; }
+button.pill:hover { color: var(--ink); }
+
+main {
+  flex: 1;
+  display: grid;
+  gap: 16px;
+  padding: 16px 28px;
+  grid-template-columns: minmax(0, 2.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  grid-template-areas: "viewer formula review" "viewer agent agent";
+  align-items: start;
+}
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 14px 16px; min-width: 0;
+}
+.card h2 {
+  margin: 0 0 10px; font: 600 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.viewer { grid-area: viewer; display: flex; flex-direction: column; gap: 12px; }
+.formula { grid-area: formula; }
+.review { grid-area: review; }
+.agent { grid-area: agent; }
+
+.drop {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: 8px;
+  background: var(--accent-soft); color: var(--ink);
+}
+.drop svg { width: 26px; height: 26px; flex: none; color: var(--accent); }
+.drop b { font-weight: 600; }
+.drop span { color: var(--ink-2); font-size: 13px; }
+.drop .file { margin-left: auto; font: 12px/1.3 var(--mono); color: var(--ink-2); text-align: right; white-space: nowrap; }
+
+.stage { position: relative; border-radius: 8px; overflow: hidden; background: #000; line-height: 0; }
+.stage img { width: 100%; height: auto; display: block; }
+.stage svg.boxes { position: absolute; inset: 0; width: 100%; height: 100%; }
+.box { fill: transparent; stroke: var(--c); stroke-width: 2.5; vector-effect: non-scaling-stroke; cursor: pointer; }
+.box.rev { stroke-dasharray: 7 5; stroke-width: 3; }
+.box-halo { fill: none; stroke: rgba(0,0,0,.55); stroke-width: 5.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.box-halo.rev { stroke-dasharray: 7 5; stroke-width: 6.5; }
+.box.on { fill: color-mix(in srgb, var(--c) 22%, transparent); stroke-width: 4; }
+.badge { pointer-events: none; }
+.badge circle { fill: var(--review); stroke: #fff; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.badge text { fill: #fff; font: 700 14px var(--sans); text-anchor: middle; dominant-baseline: central; }
+.tip {
+  position: absolute; z-index: 3; pointer-events: none; line-height: 1.35;
+  background: var(--card); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--c, var(--accent));
+  padding: 6px 9px; border-radius: 6px; font-size: 12.5px; box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  white-space: nowrap; transform: translate(12px, 12px);
+}
+.tip b { text-transform: capitalize; }
+.tip .rv { color: var(--review); font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+.legend .dash i { background: transparent; border: 2px dashed var(--review); width: 14px; height: 10px; }
+
+.stack { display: flex; height: 12px; border-radius: 3px; overflow: hidden; background: var(--line); margin-bottom: 12px; gap: 1px; }
+.stack div { background: var(--c); }
+.rows { display: grid; gap: 2px; }
+.row {
+  display: grid; grid-template-columns: 12px 1fr auto 62px; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 5px;
+}
+.row:hover, .row.on { background: color-mix(in srgb, var(--c) 14%, transparent); }
+.row .sw { width: 10px; height: 10px; border-radius: 2px; background: var(--c); }
+.row .n { text-transform: capitalize; }
+.row .pc { white-space: nowrap; font: 600 17px/1 var(--serif); font-variant-numeric: tabular-nums; text-align: right; }
+.row .ct { font: 12px var(--mono); color: var(--ink-2); text-align: right; }
+.row.zero { opacity: .45; }
+.row.zero .sw { background: transparent; border: 1.5px solid var(--c); }
+.counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.stat b { display: block; font: 600 26px/1.05 var(--serif); font-variant-numeric: tabular-nums; }
+.stat span { font: 11px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
+
+.rlist { display: grid; gap: 10px; }
+.item { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 8px; border-left: 4px solid var(--c); cursor: pointer; }
+.item:hover, .item.on { background: var(--review-soft); }
+.item canvas { width: 76px; height: 76px; border-radius: 6px; background: #000; display: block; }
+.item .no { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--review); color: #fff; font: 700 12px var(--sans); margin-right: 6px; }
+.item .ty { font-weight: 600; text-transform: capitalize; }
+.item .sub { font: 12px var(--mono); color: var(--ink-2); margin-top: 3px; }
+.meter { height: 5px; border-radius: 3px; background: var(--line); margin-top: 7px; position: relative; overflow: hidden; }
+.meter i { position: absolute; inset: 0 auto 0 0; background: var(--c); }
+.meter u { position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--ink); opacity: .7; }
+.hint { margin: 10px 0 0; font-size: 12px; color: var(--ink-2); }
+.empty { color: var(--ink-2); font-size: 13px; }
+
+.agent { background: var(--example-bg); border-style: dashed; }
+.agent .tag { color: var(--review); border: 1px solid currentColor; padding: 3px 7px; border-radius: 999px; font-size: 10px; }
+.agent .body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; }
+.agent p { margin: 0 0 8px; font-size: 13.5px; }
+.agent h3 { margin: 0 0 4px; font: 600 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.agent ul { margin: 0; padding-left: 18px; font-size: 13.5px; }
+
+footer {
+  position: sticky; bottom: 0; border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 92%, var(--accent));
+  color: var(--ink-2); font-size: 12.5px; padding: 8px 28px; display: flex; align-items: center; gap: 10px;
+}
+footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
+
+@media (max-width: 1100px) {
+  main { grid-template-columns: 1fr 1fr; grid-template-areas: "viewer viewer" "formula review" "agent agent"; }
+}
+@media (max-width: 700px) {
+  header { padding: 10px 16px; flex-wrap: wrap; }
+  .brand small { display: none; }
+  main { padding: 12px 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "viewer" "formula" "review" "agent"; }
+  .drop { flex-wrap: wrap; }
+  .drop .file { margin-left: 0; white-space: normal; text-align: left; flex-basis: 100%; }
+  .agent .body { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 12px 1fr auto 58px; }
+  footer { position: static; padding: 8px 16px; font-size: 12px; align-items: flex-start; }
+  footer svg { margin-top: 2px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="14" cy="14" r="9"/><path d="M21 21l7 7" stroke-linecap="round"/><circle cx="14" cy="14" r="3.5" fill="currentColor" stroke="none"/></svg>
+    SmearLens <small data-i="tagline"></small>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill mock" data-i="mock"></span>
+  <button class="pill" id="lang" type="button" aria-label="Language">FR</button>
+</header>
+
+<main>
+  <section class="card viewer" aria-label="Analysed image">
+    <div class="drop">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 20V6m0 0l-5 5m5-5l5 5"/><path d="M5 20v2a2 2 0 002 2h14a2 2 0 002-2v-2"/></svg>
+      <div><b data-i="drop1"></b> <span data-i="drop2"></span></div>
+      <div class="file" id="file"></div>
+    </div>
+    <div class="stage" id="stage">
+      <img id="img" alt="Blood smear field with detected white blood cells">
+      <svg class="boxes" id="boxes" preserveAspectRatio="none"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="card formula" aria-label="Differential count">
+    <h2><span data-i="formula"></span><span id="wbcn"></span></h2>
+    <div class="stack" id="stack"></div>
+    <div class="rows" id="rows"></div>
+    <div class="counts" id="counts"></div>
+  </section>
+
+  <section class="card review" aria-label="Cells to review">
+    <h2><span data-i="review"></span><span id="revn"></span></h2>
+    <div class="rlist" id="rlist"></div>
+    <p class="hint" id="revhint"></p>
+  </section>
+
+  <section class="card agent" aria-label="Agent report (example)">
+    <h2><span data-i="agent"></span><span class="tag" data-i="example"></span></h2>
+    <div class="body" id="agentbody"></div>
+  </section>
+</main>
+
+<footer>
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.6v.1" stroke-linecap="round"/></svg>
+  <span data-i="disclaimer"></span>
+</footer>
+
+<script>
+const T = {
+  en: {
+    tagline: "Blood smear review", mock: "Static mockup", lang: "FR",
+    drop1: "Drop a smear image here", drop2: "or browse. JPG or PNG, one field of view.",
+    formula: "Differential count", review: "To review", agent: "Agent report", example: "Example text",
+    cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
+    legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
+    revhint: (c) => `Types shown are the proposed ones. Cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
+    revnone: "No cell below the confidence cutoff.",
+    nCells: (n) => `${n} cells`,
+    types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast" },
+    file: (j) => `sample.jpg · ${j.image.width}×${j.image.height} · ${j.timing_s.total.toFixed(1)} s`,
+    disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate.",
+    agentBody: (j) => [
+      ["Summary", `<p>${j.white_cell_count} white cells found. The draft count is dominated by neutrophils, with lymphocytes and one monocyte. ${j.needs_review_count} cells are below the confidence cutoff and need a human look.</p>`],
+      ["Check first", `<ul><li>Cell 1: partly cut by the image edge, the type is uncertain.</li><li>Cell 2: lobed nucleus, may be a band form; confirm.</li><li>Cell 3: large cell with a pale cytoplasm, confirm monocyte.</li></ul>`],
+      ["Limits", `<p>One field of view only: the percentages are not a full 100-cell count. Platelet and red cell counts are rough.</p>`],
+      ["Next step", `<p>Validate or correct the flagged cells, then add more fields to reach a usable count.</p>`]
+    ]
+  },
+  fr: {
+    tagline: "Revue de frottis", mock: "Maquette statique", lang: "EN",
+    drop1: "Dépose une image de frottis ici", drop2: "ou parcours. JPG ou PNG, un champ.",
+    formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent", example: "Texte d'exemple",
+    cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
+    legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
+    revhint: (c) => `Types proposés. Cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
+    revnone: "Aucune cellule sous le seuil de confiance.",
+    nCells: (n) => `${n} cellules`,
+    types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste" },
+    file: (j) => `sample.jpg · ${j.image.width}×${j.image.height} · ${j.timing_s.total.toFixed(1)} s`,
+    disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste.",
+    agentBody: (j) => [
+      ["Résumé", `<p>${j.white_cell_count} globules blancs trouvés. Le décompte brouillon est dominé par les neutrophiles, avec des lymphocytes et un monocyte. ${j.needs_review_count} cellules sont sous le seuil de confiance et demandent un regard humain.</p>`],
+      ["À vérifier d'abord", `<ul><li>Cellule 1 : coupée par le bord de l'image, type incertain.</li><li>Cellule 2 : noyau lobé, peut-être une forme en bande ; à confirmer.</li><li>Cellule 3 : grande cellule au cytoplasme pâle, monocyte à confirmer.</li></ul>`],
+      ["Limites", `<p>Un seul champ : les pourcentages ne valent pas un décompte de 100 cellules. Les comptes de plaquettes et de globules rouges sont approximatifs.</p>`],
+      ["Suite", `<p>Valider ou corriger les cellules signalées, puis ajouter des champs pour obtenir un décompte exploitable.</p>`]
+    ]
+  }
+};
+const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast"];
+const REVIEW_CUTOFF = 0.9598;
+let lang = (new URLSearchParams(location.search).get("lang") || "en") === "fr" ? "fr" : "en";
+let data = null;
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const col = (t) => `var(--t-${t})`;
+const pct = (x) => (x * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".") + " %";
+
+function mk(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+function highlight(i, on) {
+  document.querySelectorAll(`[data-idx="${i}"]`).forEach((e) => e.classList.toggle("on", on));
+}
+
+function render() {
+  const t = T[lang], j = data;
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach((e) => { const v = t[e.dataset.i]; if (typeof v === "string") e.textContent = v; });
+  $("lang").textContent = t.lang;
+  $("file").textContent = t.file(j);
+  $("wbcn").textContent = t.nCells(j.white_cell_count);
+
+  const W = j.image.width, H = j.image.height, svg = $("boxes");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.replaceChildren();
+  const revs = [];
+  j.white_cells.forEach((c, i) => { if (c.needs_review) revs.push(i); });
+  [...j.white_cells.keys()].sort((a, b) => j.white_cells[a].needs_review - j.white_cells[b].needs_review).forEach((i) => {
+    const c = j.white_cells[i];
+    const [x0, y0, x1, y1] = c.box, rev = c.needs_review;
+    const g = mk("g", { style: `--c:${col(c.type)}` }, svg);
+    const a = { x: x0, y: y0, width: x1 - x0, height: y1 - y0, rx: 6 };
+    mk("rect", { ...a, class: "box-halo" + (rev ? " rev" : "") }, g);
+    const r = mk("rect", { ...a, class: "box" + (rev ? " rev" : ""), "data-idx": i }, g);
+    r.addEventListener("mouseenter", () => highlight(i, true));
+    r.addEventListener("mouseleave", () => { highlight(i, false); $("tip").hidden = true; });
+    r.addEventListener("mousemove", (ev) => showTip(ev, c));
+    if (rev) {
+      const n = revs.indexOf(i) + 1, b = mk("g", { class: "badge", transform: `translate(${x0 + 4} ${y0 + 4})` }, g);
+      mk("circle", { r: String(Math.max(11, W / 70)), cx: 0, cy: 0 }, b);
+      const tx = mk("text", { x: 0, y: 1, "font-size": String(Math.max(13, W / 80)) }, b);
+      tx.textContent = n;
+    }
+  });
+
+  const counts = {};
+  j.white_cells.forEach((c) => counts[c.type] = (counts[c.type] || 0) + 1);
+  const total = j.white_cell_count || 1;
+  $("stack").replaceChildren(...ORDER.filter((k) => counts[k]).map((k) => {
+    const d = document.createElement("div"); d.style.cssText = `--c:${col(k)};flex:${counts[k]}`; d.title = t.types[k]; return d;
+  }));
+  $("rows").replaceChildren(...ORDER.map((k) => {
+    const d = document.createElement("div");
+    d.className = "row" + (counts[k] ? "" : " zero"); d.style.setProperty("--c", col(k));
+    const p = j.differential_percent[k] || 0;
+    d.innerHTML = `<span class="sw"></span><span class="n">${t.types[k]}</span><span class="ct">${counts[k] || 0} / ${j.white_cell_count}</span><span class="pc">${pct(p / 100)}</span>`;
+    d.addEventListener("mouseenter", () => j.white_cells.forEach((c, i) => c.type === k && highlight(i, true)));
+    d.addEventListener("mouseleave", () => j.white_cells.forEach((c, i) => highlight(i, false)));
+    return d;
+  }));
+  $("counts").innerHTML = [[t.wbc, j.white_cell_count], [t.rbc, j.red_cell_count], [t.plt, j.platelet_count]]
+    .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+
+  $("legend").replaceChildren(...ORDER.filter((k) => counts[k]).map((k) => {
+    const s = document.createElement("span"); s.style.setProperty("--c", col(k)); s.innerHTML = `<i></i>${t.types[k]}`; return s;
+  }));
+  const dl = document.createElement("span"); dl.className = "dash"; dl.innerHTML = `<i></i>${t.legendReview}`; $("legend").appendChild(dl);
+
+  $("revn").textContent = revs.length ? `${revs.length} / ${j.white_cell_count}` : "0";
+  $("rlist").replaceChildren(...(revs.length ? revs.map((idx, n) => {
+    const c = j.white_cells[idx], d = document.createElement("div");
+    d.className = "item"; d.dataset.idx = idx; d.style.setProperty("--c", col(c.type));
+    const cv = document.createElement("canvas"); cv.width = cv.height = 152;
+    d.appendChild(cv);
+    const info = document.createElement("div");
+    info.innerHTML = `<div><span class="no">${n + 1}</span><span class="ty">${t.types[c.type]}</span></div>
+      <div class="sub">${(c.confidence * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".")} % ${t.conf}</div>
+      <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${REVIEW_CUTOFF * 100}%"></u></div>`;
+    d.appendChild(info);
+    d.addEventListener("mouseenter", () => highlight(idx, true));
+    d.addEventListener("mouseleave", () => highlight(idx, false));
+    drawCrop(cv, c.box);
+    return d;
+  }) : [Object.assign(document.createElement("p"), { className: "empty", textContent: t.revnone })]));
+  $("revhint").textContent = t.revhint(Math.round(REVIEW_CUTOFF * 100));
+
+  $("agentbody").innerHTML = t.agentBody(j).map(([h, b]) => `<div><h3>${h}</h3>${b}</div>`).join("");
+}
+
+function drawCrop(cv, box) {
+  const img = $("img");
+  const go = () => {
+    const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0, s = Math.max(w, h) * 1.3;
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const sx = Math.max(0, Math.min(img.naturalWidth - s, cx - s / 2)), sy = Math.max(0, Math.min(img.naturalHeight - s, cy - s / 2));
+    const ctx = cv.getContext("2d");
+    ctx.drawImage(img, sx, sy, s, s, 0, 0, cv.width, cv.height);
+  };
+  img.complete && img.naturalWidth ? go() : img.addEventListener("load", go, { once: true });
+}
+
+function showTip(ev, c) {
+  const tip = $("tip"), r = $("stage").getBoundingClientRect(), t = T[lang];
+  tip.style.setProperty("--c", col(c.type));
+  tip.innerHTML = `<b>${t.types[c.type]}</b> · ${(c.confidence * 100).toFixed(1).replace(".", lang === "fr" ? "," : ".")} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
+  tip.hidden = false;
+  let x = ev.clientX - r.left, y = ev.clientY - r.top;
+  tip.style.left = Math.min(x, r.width - tip.offsetWidth - 20) + "px";
+  tip.style.top = Math.min(y, r.height - tip.offsetHeight - 20) + "px";
+}
+
+$("lang").addEventListener("click", () => { lang = lang === "en" ? "fr" : "en"; render(); });
+fetch("sample.json").then((r) => r.json()).then((j) => {
+  data = Array.isArray(j) ? j[0] : j;
+  $("img").src = data.path || "sample.jpg";
+  render();
+}).catch(() => { document.body.insertAdjacentHTML("afterbegin", "<p style='padding:20px'>Cannot load sample.json. Serve this folder with: python3 -m http.server</p>"); });
+</script>
+</body>
+</html>

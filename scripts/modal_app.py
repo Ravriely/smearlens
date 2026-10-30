@@ -101,38 +101,69 @@ class Analyzer:
         self.probes = load_probes(*(Path(REMOTE) / "probes" / p.name for p in PROBES.values()))
         self.load_s = time.perf_counter() - started
 
+    def detect(self, image) -> list[dict]:
+        from PIL import Image
+
+        from sam3_validate import segment_concept, upscale_factor
+
+        from smearlens.analyze import PROMPTS, UPSCALE_BELOW
+
+        factor = upscale_factor(image, UPSCALE_BELOW)
+        state = self.sam_processor.set_image(image.resize((image.width * factor, image.height * factor), Image.LANCZOS))
+        detections = []
+        for label, prompt in PROMPTS:
+            boxes, _, scores = segment_concept(self.sam_processor, state, label, prompt, factor, image.size)
+            boxes = [[b.x0, b.y0, b.x1, b.y1] for b in boxes]
+            detections.append({"image": "field", "label": label, "boxes": boxes, "scores": scores})
+        return detections
+
+    def detect_tiled(self, field, n: int) -> list[dict]:
+        from smearlens.analyze import PROMPTS, in_core, plan_windows
+
+        merged = {label: {"image": "field", "label": label, "boxes": [], "scores": []} for label, _ in PROMPTS}
+        for window, core in plan_windows(field.size, n):
+            x0, y0 = int(window.x0), int(window.y0)
+            part = field.crop((x0, y0, int(round(window.x1)), int(round(window.y1))))
+            for d in self.detect(part):
+                for b, score in zip(d["boxes"], d["scores"]):
+                    box = [b[0] + x0, b[1] + y0, b[2] + x0, b[3] + y0]
+                    if in_core(box, core, field.size):
+                        merged[d["label"]]["boxes"].append(box)
+                        merged[d["label"]]["scores"].append(score)
+        return [merged[label] for label in dict.fromkeys(label for label, _ in PROMPTS)]
+
     @modal.method()
-    def analyze(self, image_bytes: bytes) -> dict:
+    def analyze(self, image_bytes: bytes, tiling: bool = True) -> dict:
         import io
+        import statistics
 
         from PIL import Image
 
         from modal_glimmer_probe import embed
-        from sam3_validate import segment_concept, upscale_factor
 
-        from smearlens.analyze import PROMPTS, RBC_MIN, UPSCALE_BELOW, WBC_MIN
-        from smearlens.analyze import candidates_for, rbc_sizes, report, wbc_probability, white_cells
+        from smearlens.analyze import RBC_MIN, WBC_MIN
+        from smearlens.analyze import candidates_for, rbc_sizes, report, tiles_per_side, wbc_probability, white_cells
         from smearlens.pipeline import PBC_RBC_PX, crop_at_scale
 
         started = time.perf_counter()
         field = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        factor = upscale_factor(field, UPSCALE_BELOW)
-        state = self.sam_processor.set_image(field.resize((field.width * factor, field.height * factor), Image.LANCZOS))
-        detections = []
-        for label, prompt in PROMPTS:
-            boxes, _, scores = segment_concept(self.sam_processor, state, label, prompt, factor, field.size)
-            boxes = [[b.x0, b.y0, b.x1, b.y1] for b in boxes]
-            detections.append({"image": "field", "label": label, "boxes": boxes, "scores": scores})
+        detections = self.detect(field)
+        red = [max(b[2] - b[0], b[3] - b[1]) for d in detections if d["label"] == "RBC"
+               for b, sc in zip(d["boxes"], d["scores"]) if sc >= RBC_MIN]
+        tiles = tiles_per_side(field.size, statistics.median(red) if len(red) >= 3 else None) if tiling else 1
+        counted = self.detect_tiled(field, tiles) if tiles > 1 else detections
         cands = candidates_for(detections, WBC_MIN, RBC_MIN).get("field", [])
         rbc_px = rbc_sizes(detections).get("field", PBC_RBC_PX)
+        count_px = rbc_sizes(counted).get("field", PBC_RBC_PX)
         sam_done = time.perf_counter()
         crops = [crop_at_scale(field, c.box, rbc_px) for c in cands]
         features = embed(self.encoder, self.processor, self.merge, crops) if crops else None
         cells = white_cells(cands, features, rbc_px, self.probes) if crops else []
         done = time.perf_counter()
         timing = {"sam": sam_done - started, "glimmer_and_probes": done - sam_done, "total": done - started}
-        result = report(field.size, detections, rbc_px, cells, timing)
+        result = report(field.size, counted, count_px, cells, timing)
         result["candidates"] = len(cands)
+        result["tiles_per_side"] = tiles
         p_wbc = wbc_probability(features, self.probes["detection"]) if crops else []
         result["candidate_boxes"] = [
             {"box": [round(v, 1) for v in (c.box.x0, c.box.y0, c.box.x1, c.box.y1)], "p_wbc": round(float(p), 5)}
@@ -261,12 +292,13 @@ def main(*arglist: str) -> None:
     parser = argparse.ArgumentParser(prog="modal run scripts/modal_app.py")
     parser.add_argument("--image", type=Path, action="append", required=True)
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--no-tiling", action="store_true", help="always analyse the whole image in one SAM pass")
     args = parser.parse_args(arglist)
     analyzer = Analyzer()
     results = []
     for path in args.image:
         started = time.perf_counter()
-        result = analyzer.analyze.remote(path.read_bytes())
+        result = analyzer.analyze.remote(path.read_bytes(), tiling=not args.no_tiling)
         results.append({"path": str(path), "round_trip_s": round(time.perf_counter() - started, 3), **result})
         print(json.dumps(results[-1]), flush=True)
     if args.out:

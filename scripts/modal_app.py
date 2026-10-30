@@ -3,8 +3,9 @@
     modal run scripts/modal_app.py --image field.png [--image other.jpg ...] [--out runs/analyze.json]
     modal deploy scripts/modal_app.py
 
-The deployed app also serves the web demo (web/) and POST /api/analyze from a small CPU
-container. That endpoint checks the token of the Modal secret smearlens-web, then the size of
+The deployed app also serves the web demo (web/), POST /api/analyze and POST /api/review from a
+small CPU container. /api/review runs the review agent (Muse Spark on Baseten) on the output of
+/api/analyze, in its own CPU function that holds the Baseten key. That endpoint checks the token of the Modal secret smearlens-web, then the size of
 the image, before it calls the GPU class, so a refused request never starts a GPU.
 
 The deployed app scales to zero. To keep one container warm, see scripts/modal_warm.py,
@@ -65,6 +66,15 @@ web_image = (
     .add_local_file(REPO / "scripts" / "modal_glimmer_probe.py", "/root/scripts/modal_glimmer_probe.py")
     .add_local_dir(REPO / "web", "/root/web")
 )
+review_image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .pip_install("pillow", "numpy")
+    .env({"PYTHONPATH": "/root:/root/scripts"})
+    .add_local_file(REPO / "scripts" / "modal_glimmer_probe.py", "/root/scripts/modal_glimmer_probe.py")
+    .add_local_dir(REPO / "smearlens", "/root/smearlens")
+)
+REVIEW_MAX_STEPS = 10
+REVIEW_SECOND_OPINIONS = 3
 
 
 @app.cls(
@@ -101,7 +111,7 @@ class Analyzer:
         from sam3_validate import segment_concept, upscale_factor
 
         from smearlens.analyze import PROMPTS, RBC_MIN, UPSCALE_BELOW, WBC_MIN
-        from smearlens.analyze import candidates_for, rbc_sizes, report, white_cells
+        from smearlens.analyze import candidates_for, rbc_sizes, report, wbc_probability, white_cells
         from smearlens.pipeline import PBC_RBC_PX, crop_at_scale
 
         started = time.perf_counter()
@@ -123,9 +133,24 @@ class Analyzer:
         timing = {"sam": sam_done - started, "glimmer_and_probes": done - sam_done, "total": done - started}
         result = report(field.size, detections, rbc_px, cells, timing)
         result["candidates"] = len(cands)
+        p_wbc = wbc_probability(features, self.probes["detection"]) if crops else []
+        result["candidate_boxes"] = [
+            {"box": [round(v, 1) for v in (c.box.x0, c.box.y0, c.box.x1, c.box.y1)], "p_wbc": round(float(p), 5)}
+            for c, p in zip(cands, p_wbc)
+        ]
         result["timing_s"]["model_load"] = round(self.load_s, 3)
         result["review_cutoff"] = self.probes["review_cutoff"]
         return result
+
+
+@app.function(image=review_image, secrets=[modal.Secret.from_name("baseten")], timeout=240, max_containers=2)
+def review(analysis: dict, image_bytes: bytes, name: str) -> dict:
+    from smearlens.agent import review_slide
+
+    return review_slide(
+        [analysis], [image_bytes], names=[name],
+        max_steps=REVIEW_MAX_STEPS, max_second_opinions=REVIEW_SECOND_OPINIONS,
+    )
 
 
 @app.function(
@@ -138,6 +163,7 @@ class Analyzer:
 @modal.concurrent(max_inputs=8)
 @modal.asgi_app()
 def web():
+    import base64
     import hmac
     import io
 
@@ -162,19 +188,28 @@ def web():
     def error(status: int, code: str, message: str) -> JSONResponse:
         return JSONResponse({"error": code, "message": message}, status_code=status)
 
+    def authorized(request: Request) -> bool:
+        given = request.headers.get(TOKEN_HEADER, "").encode()
+        return bool(given) and hmac.compare_digest(given, token)
+
+    async def read_body(request: Request, limit: int) -> bytes | None:
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > limit:
+                return None
+        return bytes(body)
+
     @api.post("/api/analyze")
     async def analyze(request: Request):
-        given = request.headers.get(TOKEN_HEADER, "").encode()
-        if not given or not hmac.compare_digest(given, token):
+        if not authorized(request):
             return error(401, "unauthorized", "Missing or wrong access token.")
         declared = request.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > MAX_BYTES:
             return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
-        body = bytearray()
-        async for chunk in request.stream():
-            body.extend(chunk)
-            if len(body) > MAX_BYTES:
-                return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
+        body = await read_body(request, MAX_BYTES)
+        if body is None:
+            return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
         try:
             with Image.open(io.BytesIO(body)) as field:
                 size = field.size
@@ -185,9 +220,35 @@ def web():
             return error(413, "too_many_pixels", f"Image of {size[0]}x{size[1]} px, the limit is 4096x4096.")
         started = time.perf_counter()
         try:
-            result = await Analyzer().analyze.remote.aio(bytes(body))
+            result = await Analyzer().analyze.remote.aio(body)
         except Exception as exc:
             return error(502, "analysis_failed", f"The analysis failed: {type(exc).__name__}.")
+        result["round_trip_s"] = round(time.perf_counter() - started, 3)
+        return result
+
+    @api.post("/api/review")
+    async def review_endpoint(request: Request):
+        if not authorized(request):
+            return error(401, "unauthorized", "Missing or wrong access token.")
+        body = await read_body(request, MAX_BYTES * 4 // 3 + 2**20)
+        if body is None:
+            return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
+        try:
+            payload = json.loads(body)
+            analysis, image_bytes = payload["analysis"], base64.b64decode(payload["image"], validate=True)
+            with Image.open(io.BytesIO(image_bytes)) as field:
+                field.verify()
+            if not isinstance(analysis.get("white_cells"), list):
+                raise ValueError
+        except Exception:
+            return error(400, "bad_request", "Send the analysis and the image it was computed on.")
+        if not analysis["white_cells"]:
+            return error(422, "no_cells", "No white cell to review on this image.")
+        started = time.perf_counter()
+        try:
+            result = await review.remote.aio(analysis, image_bytes, str(payload.get("name") or "field"))
+        except Exception as exc:
+            return error(502, "review_failed", f"The review failed: {type(exc).__name__}.")
         result["round_trip_s"] = round(time.perf_counter() - started, 3)
         return result
 

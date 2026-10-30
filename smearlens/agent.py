@@ -257,6 +257,8 @@ class SlideReviewer:
             "below_confidence_0.7": sum(c.confidence < LOW_CONFIDENCE for c in cells),
             "red_cells": self.counts.get("red_cells"),
             "platelets": self.counts.get("platelets"),
+            "red_cells_per_field": _per_field(self.counts.get("red_cells"), self.fields),
+            "platelets_per_field": _per_field(self.counts.get("platelets"), self.fields),
             "second_opinion_budget": self.max_second_opinions,
             "known_limits": KNOWN_LIMITS,
         }
@@ -365,6 +367,10 @@ class SlideReviewer:
             if self.review.report:
                 break
         return self.review
+
+
+def _per_field(total: int | None, fields: int) -> float | None:
+    return round(total / fields, 1) if total is not None and fields else None
 
 
 def _int(value) -> int | None:

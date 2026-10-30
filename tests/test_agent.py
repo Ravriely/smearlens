@@ -134,6 +134,7 @@ def test_review_slide_end_to_end_with_fake_clients():
     assert result["rejected_reports"] == 1
     assert result["summary"]["white_cells"] == 2 and result["summary"]["red_cells"] == 24
     assert result["summary"]["fields_without_white_cell"] == 1
+    assert result["summary"]["red_cells_per_field"] == 12.0 and result["summary"]["platelets_per_field"] == 2.0
     assert result["flags"][0]["field"] == "f1" and result["flags"][0]["box"] == [10, 10, 50, 50]
     assert result["second_opinions"][0]["second_opinion"] == "neutrophil"
     assert len(vision_calls) == 1 and vision_calls[0][:2] == b"\xff\xd8"

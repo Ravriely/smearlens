@@ -42,6 +42,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [13](docs/experiments/13-sam3-prompts-bcdd-detection.md) | Second SAM 3 prompt ("neutrophil") for pale BCDD white cells | BCDD candidate recall 0.02 → 0.92; BCDD detection F1 0.13 → 0.52; overall WBC F1 0.79 → 0.81, recall 0.68 → 0.75, count error 0.38 → 0.34 (BCCD precision 0.81 → 0.72) |
 | [14](docs/experiments/14-red-cell-platelet-size-filter.md) | Size filter on red cell and platelet boxes, scaled on the median red cell of the image | Count error per image: platelets 1.33 → 0.21, red cells 6.51 → 3.41 (BCDD 6.79 → 1.64), white cells unchanged (0.34); PBC red cells still undercounted |
 | [15](docs/experiments/15-review-agent-on-backend.md) | Review agent on the demo backend output, one PBC slide of 147 fields (132 white cells) | Backend: 96.2 % right type, 4 of 5 errors in a review queue of 11 %; agent: report with queue size, rare types and disagreements first, no diagnostic wording, about 2 min and 0.15 $ per slide |
+| [16](docs/experiments/16-empty-field-rescue.md) | Keep the best candidate of a field with no sure white cell, as a cell to review | WBC F1 0.798 → 0.815, count error 0.40 → 0.27 per test field, empty fields 12 → 1; lowering the threshold everywhere loses |
 
 ## Quick start
 

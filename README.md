@@ -97,19 +97,44 @@ The deployed app serves the review page and its API from one URL:
 
 **https://ravriely--smearlens-app-web.us-east.modal.run**
 
-The page opens on an offline demo (`web/sample.json`, no GPU). To analyse your own image, click
-**Access token**, paste the token you were given, then drop a JPG, PNG or WebP field of view
-(12 MB and 4096×4096 px at most). The token stays in the browser (localStorage). The agent report
-panel still shows example text from the sample image.
+The page opens on an offline demo, no GPU and no LLM call: one PBC field of the TXL-PBC test split
+(`BNE_59680.jpg`, a neutrophil at 95.8 %, so it sits in the review queue), the backend output on it
+(`web/sample.json`) and a recorded run of the review agent on that output (`web/sample-review.json`).
+To analyse your own image, click **Access token**, paste the token you were given, then drop a JPG,
+PNG or WebP field of view (12 MB and 4096×4096 px at most). The token stays in the browser
+(localStorage). Once the counts are shown, the page asks the review agent for its report on the same
+image: the panel shows "Muse Spark, live", then the report and the cells to open first, after about
+30 to 60 s (more after a pause, while the agent container starts).
+
+Cell numbers are the same everywhere: the badges on the image, the review list and the agent report
+count white cells from 1, in the order of the backend output, platelets skipped.
+
+The review agent gets at most 10 steps and 3 second opinions per image. On one field it costs about
+15k to 22k Baseten tokens. Below 20 white cells it does not compare the differential with the
+reference ranges: a percentage over a handful of cells is not worth it.
 
 The API is `POST /api/analyze` with the image as the raw body and the token in the
 `x-smearlens-token` header; it returns the JSON of `smearlens/analyze.py:report` plus
-`review_cutoff` and `round_trip_s`:
+`review_cutoff`, `round_trip_s` and `candidate_boxes` (every SAM candidate with its detection
+probability, to see why a cell was kept or dropped):
 
 ```bash
 curl -X POST --data-binary @field.jpg -H "content-type: image/jpeg" \
   -H "x-smearlens-token: $SMEARLENS_WEB_TOKEN" \
   https://ravriely--smearlens-app-web.us-east.modal.run/api/analyze
+```
+
+`POST /api/review` takes `{"analysis": <output of /api/analyze>, "image": <the same image in
+base64>, "name": "..."}` with the same token header, and returns the output of
+`smearlens/agent.py:review_slide` (report, flags, second opinions, tool calls, tokens). It runs in its
+own CPU function, `review`, the only one that holds the Baseten key (Modal secret `baseten`, key
+`BASETEN_API_KEY`). To regenerate the recorded sample run after a change to the agent:
+
+```bash
+cd web && uv run python -c 'import json; from pathlib import Path; from smearlens.agent import review_slide; \
+a = json.loads(Path("sample.json").read_text())[0]; \
+r = review_slide([a], [Path("sample.jpg").read_bytes()], names=["sample.jpg"], max_steps=10, max_second_opinions=3); \
+Path("sample-review.json").write_text(json.dumps(r, indent=2) + "\n")'
 ```
 
 Cost guards, since the URL is public:
@@ -120,6 +145,8 @@ Cost guards, since the URL is public:
   repo. To change it: `modal secret create --force smearlens-web SMEARLENS_WEB_TOKEN=...`, then
   `modal deploy scripts/modal_app.py`.
 - One GPU container at most (`max_containers=1`), none at rest (`min_containers=0`).
+- The agent only runs behind the same token, on a body of at most 16 MB, and not at all when the
+  analysis found no white cell. Its step and second opinion budgets cap the cost of one call.
 
 At rest the demo costs nothing. A request after a pause waits for a cold start (about 45 s,
 shown in the page as "Waking up the GPU"), then the L40S stays up 15 min after the last

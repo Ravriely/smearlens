@@ -130,6 +130,21 @@ main {
 .drop:hover, .drop:focus-within, .drop.over { border-color: var(--accent); }
 .drop.over { background: color-mix(in srgb, var(--accent) 22%, var(--card)); }
 .drop.busy { opacity: .6; pointer-events: none; }
+.examples { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.examples.busy { opacity: .6; pointer-events: none; }
+.examples .pill.on { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.examples .linkish { margin-left: auto; font: 13px var(--sans); letter-spacing: 0; text-transform: none; }
+.slidebar { display: flex; flex-direction: column; gap: 6px; }
+.fieldcap { font: 12px/1.3 var(--mono); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.strip { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: thin; }
+.thumb { position: relative; flex: none; width: 60px; height: 60px; padding: 0; border-radius: 7px; border: 2px solid var(--line); background: #000; cursor: pointer; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.thumb.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.thumb b { position: absolute; left: 3px; top: 3px; font: 600 10px/1 var(--mono); color: #fff; background: rgba(15,12,22,.72); padding: 2px 4px; border-radius: 3px; }
+.thumb i { position: absolute; right: 3px; bottom: 3px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--review); color: #fff; font: 700 10px/16px var(--sans); font-style: normal; text-align: center; }
+.item .fld { font: 11px var(--mono); color: var(--accent); margin-left: 6px; }
+.agent .chip.go { cursor: pointer; }
 .drop .file { margin-left: auto; font: 12px/1.3 var(--mono); color: var(--ink-2); text-align: right; white-space: nowrap; }
 
 .stage { position: relative; flex: 1; min-height: 0; border-radius: 8px; overflow: hidden; background: #000; line-height: 0; }
@@ -274,17 +289,27 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 <main>
   <section class="card viewer" aria-label="Analysed image">
     <label class="drop" id="drop">
-      <input type="file" id="pick" accept="image/jpeg,image/png,image/webp">
+      <input type="file" id="pick" accept="image/jpeg,image/png,image/webp" multiple>
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 20V6m0 0l-5 5m5-5l5 5"/><path d="M5 20v2a2 2 0 002 2h14a2 2 0 002-2v-2"/></svg>
       <div><b data-i="drop1"></b> <span data-i="drop2"></span></div>
       <div class="file" id="file"></div>
     </label>
+    <div class="examples" id="examples" hidden>
+      <span data-i="examples"></span>
+      <button class="pill" id="exField" type="button" data-i="exField"></button>
+      <button class="pill" id="exSlide" type="button" hidden></button>
+      <button class="linkish" id="exLive" type="button" data-i="exLive" hidden></button>
+    </div>
     <div class="alert" id="alert" hidden></div>
     <div class="stage" id="stage">
       <img id="img" alt="Blood smear field with detected white blood cells">
       <svg class="boxes" id="boxes"></svg>
       <div class="tip" id="tip" hidden></div>
       <div class="veil" id="veil" hidden><div class="spin"></div><b id="vtitle"></b><span id="vtext"></span><span class="el" id="vel"></span></div>
+    </div>
+    <div class="slidebar" id="slidebar" hidden>
+      <div class="fieldcap" id="fieldcap"></div>
+      <div class="strip" id="strip"></div>
     </div>
     <div class="legend" id="legend"></div>
   </section>
@@ -335,7 +360,17 @@ const T = {
     key: "Access token", keySet: "Token set",
     keyTitle: "Access token", keyText: "The live analysis runs on a GPU and needs the access token you were given. It is kept in this browser only.",
     keyClear: "Forget", cancel: "Cancel", save: "Save",
-    drop1: "Drop a smear image here", drop2: "or browse. JPG, PNG or WebP, one field of view, up to 12 MB.",
+    drop1: "Drop one field, or every field of a slide", drop2: "or browse. JPG, PNG or WebP, up to 12 MB each. 2 to 20 fields make a slide report.",
+    examples: "Examples", exField: "One field", exSlide: (n) => `Slide · ${n} fields`, exLive: "Run it live",
+    slideFile: (n, s) => `${n} fields · ${s.toFixed(1)} s`,
+    fieldCap: (k, n, f) => `Field ${k} of ${n} · ${f.name} · ${f.a.image.width}×${f.a.image.height}`,
+    fieldN: (k) => `field ${k}`, fieldOf: (k, n) => `Field ${k} of ${n}`,
+    analysingField: (k, n) => `Analysing field ${k} of ${n}…`,
+    loadTextSlide: "Each field is analysed on its own, one after the other: the slide is never stitched. The first field after a pause waits for the GPU to start, about 45 s.",
+    rbcField: "Red cells / field", pltField: "Platelets / field",
+    revhintSlide: (c) => `All fields of the slide. Cells below the ${c} % confidence cutoff. Click a thumbnail to open its field.`,
+    agentRecordedSlide: "Recorded run on this slide",
+    agentWaitSlide: "It reads the slide counts, asks a second opinion on the doubtful cells, flags what to open first and writes the slide report. About 1 to 3 min.",
     formula: "Differential count", review: "To review", agent: "Agent report",
     agentRecorded: "Recorded run on this image", agentLive: "Muse Spark, live",
     agentWorking: "The agent is reviewing the slide…",
@@ -346,7 +381,6 @@ const T = {
     agentMeta: (r) => `${r.llm_calls} model calls · ${r.second_opinions.length} second opinions · ${r.flags.length} flags · ${r.seconds.toFixed(0)} s`,
     cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
     legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
-    backToSample: "Show the offline sample",
     revhint: (c) => `Types shown are the proposed ones. Cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
     revnone: "No cell below the confidence cutoff.",
     nCells: (n) => `${n} cell${n === 1 ? "" : "s"}`,
@@ -362,13 +396,14 @@ const T = {
       too_many_pixels: "The image is larger than 4096×4096 px.",
       not_an_image: "The file is not a readable JPG, PNG or WebP image.",
       bad_type: "Choose a JPG, PNG or WebP image.",
+      too_many_fields: "A slide takes at most 20 fields.",
       analysis_failed: "The analysis failed on the server. Try again, or try another image.",
       network: "Cannot reach the backend. Check the connection, then try again.",
       timeout: "No answer after 3 min. Try again in a moment.",
       no_api: "No backend address set: only the offline demo works here.",
       other: (s) => `Unexpected answer from the backend (HTTP ${s}).`
     },
-    retry: "Try again", setKey: "Enter the token",
+    retry: "Try again", setKey: "Enter the token", fieldErr: (k, name) => `Field ${k} (${name}): `,
     disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate."
   },
   fr: {
@@ -377,7 +412,17 @@ const T = {
     key: "Jeton d'accès", keySet: "Jeton enregistré",
     keyTitle: "Jeton d'accès", keyText: "L'analyse réelle tourne sur un GPU et demande le jeton d'accès qu'on t'a donné. Il reste dans ce navigateur.",
     keyClear: "Oublier", cancel: "Annuler", save: "Enregistrer",
-    drop1: "Dépose une image de frottis ici", drop2: "ou parcours. JPG, PNG ou WebP, un champ, 12 Mo max.",
+    drop1: "Dépose un champ, ou tous les champs d'une lame", drop2: "ou parcours. JPG, PNG ou WebP, 12 Mo max chacun. De 2 à 20 champs : compte rendu de lame.",
+    examples: "Exemples", exField: "Un champ", exSlide: (n) => `Lame · ${n} champs`, exLive: "L'analyser en direct",
+    slideFile: (n, s) => `${n} champs · ${s.toFixed(1).replace(".", ",")} s`,
+    fieldCap: (k, n, f) => `Champ ${k} sur ${n} · ${f.name} · ${f.a.image.width}×${f.a.image.height}`,
+    fieldN: (k) => `champ ${k}`, fieldOf: (k, n) => `Champ ${k} sur ${n}`,
+    analysingField: (k, n) => `Analyse du champ ${k} sur ${n}…`,
+    loadTextSlide: "Chaque champ est analysé seul, l'un après l'autre : la lame n'est jamais assemblée. Le premier champ après une pause attend le démarrage du GPU, environ 45 s.",
+    rbcField: "Glob. rouges / champ", pltField: "Plaquettes / champ",
+    revhintSlide: (c) => `Tous les champs de la lame. Cellules sous le seuil de confiance de ${c} %. Clique une vignette pour ouvrir son champ.`,
+    agentRecordedSlide: "Exécution enregistrée sur cette lame",
+    agentWaitSlide: "Il lit les comptes de la lame, demande un second avis sur les cellules douteuses, signale celles à ouvrir en premier et rédige le compte rendu de lame. Compter 1 à 3 min.",
     formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent",
     agentRecorded: "Exécution enregistrée sur cette image", agentLive: "Muse Spark, en direct",
     agentWorking: "L'agent relit la lame…",
@@ -388,7 +433,6 @@ const T = {
     agentMeta: (r) => `${r.llm_calls} appels au modèle · ${r.second_opinions.length} seconds avis · ${r.flags.length} signalements · ${r.seconds.toFixed(0)} s`,
     cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
     legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
-    backToSample: "Revoir l'exemple hors ligne",
     revhint: (c) => `Types proposés. Cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
     revnone: "Aucune cellule sous le seuil de confiance.",
     nCells: (n) => `${n} cellule${n > 1 ? "s" : ""}`,
@@ -404,34 +448,42 @@ const T = {
       too_many_pixels: "L'image dépasse 4096×4096 px.",
       not_an_image: "Le fichier n'est pas une image JPG, PNG ou WebP lisible.",
       bad_type: "Choisis une image JPG, PNG ou WebP.",
+      too_many_fields: "Une lame prend 20 champs au maximum.",
       analysis_failed: "L'analyse a échoué côté serveur. Réessaie, ou essaie une autre image.",
       network: "Impossible de joindre le backend. Vérifie la connexion, puis réessaie.",
       timeout: "Pas de réponse après 3 min. Réessaie dans un moment.",
       no_api: "Aucune adresse de backend : seule la démo hors ligne marche ici.",
       other: (s) => `Réponse inattendue du backend (HTTP ${s}).`
     },
-    retry: "Réessayer", setKey: "Saisir le jeton",
+    retry: "Réessayer", setKey: "Saisir le jeton", fieldErr: (k, name) => `Champ ${k} (${name}) : `,
     disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste."
   }
 };
 const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "platelet"];
 const DEFAULT_CUTOFF = 0.9598;
 const MAX_BYTES = 12 * 1024 * 1024;
+const MAX_FIELDS = 20;
 const TIMEOUT_MS = 180000;
 const REVIEW_TIMEOUT_MS = 240000;
+const SLIDE_REVIEW_TIMEOUT_MS = 400000;
 const TOKEN_KEY = "smearlens.token";
 const params = new URLSearchParams(location.search);
 const API = (params.get("api") || (location.hostname.endsWith(".modal.run") ? location.origin : DEFAULT_API)).replace(/\/$/, "");
 let lang = (params.get("lang") || "en") === "fr" ? "fr" : "en";
-let data = null, sample = null, live = false, lastFile = null, lastError = null, imgUrl = null;
-let cellIds = [];
-let sampleReview = null, liveReview = null, reviewState = "idle", reviewSeq = 0;
+let view = null, cur = 0, live = false, lastFiles = null, lastError = null, liveUrls = [];
+const samples = { field: null, slide: null };
+let ids = [];
+let reviewState = "idle", reviewSeq = 0;
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const col = (t) => `var(--t-${t})`;
 const num = (x, d = 1) => x.toFixed(d).replace(".", lang === "fr" ? "," : ".");
 const pct = (x) => num(x * 100) + " %";
 const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const inline = (x) => esc(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+const isSlide = () => !!view && view.fields.length > 1;
+const key = (k, i) => `${k}:${i}`;
 
 const store = {
   get() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; } },
@@ -445,8 +497,44 @@ function mk(tag, attrs = {}, parent) {
   return e;
 }
 
-function highlight(i, on) {
-  document.querySelectorAll(`[data-idx="${i}"]`).forEach((e) => e.classList.toggle("on", on));
+function highlight(idx, on) {
+  document.querySelectorAll(`[data-idx="${idx}"]`).forEach((e) => e.classList.toggle("on", on));
+}
+
+// Same names as the backend gives the agent (scripts/modal_app.py, /api/review-slide): duplicates get their rank.
+function reviewNames(names) {
+  return names.map((n, i) => names.filter((x) => x === n).length === 1 ? n : `${String(i + 1).padStart(2, "0")}-${n}`);
+}
+
+function makeView(items, extra) {
+  const names = reviewNames(items.map((f) => f.name));
+  const fields = items.map((f, k) => {
+    const img = new Image();
+    img.src = f.src;
+    return { name: f.name, src: f.src, a: f.a, img, rname: names[k] };
+  });
+  return { fields, review: null, recorded: true, seconds: 0, ...extra };
+}
+
+// Same numbering as the review agent (smearlens.agent.cells_from_reports): white cells from 1 across the
+// fields in order, platelets skipped.
+function numbering(fields) {
+  let n = 0;
+  return fields.map((f) => f.a.white_cells.map((c) => c.type === "platelet" ? null : ++n));
+}
+
+function aggregate(fields) {
+  const counts = {};
+  let wbc = 0, rbc = 0, plt = 0;
+  for (const f of fields) {
+    f.a.white_cells.forEach((c) => counts[c.type] = (counts[c.type] || 0) + 1);
+    wbc += f.a.white_cell_count; rbc += f.a.red_cell_count; plt += f.a.platelet_count;
+  }
+  if (fields.length === 1) return { counts, wbc, rbc, plt, diff: fields[0].a.differential_percent };
+  const nucleated = ORDER.filter((k) => k !== "platelet").reduce((s, k) => s + (counts[k] || 0), 0);
+  const diff = {};
+  ORDER.forEach((k) => { if (k !== "platelet" && counts[k]) diff[k] = 100 * counts[k] / nucleated; });
+  return { counts, wbc, rbc, plt, diff };
 }
 
 function chrome() {
@@ -460,45 +548,74 @@ function chrome() {
   const has = !!store.get();
   $("keybtn").classList.toggle("set", has);
   $("keylbl").textContent = has ? t.keySet : t.key;
+  $("examples").hidden = !samples.field && !samples.slide;
+  $("exField").hidden = !samples.field;
+  $("exField").classList.toggle("on", !!view && view === samples.field);
+  $("exSlide").hidden = !samples.slide;
+  if (samples.slide) $("exSlide").textContent = t.exSlide(samples.slide.fields.length);
+  $("exSlide").classList.toggle("on", !!view && view === samples.slide);
+  $("exLive").hidden = !view || view !== samples.slide;
   showError(lastError);
+}
+
+function goField(k) {
+  if (!view || k === cur || k < 0 || k >= view.fields.length) return;
+  cur = k;
+  render();
 }
 
 function render() {
   chrome();
-  if (!data) return;
-  const t = T[lang], j = data;
+  if (!view) return;
+  const t = T[lang], slide = isSlide(), fields = view.fields, f = fields[cur], j = f.a;
   const cutoff = j.review_cutoff ?? DEFAULT_CUTOFF;
-  $("file").textContent = t.file(j);
-  $("wbcn").textContent = t.nCells(j.white_cell_count);
+  const agg = aggregate(fields);
+  ids = numbering(fields);
+  $("file").textContent = slide ? t.slideFile(fields.length, view.seconds) : t.file({ ...j, name: f.name });
+  $("wbcn").textContent = t.nCells(agg.wbc);
+  if ($("img").getAttribute("src") !== f.src) $("img").src = f.src;
 
   const W = j.image.width, H = j.image.height, svg = $("boxes");
   $("stage").style.setProperty("--ar", `${W} / ${H}`);
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   svg.replaceChildren();
-  const revs = [];
-  j.white_cells.forEach((c, i) => { if (c.needs_review) revs.push(i); });
-  cellIds = cellNumbers(j.white_cells);
+  $("tip").hidden = true;
   [...j.white_cells.keys()].sort((a, b) => j.white_cells[a].needs_review - j.white_cells[b].needs_review).forEach((i) => {
-    const c = j.white_cells[i];
+    const c = j.white_cells[i], idx = key(cur, i);
     const [x0, y0, x1, y1] = c.box, rev = c.needs_review;
     const g = mk("g", { style: `--c:${col(c.type)}` }, svg);
     const a = { x: x0, y: y0, width: x1 - x0, height: y1 - y0, rx: 6 };
     mk("rect", { ...a, class: "box-halo" + (rev ? " rev" : "") }, g);
-    const r = mk("rect", { ...a, class: "box" + (rev ? " rev" : ""), "data-idx": i }, g);
-    r.addEventListener("mouseenter", () => highlight(i, true));
-    r.addEventListener("mouseleave", () => { highlight(i, false); $("tip").hidden = true; });
-    r.addEventListener("mousemove", (ev) => showTip(ev, c, cellIds[i]));
+    const r = mk("rect", { ...a, class: "box" + (rev ? " rev" : ""), "data-idx": idx }, g);
+    r.addEventListener("mouseenter", () => highlight(idx, true));
+    r.addEventListener("mouseleave", () => { highlight(idx, false); $("tip").hidden = true; });
+    r.addEventListener("mousemove", (ev) => showTip(ev, c, ids[cur][i]));
     if (rev) {
-      const n = cellIds[i] ?? "", b = mk("g", { class: "badge", transform: `translate(${x0 + 4} ${y0 + 4})` }, g);
+      const n = ids[cur][i] ?? "", b = mk("g", { class: "badge", transform: `translate(${x0 + 4} ${y0 + 4})` }, g);
       mk("circle", { r: String(Math.max(11, W / 70)), cx: 0, cy: 0 }, b);
       const tx = mk("text", { x: 0, y: 1, "font-size": String(Math.max(13, W / 80)) }, b);
       tx.textContent = n;
     }
   });
 
-  const counts = {};
-  j.white_cells.forEach((c) => counts[c.type] = (counts[c.type] || 0) + 1);
+  $("slidebar").hidden = !slide;
+  if (slide) {
+    $("fieldcap").textContent = t.fieldCap(cur + 1, fields.length, f);
+    $("strip").replaceChildren(...fields.map((g, k) => {
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "thumb" + (k === cur ? " on" : "") });
+      b.setAttribute("aria-label", t.fieldOf(k + 1, fields.length));
+      b.setAttribute("aria-pressed", String(k === cur));
+      const n = g.a.white_cells.filter((c) => c.needs_review).length;
+      b.innerHTML = `<img src="${esc(g.src)}" alt=""><b>${k + 1}</b>${n ? `<i>${n}</i>` : ""}`;
+      b.addEventListener("click", () => goField(k));
+      return b;
+    }));
+    $("strip").children[cur]?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }
+
+  const counts = agg.counts;
+  const each = (k, fn) => fields.forEach((g, fk) => g.a.white_cells.forEach((c, i) => c.type === k && fn(key(fk, i))));
   const shown = ORDER.filter((k) => k !== "platelet" || counts[k]);
   $("stack").replaceChildren(...ORDER.filter((k) => counts[k]).map((k) => {
     const d = document.createElement("div"); d.style.cssText = `--c:${col(k)};flex:${counts[k]}`; d.title = t.types[k]; return d;
@@ -506,56 +623,48 @@ function render() {
   $("rows").replaceChildren(...shown.map((k) => {
     const d = document.createElement("div");
     d.className = "row" + (counts[k] ? "" : " zero"); d.style.setProperty("--c", col(k));
-    const p = j.differential_percent[k] || 0;
-    d.innerHTML = `<span class="sw"></span><span class="n">${cap(t.types[k])}</span><span class="ct">${counts[k] || 0} / ${j.white_cell_count}</span><span class="pc">${pct(p / 100)}</span>`;
-    d.addEventListener("mouseenter", () => j.white_cells.forEach((c, i) => c.type === k && highlight(i, true)));
-    d.addEventListener("mouseleave", () => j.white_cells.forEach((c, i) => highlight(i, false)));
+    const p = agg.diff[k] || 0;
+    d.innerHTML = `<span class="sw"></span><span class="n">${cap(t.types[k])}</span><span class="ct">${counts[k] || 0} / ${agg.wbc}</span><span class="pc">${pct(p / 100)}</span>`;
+    d.addEventListener("mouseenter", () => each(k, (idx) => highlight(idx, true)));
+    d.addEventListener("mouseleave", () => each(k, (idx) => highlight(idx, false)));
     return d;
   }));
-  $("counts").innerHTML = [[t.wbc, j.white_cell_count], [t.rbc, j.red_cell_count], [t.plt, j.platelet_count]]
-    .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const stats = slide
+    ? [[t.wbc, agg.wbc], [t.rbcField, num(agg.rbc / fields.length)], [t.pltField, num(agg.plt / fields.length)]]
+    : [[t.wbc, agg.wbc], [t.rbc, agg.rbc], [t.plt, agg.plt]];
+  $("counts").innerHTML = stats.map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
 
-  $("legend").replaceChildren(...ORDER.filter((k) => counts[k]).map((k) => {
+  const here = {};
+  j.white_cells.forEach((c) => here[c.type] = 1);
+  $("legend").replaceChildren(...ORDER.filter((k) => here[k]).map((k) => {
     const s = document.createElement("span"); s.style.setProperty("--c", col(k)); s.innerHTML = `<i></i>${t.types[k]}`; return s;
   }));
   const dl = document.createElement("span"); dl.className = "dash"; dl.innerHTML = `<i></i>${t.legendReview}`; $("legend").appendChild(dl);
-  if (live && sample) {
-    const back = Object.assign(document.createElement("button"), { type: "button", className: "linkish", textContent: t.backToSample });
-    back.style.marginLeft = "auto";
-    back.addEventListener("click", showSample);
-    $("legend").appendChild(back);
-  }
 
-  $("revn").textContent = revs.length ? `${revs.length} / ${j.white_cell_count}` : "0";
+  const revs = [];
+  fields.forEach((g, fk) => g.a.white_cells.forEach((c, i) => c.needs_review && revs.push([fk, i])));
+  $("revn").textContent = revs.length ? `${revs.length} / ${agg.wbc}` : "0";
   $("rlist").classList.toggle("dense", revs.length > 2);
-  $("rlist").replaceChildren(...(revs.length ? revs.map((idx, n) => {
-    const c = j.white_cells[idx], d = document.createElement("div");
+  $("rlist").replaceChildren(...(revs.length ? revs.map(([fk, i]) => {
+    const g = fields[fk], c = g.a.white_cells[i], idx = key(fk, i), d = document.createElement("div");
     d.className = "item"; d.dataset.idx = idx; d.style.setProperty("--c", col(c.type));
     const cv = document.createElement("canvas"); cv.width = cv.height = 152;
     d.appendChild(cv);
     const info = document.createElement("div");
-    info.innerHTML = `<div><span class="no">${cellIds[idx] ?? ""}</span><span class="ty">${cap(t.types[c.type])}</span></div>
+    info.innerHTML = `<div><span class="no">${ids[fk][i] ?? ""}</span><span class="ty">${cap(t.types[c.type])}</span>${slide ? `<span class="fld">${t.fieldN(fk + 1)}</span>` : ""}</div>
       <div class="sub">${num(c.confidence * 100)} % ${t.conf}${c.uncertain_detection ? ` · ${t.uncertain}` : ""}</div>
-      <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${cutoff * 100}%"></u></div>`;
+      <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${(g.a.review_cutoff ?? cutoff) * 100}%"></u></div>`;
     d.appendChild(info);
     d.addEventListener("mouseenter", () => highlight(idx, true));
     d.addEventListener("mouseleave", () => highlight(idx, false));
-    drawCrop(cv, c.box);
+    if (slide) d.addEventListener("click", () => { goField(fk); highlight(idx, true); });
+    drawCrop(cv, g.img, c.box);
     return d;
   }) : [Object.assign(document.createElement("p"), { className: "empty", textContent: t.revnone })]));
-  $("revhint").textContent = t.revhint(num(cutoff * 100, 0));
+  $("revhint").textContent = (slide ? t.revhintSlide : t.revhint)(num(cutoff * 100, 0));
 
   renderAgent();
 }
-
-// Same numbering as the review agent (smearlens.agent.cells_from_reports): white cells from 1, platelets skipped.
-function cellNumbers(cells) {
-  let n = 0;
-  return cells.map((c) => c.type === "platelet" ? null : ++n);
-}
-
-const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const inline = (x) => esc(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
 function mdSections(md) {
   const out = [];
@@ -580,10 +689,10 @@ function mdSections(md) {
 }
 
 function renderAgent() {
-  const t = T[lang], body = $("agentbody"), r = live ? liveReview : sampleReview;
-  $("agenttag").textContent = live ? t.agentLive : t.agentRecorded;
+  const t = T[lang], body = $("agentbody"), r = view?.review, slide = isSlide();
+  $("agenttag").textContent = live ? t.agentLive : slide ? t.agentRecordedSlide : t.agentRecorded;
   if (live && reviewState === "busy") {
-    body.innerHTML = `<div class="wait"><div class="spin"></div><p><b>${t.agentWorking}</b> ${t.agentWait}</p></div>`;
+    body.innerHTML = `<div class="wait"><div class="spin"></div><p><b>${t.agentWorking}</b> ${slide ? t.agentWaitSlide : t.agentWait}</p></div>`;
     return;
   }
   if (!r || !r.report) {
@@ -591,54 +700,62 @@ function renderAgent() {
     return;
   }
   const secs = mdSections(r.report).map(([h, b]) => `<div>${h ? `<h3>${h}</h3>` : ""}${b}</div>`);
-  const key = (b) => b.map((v) => Math.round(v)).join(",");
-  const where = new Map(data.white_cells.map((c, i) => [key(c.box), i]));
+  const boxKey = (b) => b.map((v) => Math.round(v)).join(",");
+  const byName = new Map(view.fields.map((f, k) => [f.rname, k]));
+  const where = new Map();
+  view.fields.forEach((f, k) => f.a.white_cells.forEach((c, i) => where.set(`${k}|${boxKey(c.box)}`, [k, i])));
   const chips = r.flags.map((f) => {
-    const i = where.get(key(f.box)), k = ORDER.includes(f.type) ? f.type : "neutrophil";
-    return `<span class="chip" data-idx="${i ?? ""}" style="--c:${col(k)}" title="${esc(f.reason)}"><b>${t.cell} ${f.cell_id}</b> ${t.types[f.type] || f.type}${f.priority === "high" ? " · " + t.high : ""}</span>`;
+    const k = slide ? byName.get(f.field) : 0, hit = k === undefined ? null : where.get(`${k}|${boxKey(f.box)}`);
+    const ty = ORDER.includes(f.type) ? f.type : "neutrophil";
+    const at = hit ? ` data-idx="${key(...hit)}" data-k="${hit[0]}"` : "";
+    return `<span class="chip${slide && hit ? " go" : ""}"${at} style="--c:${col(ty)}" title="${esc(f.reason)}"><b>${t.cell} ${f.cell_id}</b> ${t.types[f.type] || esc(f.type)}${slide && hit ? " · " + t.fieldN(hit[0] + 1) : ""}${f.priority === "high" ? " · " + t.high : ""}</span>`;
   });
   if (chips.length) secs.push(`<div><h3>${t.agentFlags}</h3><div class="chips">${chips.join("")}</div></div>`);
   secs.push(`<p class="meta">${[t.agentLang, t.agentMeta(r)].filter(Boolean).join(" · ")}</p>`);
   body.innerHTML = secs.join("");
   body.querySelectorAll(".chip[data-idx]").forEach((c) => {
-    if (c.dataset.idx === "") return;
     c.addEventListener("mouseenter", () => highlight(c.dataset.idx, true));
     c.addEventListener("mouseleave", () => highlight(c.dataset.idx, false));
+    if (slide) c.addEventListener("click", () => { const idx = c.dataset.idx; goField(Number(c.dataset.k)); highlight(idx, true); });
   });
 }
 
-async function requestReview(file, analysis) {
-  const seq = ++reviewSeq;
-  liveReview = null;
-  if (!analysis.white_cells.length) { reviewState = "none"; return renderAgent(); }
+const base64 = (file) => new Promise((ok, ko) => {
+  const fr = new FileReader();
+  fr.onload = () => ok(String(fr.result).split(",")[1]);
+  fr.onerror = ko;
+  fr.readAsDataURL(file);
+});
+
+async function requestReview(v) {
+  const seq = ++reviewSeq, slide = v.fields.length > 1;
+  v.review = null;
+  if (!v.fields.some((f) => f.a.white_cells.length)) { reviewState = "none"; return renderAgent(); }
   reviewState = "busy";
   renderAgent();
   try {
-    const image = await new Promise((ok, ko) => {
-      const fr = new FileReader();
-      fr.onload = () => ok(String(fr.result).split(",")[1]);
-      fr.onerror = ko;
-      fr.readAsDataURL(file);
-    });
-    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), REVIEW_TIMEOUT_MS);
-    const res = await fetch(`${API}/api/review`, {
+    const images = await Promise.all(v.files.map(base64));
+    const payload = slide
+      ? { fields: v.fields.map((f, k) => ({ name: f.rname, analysis: f.a, image: images[k] })) }
+      : { analysis: v.fields[0].a, image: images[0], name: v.fields[0].rname };
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), slide ? SLIDE_REVIEW_TIMEOUT_MS : REVIEW_TIMEOUT_MS);
+    const res = await fetch(`${API}/api/${slide ? "review-slide" : "review"}`, {
       method: "POST", signal: ctrl.signal,
       headers: { "content-type": "application/json", "x-smearlens-token": store.get() },
-      body: JSON.stringify({ analysis, image, name: file.name })
+      body: JSON.stringify(payload)
     }).finally(() => clearTimeout(timer));
     const body = await res.json().catch(() => null);
     if (seq !== reviewSeq) return;
-    liveReview = res.ok && body?.report ? body : null;
-    reviewState = liveReview ? "done" : "error";
+    v.review = res.ok && body?.report ? body : null;
+    reviewState = v.review ? "done" : "error";
   } catch {
     if (seq !== reviewSeq) return;
     reviewState = "error";
   }
-  if (live) renderAgent();
+  if (view === v) renderAgent();
 }
 
-function drawCrop(cv, box) {
-  const img = $("img");
+function drawCrop(cv, img, box) {
   const go = () => {
     const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0, s = Math.max(w, h) * 1.3;
     const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
@@ -660,13 +777,15 @@ function showTip(ev, c, id) {
 }
 
 function showError(code, status) {
-  lastError = code ? { code: code.code || code, status: code.status ?? status } : null;
+  lastError = code ? { code: code.code || code, status: code.status ?? status, field: code.field } : null;
   const box = $("alert");
   if (!lastError) { box.hidden = true; box.replaceChildren(); return; }
   const t = T[lang], e = t.errors[lastError.code];
   const msg = typeof e === "function" ? e(lastError.status) : e || t.errors.other(lastError.status);
-  box.innerHTML = `<span><b>${t.errTitle}</b> ${msg}</span>`;
-  const act = lastError.code === "unauthorized" ? [t.setKey, openKey] : lastFile && lastError.code !== "bad_type" && lastError.code !== "no_api" ? [t.retry, () => analyse(lastFile)] : null;
+  const where = lastError.field ? esc(t.fieldErr(lastError.field.k, lastError.field.name)) : "";
+  box.innerHTML = `<span><b>${t.errTitle}</b> ${where}${msg}</span>`;
+  const retry = lastFiles && !["bad_type", "no_api", "too_many_fields"].includes(lastError.code);
+  const act = lastError.code === "unauthorized" ? [t.setKey, openKey] : retry ? [t.retry, () => analyse(lastFiles)] : null;
   if (act) {
     const b = Object.assign(document.createElement("button"), { type: "button", className: "btn", textContent: act[0] });
     b.addEventListener("click", act[1]);
@@ -675,18 +794,20 @@ function showError(code, status) {
   box.hidden = false;
 }
 
-let ticker = null;
+let ticker = null, progress = null;
 function busy(on) {
-  const t = T[lang];
   $("drop").classList.toggle("busy", on);
+  $("examples").classList.toggle("busy", on);
   $("veil").hidden = !on;
   clearInterval(ticker);
   if (!on) return;
   const started = Date.now();
   const tick = () => {
     const s = Math.round((Date.now() - started) / 1000), tt = T[lang];
-    $("vtitle").textContent = s < 2 ? tt.sending : s < 8 ? tt.analysing : tt.waking;
-    $("vtext").textContent = tt.loadText;
+    let title = s < 2 ? tt.sending : s < 8 ? tt.analysing : tt.waking;
+    if (progress) title = progress.k === 1 && s >= 8 ? tt.waking : tt.analysingField(progress.k, progress.n);
+    $("vtitle").textContent = title;
+    $("vtext").textContent = progress ? tt.loadTextSlide : tt.loadText;
     $("vel").textContent = tt.elapsed(s);
   };
   tick();
@@ -703,68 +824,118 @@ $("keydlg").addEventListener("close", () => {
   const v = $("keydlg").returnValue;
   if (v === "save") store.set($("keyin").value.trim());
   if (v === "clear") store.set("");
-  if (v === "save" && store.get() && lastError?.code === "unauthorized" && lastFile) { chrome(); analyse(lastFile); return; }
+  if (v === "save" && store.get() && lastError?.code === "unauthorized" && lastFiles) { chrome(); analyse(lastFiles); return; }
   chrome();
 });
 
-async function analyse(file) {
-  lastFile = file;
-  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showError("bad_type");
-  if (file.size > MAX_BYTES) return showError("too_large");
+let running = false;
+async function analyse(files) {
+  if (running) return;
+  lastFiles = files;
+  const n = files.length, ref = (k) => n > 1 ? { k: k + 1, name: files[k].name } : undefined;
+  if (n > MAX_FIELDS) return showError("too_many_fields");
+  const bad = files.findIndex((f) => !/^image\/(jpeg|png|webp)$/.test(f.type));
+  if (bad >= 0) return showError({ code: "bad_type", field: ref(bad) });
+  const big = files.findIndex((f) => f.size > MAX_BYTES);
+  if (big >= 0) return showError({ code: "too_large", field: ref(big) });
   if (!API) return showError("no_api");
   const token = store.get();
   if (!token) { showError("unauthorized"); return openKey(); }
   showError(null);
+  running = true;
+  progress = n > 1 ? { k: 1, n } : null;
   busy(true);
-  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const results = [];
+  let k = 0;
   try {
-    const res = await fetch(`${API}/api/analyze`, {
-      method: "POST", body: file, signal: ctrl.signal,
-      headers: { "content-type": file.type, "x-smearlens-token": token }
-    });
-    const body = await res.json().catch(() => null);
-    if (!res.ok || !body || !Array.isArray(body.white_cells)) return showError({ code: body?.error || "other", status: res.status });
-    const url = URL.createObjectURL(file);
-    await new Promise((ok) => { $("img").onload = ok; $("img").onerror = ok; $("img").src = url; });
-    if (imgUrl) URL.revokeObjectURL(imgUrl);
-    imgUrl = url;
-    data = { ...body, name: file.name };
+    for (; k < n; k++) {
+      if (progress) progress.k = k + 1;
+      const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+      const res = await fetch(`${API}/api/analyze`, {
+        method: "POST", body: files[k], signal: ctrl.signal,
+        headers: { "content-type": files[k].type, "x-smearlens-token": token }
+      }).finally(() => clearTimeout(timer));
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body || !Array.isArray(body.white_cells)) return showError({ code: body?.error || "other", status: res.status, field: ref(k) });
+      results.push(body);
+    }
+    const urls = files.map((f) => URL.createObjectURL(f));
+    await new Promise((ok) => { $("img").onload = ok; $("img").onerror = ok; $("img").src = urls[0]; });
+    liveUrls.forEach((u) => URL.revokeObjectURL(u));
+    liveUrls = urls;
+    const seconds = results.reduce((s, r) => s + (r.round_trip_s ?? r.timing_s.total), 0);
+    view = makeView(files.map((f, i) => ({ name: f.name, src: urls[i], a: results[i] })), { recorded: false, files, seconds });
+    cur = 0;
     live = true;
     render();
-    requestReview(file, body);
+    requestReview(view);
   } catch (err) {
-    showError(err.name === "AbortError" ? "timeout" : "network");
+    showError({ code: err.name === "AbortError" ? "timeout" : "network", field: ref(k) });
   } finally {
-    clearTimeout(timer);
+    running = false;
+    progress = null;
     busy(false);
   }
 }
 
-function showSample() {
-  if (!sample) return;
+function showExample(kind) {
+  if (!samples[kind] || running) return;
   live = false;
   reviewSeq++;
   showError(null);
-  data = sample;
-  $("img").src = "sample.jpg";
+  view = samples[kind];
+  cur = 0;
   render();
 }
 
-$("pick").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) analyse(f); });
+async function runExampleLive() {
+  if (!samples.slide || running) return;
+  try {
+    const files = await Promise.all(samples.slide.fields.map(async (f) => {
+      const blob = await (await fetch(f.src)).blob();
+      return new File([blob], f.name, { type: blob.type || "image/png" });
+    }));
+    analyse(files);
+  } catch {
+    showError("network");
+  }
+}
+
+function start(list) {
+  const files = [...list];
+  if (files.length && !running) analyse(files);
+}
+
+$("pick").addEventListener("change", (e) => { const fs = [...e.target.files]; e.target.value = ""; start(fs); });
 const viewer = document.querySelector(".viewer");
 ["dragenter", "dragover"].forEach((ev) => viewer.addEventListener(ev, (e) => { e.preventDefault(); $("drop").classList.add("over"); }));
 ["dragleave", "drop"].forEach((ev) => viewer.addEventListener(ev, (e) => { e.preventDefault(); if (ev === "drop" || !viewer.contains(e.relatedTarget)) $("drop").classList.remove("over"); }));
-viewer.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f && !$("drop").classList.contains("busy")) analyse(f); });
+viewer.addEventListener("drop", (e) => start(e.dataTransfer.files));
 $("keybtn").addEventListener("click", openKey);
 $("lang").addEventListener("click", () => { lang = lang === "en" ? "fr" : "en"; render(); });
+$("exField").addEventListener("click", () => showExample("field"));
+$("exSlide").addEventListener("click", () => showExample("slide"));
+$("exLive").addEventListener("click", runExampleLive);
+document.addEventListener("keydown", (e) => {
+  if (!isSlide() || e.target.closest("input, dialog") || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === "ArrowRight") goField(cur + 1);
+  if (e.key === "ArrowLeft") goField(cur - 1);
+});
 
+const getJSON = (url) => fetch(url).then((r) => r.ok ? r.json() : Promise.reject(r.status));
 chrome();
-fetch("sample.json").then((r) => r.json()).then((j) => {
-  const { round_trip_s, path, ...rest } = Array.isArray(j) ? j[0] : j;
-  sample = { ...rest, name: "sample.jpg" };
-  if (!data) showSample();
-  return fetch("sample-review.json").then((r) => r.ok ? r.json() : null).then((r) => { sampleReview = r; if (!live) renderAgent(); }).catch(() => {});
+getJSON("sample.json").then((j) => {
+  const { round_trip_s, path, ...a } = Array.isArray(j) ? j[0] : j;
+  samples.field = makeView([{ name: "sample.jpg", src: "sample.jpg", a }]);
+  const wanted = params.get("example") === "slide" && samples.slide ? "slide" : "field";
+  if (!view) showExample(wanted); else chrome();
+  return getJSON("sample-review.json").then((r) => { samples.field.review = r; if (view === samples.field) renderAgent(); }).catch(() => {});
 }).catch(() => { document.body.insertAdjacentHTML("afterbegin", "<p style='padding:20px'>Cannot load sample.json. Serve this folder with: python3 -m http.server</p>"); });
+getJSON("slide/slide.json").then((j) => {
+  samples.slide = makeView(j.fields.map(({ name, src, ...a }) => ({ name, src, a })), { seconds: j.analysis_s });
+  if (params.get("example") === "slide" && !live) showExample("slide"); else chrome();
+  return getJSON("slide/review.json").then((r) => { samples.slide.review = r; if (view === samples.slide) renderAgent(); }).catch(() => {});
+}).catch(() => {});
 </script>
 </body>
 </html>

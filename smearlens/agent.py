@@ -66,6 +66,8 @@ Rules:
 - Say clearly when fewer than 100 white cells were counted: the differential is then only indicative.
   Below 20 white cells, outside_reference_ranges is null: do not compare with the reference ranges at all,
   just say the count is too small for that. Never quote tool field names in the report.
+- A cell with uncertain_detection was kept only because the field had no sure white cell: it may not be
+  a white cell at all. Say so in the review list, and flag it.
 - If most types are outside the reference ranges, say the overall pattern is unusual and that slide
   quality and field selection should be checked before the differential is used."""
 
@@ -159,6 +161,7 @@ class Cell:
     label: str
     confidence: float
     needs_review: bool
+    uncertain_detection: bool = False
 
 
 @dataclass
@@ -193,7 +196,10 @@ def cells_from_reports(reports: Sequence[dict], names: Sequence[str]) -> list[Ce
     for name, report in zip(names, reports):
         for c in report.get("white_cells", []):
             if c["type"] in NUCLEATED:
-                cells.append(Cell(len(cells) + 1, name, c["box"], c["type"], c["confidence"], bool(c["needs_review"])))
+                cells.append(
+                    Cell(len(cells) + 1, name, c["box"], c["type"], c["confidence"], bool(c["needs_review"]),
+                         bool(c.get("uncertain_detection")))
+                )
     return cells
 
 
@@ -246,6 +252,7 @@ class SlideReviewer:
             "differential_percent": diff,
             "outside_reference_ranges": out_of_range(diff) if len(cells) >= MIN_CELLS_FOR_RANGES else None,
             "marked_for_review": sum(c.needs_review for c in cells),
+            "uncertain_detections": sum(c.uncertain_detection for c in cells),
             "marked_for_review_by_type": dict(Counter(c.label for c in cells if c.needs_review)),
             "below_confidence_0.7": sum(c.confidence < LOW_CONFIDENCE for c in cells),
             "red_cells": self.counts.get("red_cells"),
@@ -279,7 +286,7 @@ class SlideReviewer:
                 "matching": len(picked),
                 "cells": [
                     {"cell_id": c.id, "field": c.field, "type": c.label, "confidence": c.confidence,
-                     "needs_review": c.needs_review}
+                     "needs_review": c.needs_review, "uncertain_detection": c.uncertain_detection}
                     for c in picked[:MAX_LISTED]
                 ],
             }

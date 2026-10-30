@@ -342,7 +342,7 @@ const T = {
     agentWait: "It reads the counts, asks a second opinion on the doubtful cells, flags what to open first and writes the report. About 30 to 90 s.",
     agentFailed: "The agent report is not available for this image. The counts above stay valid.",
     agentNoCells: "No white cell found: nothing for the agent to review.",
-    agentFlags: "Open first", agentLang: "", cell: "Cell", high: "high priority",
+    agentFlags: "Open first", agentLang: "", cell: "Cell", high: "high priority", uncertain: "uncertain detection",
     agentMeta: (r) => `${r.llm_calls} model calls · ${r.second_opinions.length} second opinions · ${r.flags.length} flags · ${r.seconds.toFixed(0)} s`,
     cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
     legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
@@ -384,7 +384,7 @@ const T = {
     agentWait: "Il lit les comptes, demande un second avis sur les cellules douteuses, signale celles à ouvrir en premier et rédige le compte rendu. Compter 30 à 90 s.",
     agentFailed: "Le compte rendu de l'agent n'est pas disponible pour cette image. Les comptes ci-dessus restent valables.",
     agentNoCells: "Aucun globule blanc trouvé : rien à relire pour l'agent.",
-    agentFlags: "À ouvrir d'abord", cell: "Cellule", high: "priorité haute", agentLang: "Compte rendu rédigé en anglais par le modèle.",
+    agentFlags: "À ouvrir d'abord", cell: "Cellule", high: "priorité haute", uncertain: "détection incertaine", agentLang: "Compte rendu rédigé en anglais par le modèle.",
     agentMeta: (r) => `${r.llm_calls} appels au modèle · ${r.second_opinions.length} seconds avis · ${r.flags.length} signalements · ${r.seconds.toFixed(0)} s`,
     cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
     legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
@@ -535,7 +535,7 @@ function render() {
     d.appendChild(cv);
     const info = document.createElement("div");
     info.innerHTML = `<div><span class="no">${cellIds[idx] ?? ""}</span><span class="ty">${cap(t.types[c.type])}</span></div>
-      <div class="sub">${num(c.confidence * 100)} % ${t.conf}</div>
+      <div class="sub">${num(c.confidence * 100)} % ${t.conf}${c.uncertain_detection ? ` · ${t.uncertain}` : ""}</div>
       <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${cutoff * 100}%"></u></div>`;
     d.appendChild(info);
     d.addEventListener("mouseenter", () => highlight(idx, true));
@@ -652,7 +652,7 @@ function drawCrop(cv, box) {
 function showTip(ev, c, id) {
   const tip = $("tip"), r = $("stage").getBoundingClientRect(), t = T[lang];
   tip.style.setProperty("--c", col(c.type));
-  tip.innerHTML = (id ? `${t.cell} ${id} · ` : "") + `<b>${cap(t.types[c.type])}</b> · ${num(c.confidence * 100)} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
+  tip.innerHTML = (id ? `${t.cell} ${id} · ` : "") + `<b>${cap(t.types[c.type])}</b> · ${num(c.confidence * 100)} %` + (c.needs_review ? `<br><span class="rv">${t.review}${c.uncertain_detection ? ` · ${t.uncertain}` : ""}</span>` : "");
   tip.hidden = false;
   let x = ev.clientX - r.left, y = ev.clientY - r.top;
   tip.style.left = Math.min(x, r.width - tip.offsetWidth - 20) + "px";

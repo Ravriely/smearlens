@@ -63,6 +63,7 @@ def test_check_report_catches_diagnostic_words():
 def test_cells_from_reports_numbers_from_one_and_keeps_field():
     reports = [backend_report(("neutrophil", 0.95)), backend_report(), backend_report(("ig", 0.5), ("monocyte", 0.9))]
     found = cells_from_reports(reports, ["a", "b", "c"])
+    assert [c.uncertain_detection for c in found] == [False, False, False]
     assert [(c.id, c.field, c.label, c.needs_review) for c in found] == [
         (1, "a", "neutrophil", False),
         (2, "c", "ig", True),

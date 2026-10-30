@@ -1,0 +1,287 @@
+{
+  "model": "meta-models/muse-spark-open-1026",
+  "report": "### Sample adequacy\n- 12 fields analysed, 12 white cells counted. Count is too small for a differential (fewer than 100 white cells: differential is only indicative; below 20, comparison with reference ranges is not applicable).\n- Red cells: 132 counted (~11.0/field); platelets: 5 counted (~0.4/field). No empty fields.\n- Note: 1 uncertain detection kept only because its field had no sure white cell.\n\n### Differential (indicative only, n=12)\n- Automated counts: neutrophils 4 (33.3%), lymphocytes 3 (25.0%), monocytes 2 (16.7%), eosinophils 2 (16.7%), basophils 1 (8.3%), IG 0, erythroblasts 0.\n- Count too small to assess against reference ranges; interpret as indicative only.\n\n### Review list\n- Review queue: 2 cells marked for review.\n- **Flagged to open first:**\n  - Cell 2 (field-02.png, monocyte, conf 0.99) \u2014 **high priority**: uncertain detection \u2014 may not be a white cell at all; please verify if cell is present.\n  - Cell 1 (field-01.png, neutrophil, conf 0.96) \u2014 marked for review; second opinion agreed (neutrophil) \u2014 confirm morphology.\n\n### Limits\n- Second-opinion vision model is generalist (65% on single cells, weak on IG/erythroblasts vs classifier 97.6%); disagreements prompt human review, not corrections. Red-cell count is indicative in crowded fields; reference ranges are indicative adult ranges \u2014 lab ranges prevail.\n",
+  "accepted": true,
+  "summary": {
+    "fields": 12,
+    "fields_without_white_cell": 0,
+    "white_cells": 12,
+    "enough_for_differential": false,
+    "counts": {
+      "neutrophil": 4,
+      "monocyte": 2,
+      "basophil": 1,
+      "eosinophil": 2,
+      "lymphocyte": 3
+    },
+    "differential_percent": {
+      "basophil": 8.3,
+      "eosinophil": 16.7,
+      "erythroblast": 0.0,
+      "ig": 0.0,
+      "lymphocyte": 25.0,
+      "monocyte": 16.7,
+      "neutrophil": 33.3
+    },
+    "outside_reference_ranges": null,
+    "marked_for_review": 2,
+    "uncertain_detections": 1,
+    "marked_for_review_by_type": {
+      "neutrophil": 1,
+      "monocyte": 1
+    },
+    "below_confidence_0.7": 0,
+    "red_cells": 132,
+    "platelets": 5,
+    "red_cells_per_field": 11.0,
+    "platelets_per_field": 0.4,
+    "second_opinion_budget": 6,
+    "known_limits": [
+      "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
+      "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
+      "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+    ]
+  },
+  "flags": [
+    {
+      "cell_id": 2,
+      "field": "field-02.png",
+      "box": [
+        91.9,
+        114.8,
+        335.3,
+        251.5
+      ],
+      "type": "monocyte",
+      "confidence": 0.9911,
+      "priority": "high",
+      "reason": "uncertain detection: kept only because field had no sure white cell; may not be a white cell"
+    },
+    {
+      "cell_id": 1,
+      "field": "field-01.png",
+      "box": [
+        120.1,
+        114.0,
+        241.3,
+        251.0
+      ],
+      "type": "neutrophil",
+      "confidence": 0.956,
+      "priority": "normal",
+      "reason": "marked for review; second opinion agreed but confirm"
+    }
+  ],
+  "second_opinions": [
+    {
+      "cell_id": 1,
+      "field": "field-01.png",
+      "box": [
+        120.1,
+        114.0,
+        241.3,
+        251.0
+      ],
+      "classifier": "neutrophil",
+      "confidence": 0.956,
+      "second_opinion": "neutrophil",
+      "agrees": true,
+      "reasoning": "Bilobed segmented nucleus with dense clumped chromatin and pale cytoplasm with fine lilac-pink granules and no large eosinophilic or basophilic granules favors mature granulocyte.\n\nLABEL: neutrophil"
+    },
+    {
+      "cell_id": 2,
+      "field": "field-02.png",
+      "box": [
+        91.9,
+        114.8,
+        335.3,
+        251.5
+      ],
+      "classifier": "monocyte",
+      "confidence": 0.9911,
+      "second_opinion": "monocyte",
+      "agrees": true,
+      "reasoning": "Large cell with abundant grey-blue vacuolated cytoplasm and a folded/kidney-shaped nucleus is characteristic of a monocyte.\nLABEL: monocyte"
+    }
+  ],
+  "steps": [
+    {
+      "tool": "get_slide_summary",
+      "args": {},
+      "result": {
+        "fields": 12,
+        "fields_without_white_cell": 0,
+        "white_cells": 12,
+        "enough_for_differential": false,
+        "counts": {
+          "neutrophil": 4,
+          "monocyte": 2,
+          "basophil": 1,
+          "eosinophil": 2,
+          "lymphocyte": 3
+        },
+        "differential_percent": {
+          "basophil": 8.3,
+          "eosinophil": 16.7,
+          "erythroblast": 0.0,
+          "ig": 0.0,
+          "lymphocyte": 25.0,
+          "monocyte": 16.7,
+          "neutrophil": 33.3
+        },
+        "outside_reference_ranges": null,
+        "marked_for_review": 2,
+        "uncertain_detections": 1,
+        "marked_for_review_by_type": {
+          "neutrophil": 1,
+          "monocyte": 1
+        },
+        "below_confidence_0.7": 0,
+        "red_cells": 132,
+        "platelets": 5,
+        "red_cells_per_field": 11.0,
+        "platelets_per_field": 0.4,
+        "second_opinion_budget": 6,
+        "known_limits": [
+          "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
+          "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
+          "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+        ]
+      }
+    },
+    {
+      "tool": "get_reference_ranges",
+      "args": {},
+      "result": {
+        "unit": "percent of white cells",
+        "note": "indicative adult ranges; the lab's own ranges prevail",
+        "ranges": {
+          "neutrophil": [
+            40,
+            75
+          ],
+          "lymphocyte": [
+            20,
+            45
+          ],
+          "monocyte": [
+            2,
+            10
+          ],
+          "eosinophil": [
+            1,
+            6
+          ],
+          "basophil": [
+            0,
+            2
+          ],
+          "ig": [
+            0,
+            1
+          ],
+          "erythroblast": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "tool": "list_cells",
+      "args": {
+        "needs_review_only": true
+      },
+      "result": {
+        "matching": 2,
+        "cells": [
+          {
+            "cell_id": 1,
+            "field": "field-01.png",
+            "type": "neutrophil",
+            "confidence": 0.956,
+            "needs_review": true,
+            "uncertain_detection": false
+          },
+          {
+            "cell_id": 2,
+            "field": "field-02.png",
+            "type": "monocyte",
+            "confidence": 0.9911,
+            "needs_review": true,
+            "uncertain_detection": true
+          }
+        ]
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 1
+      },
+      "result": {
+        "cell_id": 1,
+        "classifier": "neutrophil",
+        "label": "neutrophil",
+        "reasoning": "Bilobed segmented nucleus with dense clumped chromatin and pale cytoplasm with fine lilac-pink granules and no large eosinophilic or basophilic granules favors mature granulocyte.\n\nLABEL: neutrophil"
+      }
+    },
+    {
+      "tool": "ask_second_opinion",
+      "args": {
+        "cell_id": 2
+      },
+      "result": {
+        "cell_id": 2,
+        "classifier": "monocyte",
+        "label": "monocyte",
+        "reasoning": "Large cell with abundant grey-blue vacuolated cytoplasm and a folded/kidney-shaped nucleus is characteristic of a monocyte.\nLABEL: monocyte"
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 2,
+        "priority": "high",
+        "reason": "uncertain detection: kept only because field had no sure white cell; may not be a white cell"
+      },
+      "result": {
+        "flagged": 2,
+        "review_list_size": 1
+      }
+    },
+    {
+      "tool": "flag_cell",
+      "args": {
+        "cell_id": 1,
+        "priority": "normal",
+        "reason": "marked for review; second opinion agreed but confirm"
+      },
+      "result": {
+        "flagged": 1,
+        "review_list_size": 2
+      }
+    },
+    {
+      "tool": "submit_report",
+      "args": {
+        "report": "### Sample adequacy\n- 12 fields analysed, 12 white cells counted. Count is too small for a differential (fewer than 100 white cells: differential is only indicative; below 20, comparison with reference ranges is not applicable).\n- Red cells: 132 counted (~11.0/field); platelets: 5 counted (~0.4/field). No empty fields.\n- Note: 1 uncertain detection kept only because its field had no sure white cell.\n\n### Differential (indicative only, n=12)\n- Automated counts: neutrophils 4 (33.3%), lymphocytes 3 (25.0%), monocytes 2 (16.7%), eosinophils 2 (16.7%), basophils 1 (8.3%), IG 0, erythroblasts 0.\n- Count too small to assess against reference ranges; interpret as indicative only.\n\n### Review list\n- Review queue: 2 cells marked for review.\n- **Flagged to open first:**\n  - Cell 2 (field-02.png, monocyte, conf 0.99) \u2014 **high priority**: uncertain detection \u2014 may not be a white cell at all; please verify if cell is present.\n  - Cell 1 (field-01.png, neutrophil, conf 0.96) \u2014 marked for review; second opinion agreed (neutrophil) \u2014 confirm morphology.\n\n### Limits\n- Second-opinion vision model is generalist (65% on single cells, weak on IG/erythroblasts vs classifier 97.6%); disagreements prompt human review, not corrections. Red-cell count is indicative in crowded fields; reference ranges are indicative adult ranges \u2014 lab ranges prevail.\n"
+      },
+      "result": {
+        "accepted": true
+      }
+    }
+  ],
+  "tokens": {
+    "agent_prompt": 11109,
+    "agent_completion": 3586,
+    "agent": 14695,
+    "second_opinions": 5045,
+    "total": 19740
+  },
+  "llm_calls": 5,
+  "seconds": 35.7,
+  "rejected_reports": 0,
+  "rejected_flags": 0,
+  "round_trip_s": 39.891
+}

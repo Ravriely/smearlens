@@ -1,0 +1,62 @@
+[
+ {
+  "name": "field-01.png",
+  "truth": "neutrophil",
+  "source": "00bb17f0c091599da3f97aeeef49bec6.png"
+ },
+ {
+  "name": "field-02.png",
+  "truth": "monocyte",
+  "source": "02b9abe156065d8097edfd6afbebcbb3.png"
+ },
+ {
+  "name": "field-03.png",
+  "truth": "neutrophil",
+  "source": "03967e3a34d05f4583e6d361f2c333a0.png"
+ },
+ {
+  "name": "field-04.png",
+  "truth": "monocyte",
+  "source": "03e9e4f8980a5fe78e1069167ff9f3d9.png"
+ },
+ {
+  "name": "field-05.png",
+  "truth": "basophil",
+  "source": "075e5bb41f4256e98bbfb870d6360d33.png"
+ },
+ {
+  "name": "field-06.png",
+  "truth": "neutrophil",
+  "source": "1299047edeb15e2581d9680aaa667d5d.png"
+ },
+ {
+  "name": "field-07.png",
+  "truth": "eosinophil",
+  "source": "37ad6d9b03d356f9a0f18cd42009b491.png"
+ },
+ {
+  "name": "field-08.png",
+  "truth": "neutrophil",
+  "source": "3c7a397302c657f9aaa5fa18182f2612.png"
+ },
+ {
+  "name": "field-09.png",
+  "truth": "lymphocyte",
+  "source": "44f9122b2a1b53499b42b4f4ae8d3a3c.png"
+ },
+ {
+  "name": "field-10.png",
+  "truth": "lymphocyte",
+  "source": "45bc2bb9c9bd57688c652db42de77007.png"
+ },
+ {
+  "name": "field-11.png",
+  "truth": "lymphocyte",
+  "source": "53542a7e8f2251008c5879a315ba2e4b.png"
+ },
+ {
+  "name": "field-12.png",
+  "truth": "eosinophil",
+  "source": "63ff753a509c59d7896f9515b7851549.png"
+ }
+]

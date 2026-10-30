@@ -224,7 +224,15 @@ dialog .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1
 .agent .body { flex: 1; align-content: space-between; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; }
 .agent p { margin: 0 0 8px; font-size: 13.5px; }
 .agent h3 { margin: 0 0 4px; font: 600 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-.agent ul { margin: 0; padding-left: 18px; font-size: 13.5px; }
+.agent ul { margin: 0 0 8px; padding-left: 18px; font-size: 13.5px; }
+.agent .meta { grid-column: 1 / -1; margin: 4px 0 0; font: 11px/1.4 var(--mono); color: var(--ink-2); }
+.agent .wait { grid-column: 1 / -1; display: flex; gap: 14px; align-items: center; }
+.agent .wait .spin { flex: none; width: 22px; height: 22px; border-color: color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); }
+.agent .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.agent .chip { --c: var(--accent); font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--c); cursor: default; }
+.agent .chip b { color: var(--c); font-weight: 600; }
+.agent .chip.on { background: color-mix(in srgb, var(--c) 18%, transparent); }
+.agent .body { contain: size; align-content: start; min-height: 180px; overflow-y: auto; scrollbar-gutter: stable; padding-right: 6px; }
 
 footer {
   position: sticky; bottom: 0; border-top: 1px solid var(--line);
@@ -236,6 +244,7 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 @media (max-width: 1100px) {
   main { grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-template-areas: "viewer viewer" "formula review" "agent agent"; }
   .stage { flex: none; aspect-ratio: var(--ar, 1024 / 960); }
+  .agent .body { contain: none; min-height: 0; overflow: visible; padding-right: 0; }
 }
 @media (max-width: 700px) {
   header { padding: 10px 16px; flex-wrap: wrap; }
@@ -293,8 +302,8 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
     <p class="hint" id="revhint"></p>
   </section>
 
-  <section class="card agent" aria-label="Agent report (example)">
-    <h2><span data-i="agent"></span><span class="tag" data-i="example"></span></h2>
+  <section class="card agent" aria-label="Agent report">
+    <h2><span data-i="agent"></span><span class="tag" id="agenttag"></span></h2>
     <div class="body" id="agentbody"></div>
   </section>
 </main>
@@ -327,14 +336,20 @@ const T = {
     keyTitle: "Access token", keyText: "The live analysis runs on a GPU and needs the access token you were given. It is kept in this browser only.",
     keyClear: "Forget", cancel: "Cancel", save: "Save",
     drop1: "Drop a smear image here", drop2: "or browse. JPG, PNG or WebP, one field of view, up to 12 MB.",
-    formula: "Differential count", review: "To review", agent: "Agent report", example: "Example text",
-    exampleLive: "Example, sample image",
+    formula: "Differential count", review: "To review", agent: "Agent report",
+    agentRecorded: "Recorded run on this image", agentLive: "Muse Spark, live",
+    agentWorking: "The agent is reviewing the slide…",
+    agentWait: "It reads the counts, asks a second opinion on the doubtful cells, flags what to open first and writes the report. About 30 to 90 s.",
+    agentFailed: "The agent report is not available for this image. The counts above stay valid.",
+    agentNoCells: "No white cell found: nothing for the agent to review.",
+    agentFlags: "Open first", agentLang: "", cell: "Cell", high: "high priority",
+    agentMeta: (r) => `${r.llm_calls} model calls · ${r.second_opinions.length} second opinions · ${r.flags.length} flags · ${r.seconds.toFixed(0)} s`,
     cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
     legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
     backToSample: "Show the offline sample",
     revhint: (c) => `Types shown are the proposed ones. Cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
     revnone: "No cell below the confidence cutoff.",
-    nCells: (n) => `${n} cells`,
+    nCells: (n) => `${n} cell${n === 1 ? "" : "s"}`,
     types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast", platelet: "platelet" },
     file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1)} s`,
     sending: "Sending the image…", analysing: "Analysing on the GPU…", waking: "Waking up the GPU…",
@@ -354,13 +369,7 @@ const T = {
       other: (s) => `Unexpected answer from the backend (HTTP ${s}).`
     },
     retry: "Try again", setKey: "Enter the token",
-    disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate.",
-    agentBody: (j) => [
-      ["Summary", `<p>${j.white_cell_count} white cells found. The draft count is dominated by neutrophils, with lymphocytes and one monocyte. ${j.needs_review_count} cells are below the confidence cutoff and need a human look.</p>`],
-      ["Check first", `<ul><li>Cell 1: partly cut by the image edge, the type is uncertain.</li><li>Cell 2: lobed nucleus, may be a band form; confirm.</li><li>Cell 3: large cell with a pale cytoplasm, confirm monocyte.</li></ul>`],
-      ["Limits", `<p>One field of view only: the percentages are not a full 100-cell count. Platelet and red cell counts are rough.</p>`],
-      ["Next step", `<p>Validate or correct the flagged cells, then add more fields to reach a usable count.</p>`]
-    ]
+    disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate."
   },
   fr: {
     tagline: "Revue de frottis", lang: "EN",
@@ -369,14 +378,20 @@ const T = {
     keyTitle: "Jeton d'accès", keyText: "L'analyse réelle tourne sur un GPU et demande le jeton d'accès qu'on t'a donné. Il reste dans ce navigateur.",
     keyClear: "Oublier", cancel: "Annuler", save: "Enregistrer",
     drop1: "Dépose une image de frottis ici", drop2: "ou parcours. JPG, PNG ou WebP, un champ, 12 Mo max.",
-    formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent", example: "Texte d'exemple",
-    exampleLive: "Exemple, image témoin",
+    formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent",
+    agentRecorded: "Exécution enregistrée sur cette image", agentLive: "Muse Spark, en direct",
+    agentWorking: "L'agent relit la lame…",
+    agentWait: "Il lit les comptes, demande un second avis sur les cellules douteuses, signale celles à ouvrir en premier et rédige le compte rendu. Compter 30 à 90 s.",
+    agentFailed: "Le compte rendu de l'agent n'est pas disponible pour cette image. Les comptes ci-dessus restent valables.",
+    agentNoCells: "Aucun globule blanc trouvé : rien à relire pour l'agent.",
+    agentFlags: "À ouvrir d'abord", cell: "Cellule", high: "priorité haute", agentLang: "Compte rendu rédigé en anglais par le modèle.",
+    agentMeta: (r) => `${r.llm_calls} appels au modèle · ${r.second_opinions.length} seconds avis · ${r.flags.length} signalements · ${r.seconds.toFixed(0)} s`,
     cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
     legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
     backToSample: "Revoir l'exemple hors ligne",
     revhint: (c) => `Types proposés. Cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
     revnone: "Aucune cellule sous le seuil de confiance.",
-    nCells: (n) => `${n} cellules`,
+    nCells: (n) => `${n} cellule${n > 1 ? "s" : ""}`,
     types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste", platelet: "plaquette" },
     file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1).replace(".", ",")} s`,
     sending: "Envoi de l'image…", analysing: "Analyse sur le GPU…", waking: "Réveil du GPU…",
@@ -396,24 +411,21 @@ const T = {
       other: (s) => `Réponse inattendue du backend (HTTP ${s}).`
     },
     retry: "Réessayer", setKey: "Saisir le jeton",
-    disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste.",
-    agentBody: (j) => [
-      ["Résumé", `<p>${j.white_cell_count} globules blancs trouvés. Le décompte brouillon est dominé par les neutrophiles, avec des lymphocytes et un monocyte. ${j.needs_review_count} cellules sont sous le seuil de confiance et demandent un regard humain.</p>`],
-      ["À vérifier d'abord", `<ul><li>Cellule 1 : coupée par le bord de l'image, type incertain.</li><li>Cellule 2 : noyau lobé, peut-être une forme en bande ; à confirmer.</li><li>Cellule 3 : grande cellule au cytoplasme pâle, monocyte à confirmer.</li></ul>`],
-      ["Limites", `<p>Un seul champ : les pourcentages ne valent pas un décompte de 100 cellules. Les comptes de plaquettes et de globules rouges sont approximatifs.</p>`],
-      ["Suite", `<p>Valider ou corriger les cellules signalées, puis ajouter des champs pour obtenir un décompte exploitable.</p>`]
-    ]
+    disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste."
   }
 };
 const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "platelet"];
 const DEFAULT_CUTOFF = 0.9598;
 const MAX_BYTES = 12 * 1024 * 1024;
 const TIMEOUT_MS = 180000;
+const REVIEW_TIMEOUT_MS = 240000;
 const TOKEN_KEY = "smearlens.token";
 const params = new URLSearchParams(location.search);
 const API = (params.get("api") || (location.hostname.endsWith(".modal.run") ? location.origin : DEFAULT_API)).replace(/\/$/, "");
 let lang = (params.get("lang") || "en") === "fr" ? "fr" : "en";
 let data = null, sample = null, live = false, lastFile = null, lastError = null, imgUrl = null;
+let cellIds = [];
+let sampleReview = null, liveReview = null, reviewState = "idle", reviewSeq = 0;
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const col = (t) => `var(--t-${t})`;
@@ -458,7 +470,6 @@ function render() {
   const cutoff = j.review_cutoff ?? DEFAULT_CUTOFF;
   $("file").textContent = t.file(j);
   $("wbcn").textContent = t.nCells(j.white_cell_count);
-  document.querySelector(".agent .tag").textContent = live ? t.exampleLive : t.example;
 
   const W = j.image.width, H = j.image.height, svg = $("boxes");
   $("stage").style.setProperty("--ar", `${W} / ${H}`);
@@ -467,6 +478,7 @@ function render() {
   svg.replaceChildren();
   const revs = [];
   j.white_cells.forEach((c, i) => { if (c.needs_review) revs.push(i); });
+  cellIds = cellNumbers(j.white_cells);
   [...j.white_cells.keys()].sort((a, b) => j.white_cells[a].needs_review - j.white_cells[b].needs_review).forEach((i) => {
     const c = j.white_cells[i];
     const [x0, y0, x1, y1] = c.box, rev = c.needs_review;
@@ -476,9 +488,9 @@ function render() {
     const r = mk("rect", { ...a, class: "box" + (rev ? " rev" : ""), "data-idx": i }, g);
     r.addEventListener("mouseenter", () => highlight(i, true));
     r.addEventListener("mouseleave", () => { highlight(i, false); $("tip").hidden = true; });
-    r.addEventListener("mousemove", (ev) => showTip(ev, c));
+    r.addEventListener("mousemove", (ev) => showTip(ev, c, cellIds[i]));
     if (rev) {
-      const n = revs.indexOf(i) + 1, b = mk("g", { class: "badge", transform: `translate(${x0 + 4} ${y0 + 4})` }, g);
+      const n = cellIds[i] ?? "", b = mk("g", { class: "badge", transform: `translate(${x0 + 4} ${y0 + 4})` }, g);
       mk("circle", { r: String(Math.max(11, W / 70)), cx: 0, cy: 0 }, b);
       const tx = mk("text", { x: 0, y: 1, "font-size": String(Math.max(13, W / 80)) }, b);
       tx.textContent = n;
@@ -522,7 +534,7 @@ function render() {
     const cv = document.createElement("canvas"); cv.width = cv.height = 152;
     d.appendChild(cv);
     const info = document.createElement("div");
-    info.innerHTML = `<div><span class="no">${n + 1}</span><span class="ty">${cap(t.types[c.type])}</span></div>
+    info.innerHTML = `<div><span class="no">${cellIds[idx] ?? ""}</span><span class="ty">${cap(t.types[c.type])}</span></div>
       <div class="sub">${num(c.confidence * 100)} % ${t.conf}</div>
       <div class="meter"><i style="width:${c.confidence * 100}%"></i><u style="left:${cutoff * 100}%"></u></div>`;
     d.appendChild(info);
@@ -533,7 +545,96 @@ function render() {
   }) : [Object.assign(document.createElement("p"), { className: "empty", textContent: t.revnone })]));
   $("revhint").textContent = t.revhint(num(cutoff * 100, 0));
 
-  $("agentbody").innerHTML = t.agentBody(sample || j).map(([h, b]) => `<div><h3>${h}</h3>${b}</div>`).join("");
+  renderAgent();
+}
+
+// Same numbering as the review agent (smearlens.agent.cells_from_reports): white cells from 1, platelets skipped.
+function cellNumbers(cells) {
+  let n = 0;
+  return cells.map((c) => c.type === "platelet" ? null : ++n);
+}
+
+const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const inline = (x) => esc(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+
+function mdSections(md) {
+  const out = [];
+  let cur = null, list = null;
+  const open = (h) => { cur = [h, []]; out.push(cur); list = null; };
+  for (const raw of md.split("\n")) {
+    const line = raw.trim();
+    if (!line) { list = null; continue; }
+    const head = line.match(/^#{1,6}\s+(.+)$/) || line.match(/^\*\*([^*]+?):?\*\*:?$/);
+    if (head) { open(head[1].replace(/[:*]+$/, "")); continue; }
+    const lead = line.match(/^\*\*([^*]+?):\*\*\s*(.+)$/);
+    if (lead) { open(lead[1]); cur[1].push(`<p>${inline(lead[2])}</p>`); continue; }
+    if (!cur) open("");
+    const li = line.match(/^[-*•]\s+(.+)$/);
+    if (li) {
+      if (!list) { list = []; cur[1].push(list); }
+      list.push(`<li>${inline(li[1])}</li>`);
+    } else { list = null; cur[1].push(`<p>${inline(line)}</p>`); }
+  }
+  return out.filter(([h, b]) => b.length)
+    .map(([h, b]) => [esc(h), b.map((x) => Array.isArray(x) ? `<ul>${x.join("")}</ul>` : x).join("")]);
+}
+
+function renderAgent() {
+  const t = T[lang], body = $("agentbody"), r = live ? liveReview : sampleReview;
+  $("agenttag").textContent = live ? t.agentLive : t.agentRecorded;
+  if (live && reviewState === "busy") {
+    body.innerHTML = `<div class="wait"><div class="spin"></div><p><b>${t.agentWorking}</b> ${t.agentWait}</p></div>`;
+    return;
+  }
+  if (!r || !r.report) {
+    body.innerHTML = `<p class="empty">${live && reviewState === "none" ? t.agentNoCells : t.agentFailed}</p>`;
+    return;
+  }
+  const secs = mdSections(r.report).map(([h, b]) => `<div>${h ? `<h3>${h}</h3>` : ""}${b}</div>`);
+  const key = (b) => b.map((v) => Math.round(v)).join(",");
+  const where = new Map(data.white_cells.map((c, i) => [key(c.box), i]));
+  const chips = r.flags.map((f) => {
+    const i = where.get(key(f.box)), k = ORDER.includes(f.type) ? f.type : "neutrophil";
+    return `<span class="chip" data-idx="${i ?? ""}" style="--c:${col(k)}" title="${esc(f.reason)}"><b>${t.cell} ${f.cell_id}</b> ${t.types[f.type] || f.type}${f.priority === "high" ? " · " + t.high : ""}</span>`;
+  });
+  if (chips.length) secs.push(`<div><h3>${t.agentFlags}</h3><div class="chips">${chips.join("")}</div></div>`);
+  secs.push(`<p class="meta">${[t.agentLang, t.agentMeta(r)].filter(Boolean).join(" · ")}</p>`);
+  body.innerHTML = secs.join("");
+  body.querySelectorAll(".chip[data-idx]").forEach((c) => {
+    if (c.dataset.idx === "") return;
+    c.addEventListener("mouseenter", () => highlight(c.dataset.idx, true));
+    c.addEventListener("mouseleave", () => highlight(c.dataset.idx, false));
+  });
+}
+
+async function requestReview(file, analysis) {
+  const seq = ++reviewSeq;
+  liveReview = null;
+  if (!analysis.white_cells.length) { reviewState = "none"; return renderAgent(); }
+  reviewState = "busy";
+  renderAgent();
+  try {
+    const image = await new Promise((ok, ko) => {
+      const fr = new FileReader();
+      fr.onload = () => ok(String(fr.result).split(",")[1]);
+      fr.onerror = ko;
+      fr.readAsDataURL(file);
+    });
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), REVIEW_TIMEOUT_MS);
+    const res = await fetch(`${API}/api/review`, {
+      method: "POST", signal: ctrl.signal,
+      headers: { "content-type": "application/json", "x-smearlens-token": store.get() },
+      body: JSON.stringify({ analysis, image, name: file.name })
+    }).finally(() => clearTimeout(timer));
+    const body = await res.json().catch(() => null);
+    if (seq !== reviewSeq) return;
+    liveReview = res.ok && body?.report ? body : null;
+    reviewState = liveReview ? "done" : "error";
+  } catch {
+    if (seq !== reviewSeq) return;
+    reviewState = "error";
+  }
+  if (live) renderAgent();
 }
 
 function drawCrop(cv, box) {
@@ -548,10 +649,10 @@ function drawCrop(cv, box) {
   img.complete && img.naturalWidth ? go() : img.addEventListener("load", go, { once: true });
 }
 
-function showTip(ev, c) {
+function showTip(ev, c, id) {
   const tip = $("tip"), r = $("stage").getBoundingClientRect(), t = T[lang];
   tip.style.setProperty("--c", col(c.type));
-  tip.innerHTML = `<b>${cap(t.types[c.type])}</b> · ${num(c.confidence * 100)} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
+  tip.innerHTML = (id ? `${t.cell} ${id} · ` : "") + `<b>${cap(t.types[c.type])}</b> · ${num(c.confidence * 100)} %` + (c.needs_review ? `<br><span class="rv">${t.review}</span>` : "");
   tip.hidden = false;
   let x = ev.clientX - r.left, y = ev.clientY - r.top;
   tip.style.left = Math.min(x, r.width - tip.offsetWidth - 20) + "px";
@@ -630,6 +731,7 @@ async function analyse(file) {
     data = { ...body, name: file.name };
     live = true;
     render();
+    requestReview(file, body);
   } catch (err) {
     showError(err.name === "AbortError" ? "timeout" : "network");
   } finally {
@@ -641,6 +743,7 @@ async function analyse(file) {
 function showSample() {
   if (!sample) return;
   live = false;
+  reviewSeq++;
   showError(null);
   data = sample;
   $("img").src = "sample.jpg";
@@ -660,6 +763,7 @@ fetch("sample.json").then((r) => r.json()).then((j) => {
   const { round_trip_s, path, ...rest } = Array.isArray(j) ? j[0] : j;
   sample = { ...rest, name: "sample.jpg" };
   if (!data) showSample();
+  return fetch("sample-review.json").then((r) => r.ok ? r.json() : null).then((r) => { sampleReview = r; if (!live) renderAgent(); }).catch(() => {});
 }).catch(() => { document.body.insertAdjacentHTML("afterbegin", "<p style='padding:20px'>Cannot load sample.json. Serve this folder with: python3 -m http.server</p>"); });
 </script>
 </body>

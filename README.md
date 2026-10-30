@@ -129,8 +129,20 @@ PNG or WebP field of view (12 MB and 4096×4096 px at most). The token stays in 
 image: the panel shows "Muse Spark, live", then the report and the cells to open first, after about
 30 to 60 s (more after a pause, while the agent container starts).
 
+**Slide mode.** Drop 2 to 20 fields of the same slide at once (or click **Slide · 12 fields**, then
+**Run it live**). Each field goes to `/api/analyze` on its own, one after the other: SAM 3 does not
+handle stitched mosaics, so the fields are never assembled. The page then adds them up into one slide
+report: the differential over every white cell of every field, the red cell and platelet counts per
+field on average, and one review list across the fields (a thumbnail strip, or the arrow keys, opens
+each field). The agent reviews the whole slide through `POST /api/review-slide`, with at most 14 steps
+and 6 second opinions. The ready-to-click example is 12 PBC fields of the TXL-PBC test split
+(`web/slide/`, 230 kB, picked and recorded by `scripts/slide_demo.py`): 12 white cells typed right out
+of 12, analysed in about 65 s from cold (1 s per field once the GPU is up), reviewed in about 40 s for
+20k Baseten tokens.
+
 Cell numbers are the same everywhere: the badges on the image, the review list and the agent report
-count white cells from 1, in the order of the backend output, platelets skipped.
+count white cells from 1, in the order of the backend output (field after field on a slide),
+platelets skipped.
 
 The review agent gets at most 10 steps and 3 second opinions per image. On one field it costs about
 15k to 22k Baseten tokens. Below 20 white cells it does not compare the differential with the
@@ -160,6 +172,10 @@ r = review_slide([a], [Path("sample.jpg").read_bytes()], names=["sample.jpg"], m
 Path("sample-review.json").write_text(json.dumps(r, indent=2) + "\n")'
 ```
 
+`POST /api/review-slide` takes `{"fields": [{"name": "...", "analysis": ..., "image": ...}, ...]}`,
+1 to 20 fields and 64 MB at most, and returns the same review for the whole slide. Its agent flags
+carry the field name. To regenerate the example slide: `SMEARLENS_WEB_TOKEN=... uv run python scripts/slide_demo.py record`.
+
 Cost guards, since the URL is public:
 
 - A small CPU container checks the token, the size and the pixel count of the image before it
@@ -168,7 +184,7 @@ Cost guards, since the URL is public:
   repo. To change it: `modal secret create --force smearlens-web SMEARLENS_WEB_TOKEN=...`, then
   `modal deploy scripts/modal_app.py`.
 - One GPU container at most (`max_containers=1`), none at rest (`min_containers=0`).
-- The agent only runs behind the same token, on a body of at most 16 MB, and not at all when the
+- The agent only runs behind the same token, on a body of at most 16 MB (85 MB for a slide of up to 20 fields), and not at all when the
   analysis found no white cell. Its step and second opinion budgets cap the cost of one call.
 
 At rest the demo costs nothing. A request after a pause waits for a cold start (about 45 s,

@@ -12,16 +12,37 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 
 ## How it works
 
-1. **Segment.** SAM 3 finds and segments every cell on the smear image.
-2. **Classify.** A fine-tuned Meta open-weights model labels each white blood
-   cell (neutrophil, lymphocyte, monocyte, eosinophil, basophil, ...).
-3. **Review.** An agent drafts the differential count and lists what the
-   biologist should check first: low-confidence cells, atypical shapes,
-   counts outside the usual range.
+1. **Find the cells.** SAM 3 proposes candidates on the field image with three text prompts ("cell with a large
+   purple nucleus", "neutrophil", "red blood cell") and a fourth for platelets ("small purple dot"). On a wide field, red cells and platelets are
+   counted again on overlapping tiles ([17](docs/experiments/17-wide-field-tiling.md)).
+2. **Keep the white cells and type them.** Each candidate is cropped at the scale of the red cells
+   around it and embedded by the frozen vision encoder of **Muse Glimmer**. Two linear probes on these
+   features say whether it is a white cell ([09](docs/experiments/09-detection-probe.md)) and which
+   type it is ([05](docs/experiments/05-glimmer-linear-probe.md)). No LLM call per cell.
+3. **Send the doubtful cells to review.** The type probe is calibrated: cells below a 96 % confidence
+   cutoff go to a review queue ([10](docs/experiments/10-review-coverage.md)), as do cells kept with
+   an uncertain detection ([16](docs/experiments/16-empty-field-rescue.md)).
+4. **Prepare the review.** A **Muse Spark** agent with six tools reads the counts, asks a second
+   opinion on the doubtful cells, flags the ones to open first and writes a short slide report, with
+   a guardrail against diagnostic wording ([07](docs/experiments/07-review-agent.md),
+   [15](docs/experiments/15-review-agent-on-backend.md)).
+
+The biologist validates or corrects every cell. SmearLens proposes, it does not decide.
 
 ## Status
 
-Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Spark); see the experiments below.
+Runs end to end and is deployed as a web demo (see [Web demo](#web-demo)): one field of view in, white
+cells with type and confidence, red cell and platelet counts, a differential, a review queue and the
+agent report out, in a few seconds plus about 40 s for the agent. Main numbers:
+
+- Type of white cells: 97.6 % on PBC test cells, 96.2 % on a 147-field PBC slide through the whole
+  backend, with 4 of 5 errors already in the review queue ([05](docs/experiments/05-glimmer-linear-probe.md),
+  [15](docs/experiments/15-review-agent-on-backend.md)).
+- Review: checking the 10 % least sure cells leaves 0.3 % errors ([10](docs/experiments/10-review-coverage.md)).
+- External lab (Munich, never seen): 83.7 % zero-shot, 71 % of myeloblasts, a type the probe never
+  saw, sent to review ([11](docs/experiments/11-external-lab-munich.md)).
+- Known weak spots: white cell detection on pale BCDD images and on wide fields, red cells
+  undercounted on crowded PBC fields. Each experiment page lists its limits.
 
 ## Experiments
 

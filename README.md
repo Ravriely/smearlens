@@ -43,6 +43,7 @@ Work in progress. The pipeline runs end to end with no training (SAM 3 + Muse Sp
 | [14](docs/experiments/14-red-cell-platelet-size-filter.md) | Size filter on red cell and platelet boxes, scaled on the median red cell of the image | Count error per image: platelets 1.33 → 0.21, red cells 6.51 → 3.41 (BCDD 6.79 → 1.64), white cells unchanged (0.34); PBC red cells still undercounted |
 | [15](docs/experiments/15-review-agent-on-backend.md) | Review agent on the demo backend output, one PBC slide of 147 fields (132 white cells) | Backend: 96.2 % right type, 4 of 5 errors in a review queue of 11 %; agent: report with queue size, rare types and disagreements first, no diagnostic wording, about 2 min and 0.15 $ per slide |
 | [16](docs/experiments/16-empty-field-rescue.md) | Keep the best candidate of a field with no sure white cell, as a cell to review | WBC F1 0.798 → 0.815, count error 0.40 → 0.27 per test field, empty fields 12 → 1; lowering the threshold everywhere loses |
+| [17](docs/experiments/17-wide-field-tiling.md) | Wide fields (2 × 2 mosaics of test fields): count red cells and platelets on tiles | Red cells found 431 → 1013 of 1124 (PBC 0 → 529 of 601), error 36.5 → 7.9 per image; white cells unchanged; single fields never tiled |
 
 ## Quick start
 

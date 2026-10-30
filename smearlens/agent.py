@@ -27,6 +27,7 @@ REFERENCE_RANGES = {
     "erythroblast": (0, 0),
 }
 MIN_CELLS_FOR_DIFFERENTIAL = 100
+MIN_CELLS_FOR_RANGES = 20
 LOW_CONFIDENCE = 0.7
 MAX_SECOND_OPINIONS = 12
 MAX_LISTED = 40
@@ -63,6 +64,8 @@ Rules:
   outside the reference ranges; review list (the size of the whole review queue, then the flagged cells
   first); limits (from known_limits, in one or two lines).
 - Say clearly when fewer than 100 white cells were counted: the differential is then only indicative.
+  Below 20 white cells, outside_reference_ranges is null: do not compare with the reference ranges at all,
+  just say the count is too small for that. Never quote tool field names in the report.
 - If most types are outside the reference ranges, say the overall pattern is unusual and that slide
   quality and field selection should be checked before the differential is used."""
 
@@ -190,7 +193,7 @@ def cells_from_reports(reports: Sequence[dict], names: Sequence[str]) -> list[Ce
     for name, report in zip(names, reports):
         for c in report.get("white_cells", []):
             if c["type"] in NUCLEATED:
-                cells.append(Cell(len(cells), name, c["box"], c["type"], c["confidence"], bool(c["needs_review"])))
+                cells.append(Cell(len(cells) + 1, name, c["box"], c["type"], c["confidence"], bool(c["needs_review"])))
     return cells
 
 
@@ -241,7 +244,7 @@ class SlideReviewer:
             "enough_for_differential": len(cells) >= MIN_CELLS_FOR_DIFFERENTIAL,
             "counts": dict(Counter(c.label for c in cells)),
             "differential_percent": diff,
-            "outside_reference_ranges": out_of_range(diff),
+            "outside_reference_ranges": out_of_range(diff) if len(cells) >= MIN_CELLS_FOR_RANGES else None,
             "marked_for_review": sum(c.needs_review for c in cells),
             "marked_for_review_by_type": dict(Counter(c.label for c in cells if c.needs_review)),
             "below_confidence_0.7": sum(c.confidence < LOW_CONFIDENCE for c in cells),

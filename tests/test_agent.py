@@ -60,13 +60,13 @@ def test_check_report_catches_diagnostic_words():
     assert check_report("2 immature granulocytes to review; differential indicative") == []
 
 
-def test_cells_from_reports_keeps_field_and_review_flag():
+def test_cells_from_reports_numbers_from_one_and_keeps_field():
     reports = [backend_report(("neutrophil", 0.95)), backend_report(), backend_report(("ig", 0.5), ("monocyte", 0.9))]
     found = cells_from_reports(reports, ["a", "b", "c"])
     assert [(c.id, c.field, c.label, c.needs_review) for c in found] == [
-        (0, "a", "neutrophil", False),
-        (1, "c", "ig", True),
-        (2, "c", "monocyte", False),
+        (1, "a", "neutrophil", False),
+        (2, "c", "ig", True),
+        (3, "c", "monocyte", False),
     ]
 
 
@@ -148,3 +148,10 @@ def test_review_slide_without_report_is_not_accepted():
     chat = FakeChat([[]] * 3)
     result = review_slide([backend_report(("neutrophil", 0.9))], [b""], chat=chat, max_steps=3)
     assert result["accepted"] is False and result["report"] == ""
+
+
+def test_summary_skips_reference_ranges_on_a_tiny_count():
+    few = SlideReviewer(cells("neutrophil", "neutrophil"), fields=1, second_opinion=lambda c: {})
+    assert few.summary()["outside_reference_ranges"] is None
+    enough = SlideReviewer(cells(*["neutrophil"] * 20), fields=1, second_opinion=lambda c: {})
+    assert set(enough.summary()["outside_reference_ranges"]) == {"neutrophil", "lymphocyte", "monocyte", "eosinophil"}

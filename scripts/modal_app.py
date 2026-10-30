@@ -5,7 +5,8 @@
 
 The deployed app also serves the web demo (web/), POST /api/analyze and POST /api/review from a
 small CPU container. /api/review runs the review agent (Muse Spark on Baseten) on the output of
-/api/analyze, in its own CPU function that holds the Baseten key. That endpoint checks the token of the Modal secret smearlens-web, then the size of
+/api/analyze, in its own CPU function that holds the Baseten key. /api/review-slide does the same on
+several fields of one slide, each analysed on its own by /api/analyze. That endpoint checks the token of the Modal secret smearlens-web, then the size of
 the image, before it calls the GPU class, so a refused request never starts a GPU.
 
 The deployed app scales to zero. To keep one container warm, see scripts/modal_warm.py,
@@ -75,6 +76,10 @@ review_image = (
 )
 REVIEW_MAX_STEPS = 10
 REVIEW_SECOND_OPINIONS = 3
+SLIDE_MAX_FIELDS = 20
+SLIDE_MAX_BYTES = 64 * 1024 * 1024
+SLIDE_MAX_STEPS = 14
+SLIDE_SECOND_OPINIONS = 6
 
 
 @app.cls(
@@ -174,13 +179,15 @@ class Analyzer:
         return result
 
 
-@app.function(image=review_image, secrets=[modal.Secret.from_name("baseten")], timeout=240, max_containers=2)
-def review(analysis: dict, image_bytes: bytes, name: str) -> dict:
+@app.function(image=review_image, secrets=[modal.Secret.from_name("baseten")], timeout=360, max_containers=2)
+def review(analyses: list[dict], images: list[bytes], names: list[str]) -> dict:
     from smearlens.agent import review_slide
 
+    slide = len(analyses) > 1
     return review_slide(
-        [analysis], [image_bytes], names=[name],
-        max_steps=REVIEW_MAX_STEPS, max_second_opinions=REVIEW_SECOND_OPINIONS,
+        analyses, images, names=names,
+        max_steps=SLIDE_MAX_STEPS if slide else REVIEW_MAX_STEPS,
+        max_second_opinions=SLIDE_SECOND_OPINIONS if slide else REVIEW_SECOND_OPINIONS,
     )
 
 
@@ -189,7 +196,7 @@ def review(analysis: dict, image_bytes: bytes, name: str) -> dict:
     secrets=[modal.Secret.from_name("smearlens-web")],
     max_containers=1,
     scaledown_window=60,
-    timeout=300,
+    timeout=420,
 )
 @modal.concurrent(max_inputs=8)
 @modal.asgi_app()
@@ -257,6 +264,25 @@ def web():
         result["round_trip_s"] = round(time.perf_counter() - started, 3)
         return result
 
+    def checked_field(item: dict) -> tuple[dict, bytes]:
+        analysis, image_bytes = item["analysis"], base64.b64decode(item["image"], validate=True)
+        if len(image_bytes) > MAX_BYTES or not isinstance(analysis.get("white_cells"), list):
+            raise ValueError
+        with Image.open(io.BytesIO(image_bytes)) as field:
+            field.verify()
+        return analysis, image_bytes
+
+    async def run_review(analyses: list[dict], images: list[bytes], names: list[str]):
+        if not any(a["white_cells"] for a in analyses):
+            return error(422, "no_cells", "No white cell to review.")
+        started = time.perf_counter()
+        try:
+            result = await review.remote.aio(analyses, images, names)
+        except Exception as exc:
+            return error(502, "review_failed", f"The review failed: {type(exc).__name__}.")
+        result["round_trip_s"] = round(time.perf_counter() - started, 3)
+        return result
+
     @api.post("/api/review")
     async def review_endpoint(request: Request):
         if not authorized(request):
@@ -266,22 +292,28 @@ def web():
             return error(413, "too_large", f"Image larger than {MAX_BYTES // 2**20} MB.")
         try:
             payload = json.loads(body)
-            analysis, image_bytes = payload["analysis"], base64.b64decode(payload["image"], validate=True)
-            with Image.open(io.BytesIO(image_bytes)) as field:
-                field.verify()
-            if not isinstance(analysis.get("white_cells"), list):
-                raise ValueError
+            analysis, image_bytes = checked_field(payload)
         except Exception:
             return error(400, "bad_request", "Send the analysis and the image it was computed on.")
-        if not analysis["white_cells"]:
-            return error(422, "no_cells", "No white cell to review on this image.")
-        started = time.perf_counter()
+        return await run_review([analysis], [image_bytes], [str(payload.get("name") or "field")])
+
+    @api.post("/api/review-slide")
+    async def review_slide_endpoint(request: Request):
+        if not authorized(request):
+            return error(401, "unauthorized", "Missing or wrong access token.")
+        body = await read_body(request, SLIDE_MAX_BYTES * 4 // 3 + 2**20)
+        if body is None:
+            return error(413, "too_large", f"Slide larger than {SLIDE_MAX_BYTES // 2**20} MB.")
         try:
-            result = await review.remote.aio(analysis, image_bytes, str(payload.get("name") or "field"))
-        except Exception as exc:
-            return error(502, "review_failed", f"The review failed: {type(exc).__name__}.")
-        result["round_trip_s"] = round(time.perf_counter() - started, 3)
-        return result
+            items = json.loads(body)["fields"]
+            if not isinstance(items, list) or not 1 <= len(items) <= SLIDE_MAX_FIELDS:
+                raise ValueError
+            fields = [checked_field(item) for item in items]
+        except Exception:
+            return error(400, "bad_request", f"Send 1 to {SLIDE_MAX_FIELDS} fields, each with its analysis and image.")
+        names = [str(item.get("name") or f"field-{i + 1:02d}") for i, item in enumerate(items)]
+        names = [n if names.count(n) == 1 else f"{i + 1:02d}-{n}" for i, n in enumerate(names)]
+        return await run_review([a for a, _ in fields], [b for _, b in fields], names)
 
     api.mount("/", StaticFiles(directory="/root/web", html=True), name="web")
     return api

@@ -20,6 +20,7 @@ UPSCALE_BELOW = 512
 RBC_COUNT_MIN = 0.3
 RBC_SIZE = (0.85, 1.6)
 PLATELET_SIZE = (0.22, 0.6)
+RESCUE_FLOOR = 0.95
 
 
 def candidates_for(detections: list[dict], wbc_min: float, rbc_min: float) -> dict[str, list[Candidate]]:
@@ -101,6 +102,9 @@ def white_cells(cands: list[Candidate], features: np.ndarray, rbc_px: float, pro
     detection = probes["detection"]
     p_wbc = wbc_probability(features, detection)
     kept = merge_kept(cands, p_wbc, float(detection["threshold"]), rbc_px)
+    rescued = not kept and len(cands) > 0 and float(p_wbc.max()) >= RESCUE_FLOOR
+    if rescued:
+        kept = [cands[int(np.argmax(p_wbc))].box]
     index = {c.box: i for i, c in enumerate(cands)}
     rows = [index[b] for b in kept]
     types = probe_predict(features[rows], probes["type"], probes["temperature"]) if rows else []
@@ -110,7 +114,8 @@ def white_cells(cands: list[Candidate], features: np.ndarray, rbc_px: float, pro
             "p_wbc": round(float(p_wbc[i]), 5),
             "type": label,
             "confidence": round(confidence, 4),
-            "needs_review": confidence < probes["review_cutoff"],
+            "needs_review": rescued or confidence < probes["review_cutoff"],
+            "uncertain_detection": rescued,
         }
         for b, i, (label, confidence) in zip(kept, rows, types)
     ]

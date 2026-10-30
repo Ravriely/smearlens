@@ -60,6 +60,25 @@ def test_white_cells_apply_both_probes():
     assert cells[0]["p_wbc"] > 0.99
 
 
+def strict_probes():
+    found = probes()
+    found["detection"]["threshold"] = np.array(0.999)
+    return found
+
+
+def test_white_cells_rescue_the_best_candidate_of_an_empty_field_for_review():
+    cells = white_cells([cand(0, 0, 40, 40)], np.array([[0.3, 1.0]]), rbc_px=30, probes=strict_probes())
+    assert len(cells) == 1
+    assert cells[0]["uncertain_detection"] is True and cells[0]["needs_review"] is True
+
+
+def test_white_cells_rescue_nothing_below_the_floor_or_next_to_a_sure_cell():
+    assert white_cells([cand(0, 0, 40, 40)], np.array([[0.2, 1.0]]), rbc_px=30, probes=strict_probes()) == []
+    cands = [cand(0, 0, 40, 40), cand(200, 0, 240, 40)]
+    cells = white_cells(cands, np.array([[1.0, 1.0], [0.3, 1.0]]), rbc_px=30, probes=strict_probes())
+    assert [c["uncertain_detection"] for c in cells] == [False]
+
+
 def test_report_counts_cells_outside_white_cells():
     cells = [{"box": [0, 0, 40, 40], "p_wbc": 1.0, "type": "neutrophil", "confidence": 0.9, "needs_review": True}]
     dets = detections() + [{"image": "f", "label": "Platelet", "boxes": [[300, 0, 308, 8]], "scores": [0.5]}]

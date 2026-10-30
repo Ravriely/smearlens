@@ -21,6 +21,12 @@ RBC_COUNT_MIN = 0.3
 RBC_SIZE = (0.85, 1.6)
 PLATELET_SIZE = (0.22, 0.6)
 RESCUE_FLOOR = 0.95
+SAM_INPUT = 1008
+TILE_BELOW_RBC = 130
+TILE_TARGET_RBC = 180
+TILE_MIN_SIDE = 500
+MAX_TILES_PER_SIDE = 4
+TILE_MARGIN = 0.2
 
 
 def candidates_for(detections: list[dict], wbc_min: float, rbc_min: float) -> dict[str, list[Candidate]]:
@@ -41,6 +47,43 @@ def rbc_sizes(detections: list[dict]) -> dict[str, float]:
         for d in detections
         if d["label"] == "RBC"
     }
+
+
+def tiles_per_side(size: tuple[int, int], rbc_px: float | None) -> int:
+    """How many windows per side bring red cells back to the scale SAM 3 sees them at on a single field.
+
+    SAM 3 resizes every image to SAM_INPUT px. On the TXL-PBC fields it finds red cells when they span
+    150 to 200 px of its input; on a wider field (more, smaller cells) it loses them. rbc_px is the
+    median red cell of a first pass, None when that pass found none.
+    """
+    longest = max(size)
+    if rbc_px is None:
+        return 2 if min(size) >= TILE_MIN_SIDE else 1
+    seen = rbc_px * SAM_INPUT / longest
+    if seen >= TILE_BELOW_RBC:
+        return 1
+    return max(2, min(MAX_TILES_PER_SIDE, -(-int(TILE_TARGET_RBC) // max(1, int(seen)))))
+
+
+def plan_windows(size: tuple[int, int], n: int, margin: float = TILE_MARGIN) -> list[tuple[Box, Box]]:
+    """n x n windows as (window, core): cores tile the image, each window adds `margin` of a core around it."""
+    width, height = size
+    plans = []
+    for row in range(n):
+        for col in range(n):
+            core = Box("core", width * col / n, height * row / n, width * (col + 1) / n, height * (row + 1) / n)
+            dx, dy = margin * width / n, margin * height / n
+            window = Box("window", max(0.0, core.x0 - dx), max(0.0, core.y0 - dy),
+                         min(float(width), core.x1 + dx), min(float(height), core.y1 + dy))
+            plans.append((window, core))
+    return plans
+
+
+def in_core(box: list[float], core: Box, size: tuple[int, int]) -> bool:
+    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    right = cx < core.x1 or core.x1 >= size[0]
+    bottom = cy < core.y1 or core.y1 >= size[1]
+    return core.x0 <= cx and core.y0 <= cy and right and bottom
 
 
 def merge_kept(cands: list[Candidate], probs: np.ndarray, threshold: float, rbc_px: float) -> list[Box]:

@@ -7,10 +7,13 @@ from smearlens.analyze import (
     count_cells,
     count_outside,
     load_probes,
+    in_core,
     merge_kept,
+    plan_windows,
     rbc_sizes,
     relative_size,
     report,
+    tiles_per_side,
     white_cells,
 )
 from smearlens.datasets import Box
@@ -130,3 +133,26 @@ def test_count_cells_drops_red_cell_box_that_covers_a_white_cell():
 def test_count_cells_uses_score_floor():
     dets = [{"image": "f", "label": "RBC", "scores": [0.9, 0.2], "boxes": [[0, 0, 30, 30], [100, 0, 130, 30]]}]
     assert count_cells(dets, "RBC", 0.3, [], 30.0, (0.85, 1.6)) == 1
+
+
+def test_tiles_per_side_keeps_single_fields_whole():
+    assert tiles_per_side((360, 363), 74.6) == 1
+    assert tiles_per_side((640, 480), 94.3) == 1
+    assert tiles_per_side((360, 363), None) == 1
+
+
+def test_tiles_per_side_splits_wide_fields():
+    assert tiles_per_side((720, 726), None) == 2
+    assert tiles_per_side((1280, 960), 74.6) == 4
+    assert tiles_per_side((1280, 960), 120) == 2
+    assert tiles_per_side((4000, 3000), 30) == 4
+
+
+def test_windows_overlap_and_cores_cover_each_point_once():
+    size = (100, 80)
+    plans = plan_windows(size, 2, margin=0.2)
+    assert len(plans) == 4
+    window, core = plans[0]
+    assert (window.x0, window.y0, window.x1, window.y1) == (0.0, 0.0, 60.0, 48.0)
+    for x, y in [(0, 0), (49.9, 39.9), (50, 40), (99, 79), (100, 80)]:
+        assert sum(in_core([x, y, x, y], core, size) for _, core in plans) == 1

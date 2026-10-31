@@ -18,11 +18,11 @@ from smearlens.metrics import MatchResult, match_centers
 SEAM_PX = 3
 
 
-def build(data_dir: Path, out: Path) -> list[dict]:
+def build(data_dir: Path, out: Path, split: str = "test") -> list[dict]:
     out.mkdir(parents=True, exist_ok=True)
     rows = []
     by_source: dict[str, list] = {}
-    for s in iter_txl_pbc(data_dir, "test"):
+    for s in iter_txl_pbc(data_dir, split):
         by_source.setdefault(s.source, []).append(s)
         rows.append(single(s))
     for source, samples in by_source.items():
@@ -98,6 +98,7 @@ def main() -> None:
     b = sub.add_parser("build")
     b.add_argument("--data-dir", type=Path, default=Path("data"))
     b.add_argument("--out", type=Path, required=True)
+    b.add_argument("--split", default="test", choices=("train", "val", "test"))
     a = sub.add_parser("args")
     a.add_argument("truth", type=Path)
     s = sub.add_parser("score")
@@ -108,7 +109,7 @@ def main() -> None:
                    help="drop white cell boxes, found or true, that touch a seam between the tiled fields")
     args = parser.parse_args()
     if args.command == "build":
-        rows = build(args.data_dir, args.out)
+        rows = build(args.data_dir, args.out, args.split)
         (args.out / "truth.json").write_text(json.dumps(rows, indent=1))
         print(sum(r["kind"] == "mosaic" for r in rows), "mosaics")
     elif args.command == "args":

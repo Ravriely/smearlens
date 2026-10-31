@@ -1,62 +1,102 @@
 [
  {
-  "name": "field-01.png",
+  "name": "field-01.jpg",
   "truth": "neutrophil",
-  "source": "00bb17f0c091599da3f97aeeef49bec6.png"
+  "source": "SNE_620042.jpg"
  },
  {
-  "name": "field-02.png",
-  "truth": "monocyte",
-  "source": "02b9abe156065d8097edfd6afbebcbb3.png"
- },
- {
-  "name": "field-03.png",
-  "truth": "neutrophil",
-  "source": "03967e3a34d05f4583e6d361f2c333a0.png"
- },
- {
-  "name": "field-04.png",
-  "truth": "monocyte",
-  "source": "03e9e4f8980a5fe78e1069167ff9f3d9.png"
- },
- {
-  "name": "field-05.png",
+  "name": "field-02.jpg",
   "truth": "basophil",
-  "source": "075e5bb41f4256e98bbfb870d6360d33.png"
+  "source": "BA_270382.jpg"
  },
  {
-  "name": "field-06.png",
+  "name": "field-03.jpg",
   "truth": "neutrophil",
-  "source": "1299047edeb15e2581d9680aaa667d5d.png"
+  "source": "SNE_780200.jpg"
  },
  {
-  "name": "field-07.png",
-  "truth": "eosinophil",
-  "source": "37ad6d9b03d356f9a0f18cd42009b491.png"
- },
- {
-  "name": "field-08.png",
+  "name": "field-04.jpg",
   "truth": "neutrophil",
-  "source": "3c7a397302c657f9aaa5fa18182f2612.png"
+  "source": "BNE_570080.jpg"
  },
  {
-  "name": "field-09.png",
+  "name": "field-05.jpg",
+  "truth": "monocyte",
+  "source": "MO_943027.jpg"
+ },
+ {
+  "name": "field-06.jpg",
+  "truth": "monocyte",
+  "source": "MO_501501.jpg"
+ },
+ {
+  "name": "field-07.jpg",
+  "truth": "neutrophil",
+  "source": "SNE_679413.jpg"
+ },
+ {
+  "name": "field-08.jpg",
+  "truth": "ig",
+  "source": "IG_88166.jpg"
+ },
+ {
+  "name": "field-09.jpg",
+  "truth": "ig",
+  "source": "MY_62569.jpg"
+ },
+ {
+  "name": "field-10.jpg",
   "truth": "lymphocyte",
-  "source": "44f9122b2a1b53499b42b4f4ae8d3a3c.png"
+  "source": "LY_730801.jpg"
  },
  {
-  "name": "field-10.png",
+  "name": "field-11.jpg",
   "truth": "lymphocyte",
-  "source": "45bc2bb9c9bd57688c652db42de77007.png"
+  "source": "LY_959755.jpg"
  },
  {
-  "name": "field-11.png",
+  "name": "field-12.jpg",
+  "truth": "ig",
+  "source": "MY_295696.jpg"
+ },
+ {
+  "name": "field-13.jpg",
+  "truth": "neutrophil",
+  "source": "BNE_213353.jpg"
+ },
+ {
+  "name": "field-14.jpg",
+  "truth": "neutrophil",
+  "source": "SNE_257510.jpg"
+ },
+ {
+  "name": "field-15.jpg",
   "truth": "lymphocyte",
-  "source": "53542a7e8f2251008c5879a315ba2e4b.png"
+  "source": "LY_685515.jpg"
  },
  {
-  "name": "field-12.png",
+  "name": "field-16.jpg",
+  "truth": "neutrophil",
+  "source": "BNE_323493.jpg"
+ },
+ {
+  "name": "field-17.jpg",
+  "truth": "lymphocyte",
+  "source": "LY_776689.jpg"
+ },
+ {
+  "name": "field-18.jpg",
   "truth": "eosinophil",
-  "source": "63ff753a509c59d7896f9515b7851549.png"
+  "source": "EO_304439.jpg"
+ },
+ {
+  "name": "field-19.jpg",
+  "truth": "neutrophil",
+  "source": "BNE_345442.jpg"
+ },
+ {
+  "name": "field-20.jpg",
+  "truth": "erythroblast",
+  "source": "ERB_539945.jpg"
  }
 ]

@@ -131,16 +131,18 @@ PNG or WebP field of view (12 MB and 4096×4096 px at most). The token stays in 
 image: the panel shows "Muse Spark, live", then the report and the cells to open first, after about
 30 to 60 s (more after a pause, while the agent container starts).
 
-**Slide mode.** Drop 2 to 20 fields of the same slide at once (or click **Slide · 12 fields**, then
+**Slide mode.** Drop 2 to 20 fields of the same slide at once (or click **Slide · 20 fields**, then
 **Run it live**). Each field goes to `/api/analyze` on its own, one after the other: SAM 3 does not
 handle stitched mosaics, so the fields are never assembled. The page then adds them up into one slide
 report: the differential over every white cell of every field, the red cell and platelet counts per
 field on average, and one review list across the fields (a thumbnail strip, or the arrow keys, opens
 each field). The agent reviews the whole slide through `POST /api/review-slide`, with at most 14 steps
-and 6 second opinions. The ready-to-click example is 12 PBC fields of the TXL-PBC test split
-(`web/slide/`, 230 kB, picked and recorded by `scripts/slide_demo.py`): 12 white cells typed right out
-of 12, analysed in about 65 s from cold (1 s per field once the GPU is up), reviewed in about 40 s for
-20k Baseten tokens.
+and 6 second opinions. The ready-to-click example is 20 fields of the PBC test split, with a left shift: 8 neutrophils,
+4 lymphocytes, 3 immature granulocytes, 2 monocytes, 1 eosinophil, 1 basophil and 1 erythroblast
+(`web/slide/`, picked and recorded by `scripts/slide_demo.py pick-pbc`). The 20 white cells are typed
+right, so the differential is exact. The agent flags the immature granulocytes and the erythroblast
+for review. Analysis takes about 25 s with a warm GPU (about 110 s from cold), and the review about
+80 s for 34k Baseten tokens.
 
 Cell numbers are the same everywhere: the badges on the image, the review list and the agent report
 count white cells from 1, in the order of the backend output (field after field on a slide),

@@ -342,6 +342,34 @@ def train_wide(folder: Path, out: Path, old_probe: Path) -> dict:
     return result
 
 
+def padding(truth: list[dict], reports: list[dict]) -> dict:
+    """On single fields: share of non white cell candidates the probe of 09 keeps, by how much of the crop is image."""
+    from smearlens.datasets import Box
+    from smearlens.metrics import contains_center
+
+    by_path = {t["path"]: t for t in truth}
+    bins = ((0.0, 0.6), (0.6, 0.8), (0.8, 0.95), (0.95, 1.01))
+    counts: dict = {}
+    for r in reports:
+        t = by_path[r["path"]]
+        width, height = r["image"]["width"], r["image"]["height"]
+        side = 360 * r["rbc_px"] / 74.6
+        cells = [Box("WBC", *b) for b in t["wbc_boxes"]]
+        for c in r["candidate_boxes"]:
+            b = Box("WBC", *c["box"])
+            if any(contains_center(w, b) for w in cells):
+                continue
+            cx, cy = (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2
+            inside = ((min(width, cx + side / 2) - max(0, cx - side / 2))
+                      * (min(height, cy + side / 2) - max(0, cy - side / 2)) / side**2)
+            lo, hi = next(x for x in bins if x[0] <= inside < x[1])
+            row = counts.setdefault(t["source"], {}).setdefault(f"{lo}-{min(hi, 1.0)}", [0, 0])
+            row[0] += 1
+            row[1] += c["p_wbc"] >= 0.9995
+    return {source: {k: {"candidates": n, "kept": kept, "share_kept": round(kept / n, 3)} for k, (n, kept) in rows.items()}
+            for source, rows in sorted(counts.items())}
+
+
 def cli() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -350,6 +378,10 @@ def cli() -> None:
         p.add_argument("truth", type=Path)
         p.add_argument("raw", type=Path)
         p.add_argument("--out", type=Path)
+    pad = sub.add_parser("padding")
+    pad.add_argument("truth", type=Path, help="runs/rescue/truth.json of note 16")
+    pad.add_argument("reports", type=Path)
+    pad.add_argument("--out", type=Path)
     w = sub.add_parser("train-wide")
     w.add_argument("folder", type=Path, help="holds train/, val/ and test/ with truth.json and features.npz")
     w.add_argument("--probe", type=Path, required=True)
@@ -358,8 +390,11 @@ def cli() -> None:
     sub.choices["score"].add_argument("--rule", action="append", required=True,
                                       help='a JSON pair, e.g. \'["and", {"grid": "2:0.2", "t_win": 14}]\'')
     args = parser.parse_args()
-    if args.command == "train-wide":
-        result = train_wide(args.folder, args.probe, args.old_probe)
+    if args.command in ("train-wide", "padding"):
+        if args.command == "padding":
+            result = padding(json.loads(args.truth.read_text()), json.loads(args.reports.read_text()))
+        else:
+            result = train_wide(args.folder, args.probe, args.old_probe)
         text = json.dumps(result, indent=1)
         print(text)
         if args.out:

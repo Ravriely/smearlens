@@ -30,6 +30,7 @@ PROBES = {
     "types": REPO / "models" / "type_probe.npz",
     "coverage": REPO / "docs" / "experiments" / "10-review-coverage.json",
     "lmu_eval": REPO / "docs" / "experiments" / "11-lmu-external.json",
+    "detection_wide": REPO / "models" / "detection_probe_wide.npz",
 }
 
 image = (
@@ -146,8 +147,8 @@ class Analyzer:
 
         from modal_glimmer_probe import embed
 
-        from smearlens.analyze import RBC_MIN, WBC_MIN
-        from smearlens.analyze import candidates_for, rbc_sizes, report, tiles_per_side, wbc_probability, white_cells
+        from smearlens.analyze import RBC_MIN, WBC_MIN, wbc_probability, white_cells
+        from smearlens.analyze import candidates_for, detection_probe, rbc_sizes, report, tiles_per_side
         from smearlens.pipeline import PBC_RBC_PX, crop_at_scale
 
         started = time.perf_counter()
@@ -163,13 +164,13 @@ class Analyzer:
         sam_done = time.perf_counter()
         crops = [crop_at_scale(field, c.box, rbc_px) for c in cands]
         features = embed(self.encoder, self.processor, self.merge, crops) if crops else None
-        cells = white_cells(cands, features, rbc_px, self.probes) if crops else []
+        cells = white_cells(cands, features, rbc_px, self.probes, wide=tiles > 1) if crops else []
         done = time.perf_counter()
         timing = {"sam": sam_done - started, "glimmer_and_probes": done - sam_done, "total": done - started}
         result = report(field.size, counted, count_px, cells, timing)
         result["candidates"] = len(cands)
         result["tiles_per_side"] = tiles
-        p_wbc = wbc_probability(features, self.probes["detection"]) if crops else []
+        p_wbc = wbc_probability(features, detection_probe(self.probes, tiles > 1)) if crops else []
         result["candidate_boxes"] = [
             {"box": [round(v, 1) for v in (c.box.x0, c.box.y0, c.box.x1, c.box.y1)], "p_wbc": round(float(p), 5)}
             for c, p in zip(cands, p_wbc)

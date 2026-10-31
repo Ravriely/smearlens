@@ -2,15 +2,21 @@
 
     uv run python scripts/pbc_slide.py fields --splits test --out runs/slide-pbc/truth-test.json
     uv run python scripts/slide_demo.py pick runs/slide-pbc/truth-test.json
+    uv run python scripts/slide_demo.py pick-pbc data/pbc/splits.csv
     SMEARLENS_WEB_TOKEN=... uv run python scripts/slide_demo.py record
 
-`pick` copies a few TXL-PBC test fields (PBC source) into web/slide/. `record` sends each field to
+`pick` copies a few TXL-PBC test fields (PBC source) into web/slide/. `pick-pbc` copies 20 fields of the PBC
+test split instead, with a differential that has a left shift (immature granulocytes, one erythroblast), so the
+slide report has something to flag. `record` sends each field to
 POST /api/analyze, one at a time as the page does, then all of them to POST /api/review-slide, and
 writes web/slide/slide.json and web/slide/review.json, which the page shows as the offline example.
 """
 
 import argparse
+import csv
 import json
+import mimetypes
+import random
 import os
 import shutil
 import time
@@ -23,6 +29,7 @@ REPO = Path(__file__).parent.parent
 OUT = REPO / "web" / "slide"
 API = "https://ravriely--smearlens-app-web.us-east.modal.run"
 MIX = {"neutrophil": 4, "lymphocyte": 3, "monocyte": 2, "eosinophil": 2, "basophil": 1}
+RICH_MIX = {"neutrophil": 8, "lymphocyte": 4, "monocyte": 2, "eosinophil": 1, "basophil": 1, "ig": 3, "erythroblast": 1}
 
 
 def pick(truth: list[dict], mix: dict[str, int]) -> list[dict]:
@@ -30,6 +37,18 @@ def pick(truth: list[dict], mix: dict[str, int]) -> list[dict]:
     for kind, n in mix.items():
         chosen += sorted((t for t in truth if t["type"] == kind), key=lambda t: Path(t["path"]).name)[:n]
     return sorted(chosen, key=lambda t: Path(t["path"]).name)
+
+
+def pick_pbc(splits: Path, mix: dict[str, int], seed: int = 0) -> list[dict]:
+    with splits.open() as f:
+        rows = [r for r in csv.DictReader(f) if r["split"] == "test"]
+    rng = random.Random(seed)
+    chosen = []
+    for kind, n in mix.items():
+        paths = sorted(r["path"] for r in rows if r["label"] == kind)
+        chosen += [{"path": str(splits.parent.parent / p), "type": kind} for p in rng.sample(paths, n)]
+    rng.shuffle(chosen)
+    return chosen
 
 
 def post(url: str, body: bytes, token: str, content_type: str, timeout: int) -> dict:
@@ -50,7 +69,7 @@ def record(api: str, token: str) -> None:
     analyses = []
     started = time.perf_counter()
     for name in names:
-        result = post(f"{api}/api/analyze", (OUT / name).read_bytes(), token, "image/png", 240)
+        result = post(f"{api}/api/analyze", (OUT / name).read_bytes(), token, mimetypes.guess_type(name)[0], 240)
         print(f"{name}: {result['white_cell_count']} white cells, {result['round_trip_s']} s", flush=True)
         analyses.append(result)
     analysed = time.perf_counter()
@@ -85,15 +104,24 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
     pick_cmd = sub.add_parser("pick")
     pick_cmd.add_argument("truth", type=Path, help="output of scripts/pbc_slide.py fields")
+    pick_pbc_cmd = sub.add_parser("pick-pbc")
+    pick_pbc_cmd.add_argument("splits", type=Path, help="splits.csv of scripts/prepare_pbc.py")
+    pick_pbc_cmd.add_argument("--seed", type=int, default=0)
     record_cmd = sub.add_parser("record")
     record_cmd.add_argument("--api", default=API)
     args = parser.parse_args()
 
-    if args.command == "pick":
+    if args.command in ("pick", "pick-pbc"):
         OUT.mkdir(parents=True, exist_ok=True)
+        for old in OUT.glob("field-*"):
+            old.unlink()
+        if args.command == "pick":
+            picked = pick(json.loads(args.truth.read_text()), MIX)
+        else:
+            picked = pick_pbc(args.splits, RICH_MIX, args.seed)
         fields = []
-        for i, t in enumerate(pick(json.loads(args.truth.read_text()), MIX), 1):
-            name = f"field-{i:02d}.png"
+        for i, t in enumerate(picked, 1):
+            name = f"field-{i:02d}{Path(t['path']).suffix}"
             shutil.copyfile(t["path"], OUT / name)
             fields.append({"name": name, "truth": t["type"], "source": Path(t["path"]).name})
             print(name, t["type"], Path(t["path"]).name)

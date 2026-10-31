@@ -18,7 +18,8 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 2. **Keep the white cells and type them.** Each candidate is cropped at the scale of the red cells
    around it and embedded by the frozen vision encoder of **Muse Glimmer**. Two linear probes on these
    features say whether it is a white cell ([09](docs/experiments/09-detection-probe.md)) and which
-   type it is ([05](docs/experiments/05-glimmer-linear-probe.md)). No LLM call per cell.
+   type it is ([05](docs/experiments/05-glimmer-linear-probe.md)). On a wide field, the white cell probe is
+   one trained on wide fields ([18](docs/experiments/18-wide-field-white-cells.md)). No LLM call per cell.
 3. **Send the doubtful cells to review.** The type probe is calibrated: cells below a 96 % confidence
    cutoff go to a review queue ([10](docs/experiments/10-review-coverage.md)), as do cells kept with
    an uncertain detection ([16](docs/experiments/16-empty-field-rescue.md)).
@@ -41,7 +42,7 @@ agent report out, in a few seconds plus about 40 s for the agent. Main numbers:
 - Review: checking the 10 % least sure cells leaves 0.3 % errors ([10](docs/experiments/10-review-coverage.md)).
 - External lab (Munich, never seen): 83.7 % zero-shot, 71 % of myeloblasts, a type the probe never
   saw, sent to review ([11](docs/experiments/11-external-lab-munich.md)).
-- Known weak spots: white cell detection on pale BCDD images and on wide fields, red cells
+- Known weak spots: white cell detection on pale BCDD images (worse on wide fields), red cells
   undercounted on crowded PBC fields. Each experiment page lists its limits.
 
 ## Experiments
@@ -65,6 +66,7 @@ agent report out, in a few seconds plus about 40 s for the agent. Main numbers:
 | [15](docs/experiments/15-review-agent-on-backend.md) | Review agent on the demo backend output, one PBC slide of 147 fields (132 white cells) | Backend: 96.2 % right type, 4 of 5 errors in a review queue of 11 %; agent: report with queue size, rare types and disagreements first, no diagnostic wording, about 2 min and 0.15 $ per slide |
 | [16](docs/experiments/16-empty-field-rescue.md) | Keep the best candidate of a field with no sure white cell, as a cell to review | WBC F1 0.798 → 0.815, count error 0.40 → 0.27 per test field, empty fields 12 → 1; lowering the threshold everywhere loses |
 | [17](docs/experiments/17-wide-field-tiling.md) | Wide fields (2 × 2 mosaics of test fields): count red cells and platelets on tiles | Red cells found 431 → 1013 of 1124 (PBC 0 → 529 of 601), error 36.5 → 7.9 per image; white cells unchanged; single fields never tiled |
+| [18](docs/experiments/18-wide-field-white-cells.md) | Wide fields: why the white cell probe adds false cells, and a probe trained on wide fields | Mosaic WBC F1 0.725 → 0.811 (precision 0.63 → 0.86, recall 0.85 → 0.77), BCDD recall falls; fusion rules on windows win 0.01 to 0.03 on val; single fields unchanged |
 
 ## Quick start
 

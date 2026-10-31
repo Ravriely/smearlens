@@ -1,0 +1,278 @@
+{
+ "note": "val mosaics, probe of note 09, white cells off the seams; thresholds are probe logits (7.6 = p 0.9995); best of each rule on val",
+ "rules_tried": 346,
+ "baseline": {
+  "rule": "whole",
+  "params": {
+   "t_whole": 7.6004023345004
+  },
+  "scores": {
+   "BCCD": {
+    "images": 10,
+    "white_cells_truth": 29,
+    "found": 26,
+    "false": 13,
+    "f1": 0.7647,
+    "precision": 0.6667,
+    "recall": 0.8966
+   },
+   "BCDD": {
+    "images": 4,
+    "white_cells_truth": 15,
+    "found": 9,
+    "false": 40,
+    "f1": 0.2812,
+    "precision": 0.1837,
+    "recall": 0.6
+   },
+   "PBC": {
+    "images": 24,
+    "white_cells_truth": 98,
+    "found": 88,
+    "false": 2,
+    "f1": 0.9362,
+    "precision": 0.9778,
+    "recall": 0.898
+   },
+   "all": {
+    "images": 38,
+    "white_cells_truth": 142,
+    "found": 123,
+    "false": 55,
+    "f1": 0.7687,
+    "precision": 0.691,
+    "recall": 0.8662
+   }
+  }
+ },
+ "best_by_rule": {
+  "whole": {
+   "rule": "whole",
+   "params": {
+    "t_whole": 10.0
+   },
+   "scores": {
+    "BCCD": {
+     "images": 10,
+     "white_cells_truth": 29,
+     "found": 25,
+     "false": 12,
+     "f1": 0.7576,
+     "precision": 0.6757,
+     "recall": 0.8621
+    },
+    "BCDD": {
+     "images": 4,
+     "white_cells_truth": 15,
+     "found": 8,
+     "false": 32,
+     "f1": 0.2909,
+     "precision": 0.2,
+     "recall": 0.5333
+    },
+    "PBC": {
+     "images": 24,
+     "white_cells_truth": 98,
+     "found": 86,
+     "false": 2,
+     "f1": 0.9247,
+     "precision": 0.9773,
+     "recall": 0.8776
+    },
+    "all": {
+     "images": 38,
+     "white_cells_truth": 142,
+     "found": 119,
+     "false": 46,
+     "f1": 0.7752,
+     "precision": 0.7212,
+     "recall": 0.838
+    }
+   }
+  },
+  "disc": {
+   "rule": "disc",
+   "params": {
+    "key": "p_disc15",
+    "t_disc": 7.6004023345004
+   },
+   "scores": {
+    "BCCD": {
+     "images": 10,
+     "white_cells_truth": 29,
+     "found": 26,
+     "false": 7,
+     "f1": 0.8387,
+     "precision": 0.7879,
+     "recall": 0.8966
+    },
+    "BCDD": {
+     "images": 4,
+     "white_cells_truth": 15,
+     "found": 5,
+     "false": 2,
+     "f1": 0.4545,
+     "precision": 0.7143,
+     "recall": 0.3333
+    },
+    "PBC": {
+     "images": 24,
+     "white_cells_truth": 98,
+     "found": 87,
+     "false": 2,
+     "f1": 0.9305,
+     "precision": 0.9775,
+     "recall": 0.8878
+    },
+    "all": {
+     "images": 38,
+     "white_cells_truth": 142,
+     "found": 118,
+     "false": 11,
+     "f1": 0.8708,
+     "precision": 0.9147,
+     "recall": 0.831
+    }
+   }
+  },
+  "windows": {
+   "rule": "windows",
+   "params": {
+    "grid": "2:0.5",
+    "key": "p_whole_scale",
+    "t_win": 14.0,
+    "core": false
+   },
+   "scores": {
+    "BCCD": {
+     "images": 10,
+     "white_cells_truth": 29,
+     "found": 24,
+     "false": 17,
+     "f1": 0.6857,
+     "precision": 0.5854,
+     "recall": 0.8276
+    },
+    "BCDD": {
+     "images": 4,
+     "white_cells_truth": 15,
+     "found": 11,
+     "false": 24,
+     "f1": 0.44,
+     "precision": 0.3143,
+     "recall": 0.7333
+    },
+    "PBC": {
+     "images": 24,
+     "white_cells_truth": 98,
+     "found": 87,
+     "false": 1,
+     "f1": 0.9355,
+     "precision": 0.9886,
+     "recall": 0.8878
+    },
+    "all": {
+     "images": 38,
+     "white_cells_truth": 142,
+     "found": 122,
+     "false": 42,
+     "f1": 0.7974,
+     "precision": 0.7439,
+     "recall": 0.8592
+    }
+   }
+  },
+  "and": {
+   "rule": "and",
+   "params": {
+    "grid": "2:0.5",
+    "key": "p_whole_scale",
+    "t_win": 10.0
+   },
+   "scores": {
+    "BCCD": {
+     "images": 10,
+     "white_cells_truth": 29,
+     "found": 25,
+     "false": 9,
+     "f1": 0.7937,
+     "precision": 0.7353,
+     "recall": 0.8621
+    },
+    "BCDD": {
+     "images": 4,
+     "white_cells_truth": 15,
+     "found": 8,
+     "false": 31,
+     "f1": 0.2963,
+     "precision": 0.2051,
+     "recall": 0.5333
+    },
+    "PBC": {
+     "images": 24,
+     "white_cells_truth": 98,
+     "found": 86,
+     "false": 2,
+     "f1": 0.9247,
+     "precision": 0.9773,
+     "recall": 0.8776
+    },
+    "all": {
+     "images": 38,
+     "white_cells_truth": 142,
+     "found": 119,
+     "false": 42,
+     "f1": 0.7855,
+     "precision": 0.7391,
+     "recall": 0.838
+    }
+   }
+  },
+  "or": {
+   "rule": "or",
+   "params": {
+    "grid": "3:0.5",
+    "key": "p",
+    "t_win": 22.0
+   },
+   "scores": {
+    "BCCD": {
+     "images": 10,
+     "white_cells_truth": 29,
+     "found": 26,
+     "false": 11,
+     "f1": 0.7879,
+     "precision": 0.7027,
+     "recall": 0.8966
+    },
+    "BCDD": {
+     "images": 4,
+     "white_cells_truth": 15,
+     "found": 11,
+     "false": 40,
+     "f1": 0.3333,
+     "precision": 0.2157,
+     "recall": 0.7333
+    },
+    "PBC": {
+     "images": 24,
+     "white_cells_truth": 98,
+     "found": 88,
+     "false": 2,
+     "f1": 0.9362,
+     "precision": 0.9778,
+     "recall": 0.898
+    },
+    "all": {
+     "images": 38,
+     "white_cells_truth": 142,
+     "found": 125,
+     "false": 53,
+     "f1": 0.7813,
+     "precision": 0.7022,
+     "recall": 0.8803
+    }
+   }
+  }
+ }
+}

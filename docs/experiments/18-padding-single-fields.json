@@ -1,0 +1,63 @@
+{
+ "BCCD": {
+  "0.8-0.95": {
+   "candidates": 132,
+   "kept": 5,
+   "share_kept": 0.038
+  },
+  "0.0-0.6": {
+   "candidates": 907,
+   "kept": 14,
+   "share_kept": 0.015
+  },
+  "0.6-0.8": {
+   "candidates": 336,
+   "kept": 5,
+   "share_kept": 0.015
+  },
+  "0.95-1.0": {
+   "candidates": 35,
+   "kept": 5,
+   "share_kept": 0.143
+  }
+ },
+ "BCDD": {
+  "0.0-0.6": {
+   "candidates": 533,
+   "kept": 4,
+   "share_kept": 0.008
+  },
+  "0.6-0.8": {
+   "candidates": 126,
+   "kept": 2,
+   "share_kept": 0.016
+  },
+  "0.8-0.95": {
+   "candidates": 25,
+   "kept": 8,
+   "share_kept": 0.32
+  },
+  "0.95-1.0": {
+   "candidates": 1,
+   "kept": 1,
+   "share_kept": 1.0
+  }
+ },
+ "PBC": {
+  "0.6-0.8": {
+   "candidates": 341,
+   "kept": 0,
+   "share_kept": 0.0
+  },
+  "0.0-0.6": {
+   "candidates": 1463,
+   "kept": 0,
+   "share_kept": 0.0
+  },
+  "0.8-0.95": {
+   "candidates": 3,
+   "kept": 0,
+   "share_kept": 0.0
+  }
+ }
+}

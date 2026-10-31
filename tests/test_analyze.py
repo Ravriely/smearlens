@@ -6,6 +6,7 @@ from smearlens.analyze import (
     candidates_for,
     count_cells,
     count_outside,
+    detection_probe,
     load_probes,
     in_core,
     merge_kept,
@@ -82,6 +83,17 @@ def test_white_cells_rescue_nothing_below_the_floor_or_next_to_a_sure_cell():
     assert [c["uncertain_detection"] for c in cells] == [False]
 
 
+def test_white_cells_use_the_wide_probe_only_on_a_wide_field():
+    found = probes()
+    found["detection_wide"] = {**found["detection"], "weight": np.array([-10.0, 0.0])}
+    cands = [cand(0, 0, 40, 40), cand(200, 0, 240, 40)]
+    features = np.array([[1.0, 1.0], [-1.0, 0.0]])
+    assert [c["box"][0] for c in white_cells(cands, features, rbc_px=30, probes=found)] == [0]
+    assert [c["box"][0] for c in white_cells(cands, features, rbc_px=30, probes=found, wide=True)] == [200]
+    without = probes()
+    assert detection_probe(without, wide=True) is without["detection"]
+
+
 def test_report_counts_cells_outside_white_cells():
     cells = [{"box": [0, 0, 40, 40], "p_wbc": 1.0, "type": "neutrophil", "confidence": 0.9, "needs_review": True}]
     dets = detections() + [{"image": "f", "label": "Platelet", "boxes": [[300, 0, 308, 8]], "scores": [0.5]}]
@@ -103,6 +115,9 @@ def test_load_probes(tmp_path):
     loaded = load_probes(tmp_path / "d.npz", tmp_path / "t.npz", tmp_path / "c.json", tmp_path / "l.json")
     assert loaded["temperature"] == 0.8 and loaded["review_cutoff"] == 0.96
     assert float(loaded["detection"]["threshold"]) == 0.5
+    assert "detection_wide" not in loaded
+    wide = load_probes(tmp_path / "d.npz", tmp_path / "t.npz", tmp_path / "c.json", tmp_path / "l.json", tmp_path / "d.npz")
+    assert float(wide["detection_wide"]["threshold"]) == 0.5
 
 
 def test_relative_size_uses_longest_side():

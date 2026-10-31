@@ -102,13 +102,27 @@ def wbc_probability(features: np.ndarray, probe: dict) -> np.ndarray:
     return 1 / (1 + np.exp(-np.clip(x @ probe["weight"] + probe["bias"], -30, 30)))
 
 
-def load_probes(detection: Path, types: Path, coverage: Path, lmu_eval: Path) -> dict:
-    return {
+def load_probes(
+    detection: Path, types: Path, coverage: Path, lmu_eval: Path, detection_wide: Path | None = None
+) -> dict:
+    probes = {
         "detection": dict(np.load(detection)),
         "type": dict(np.load(types)),
         "temperature": json.loads(coverage.read_text())["temperature"],
         "review_cutoff": json.loads(lmu_eval.read_text())["review_cutoff_from_pbc_10pct"],
     }
+    if detection_wide is not None:
+        probes["detection_wide"] = dict(np.load(detection_wide))
+    return probes
+
+
+def detection_probe(probes: dict, wide: bool) -> dict:
+    """The probe of note 18 for a tiled (wide) field, the probe of note 09 otherwise.
+
+    The probe of 09 learnt from small fields, where the crop of a candidate far from the centre is padded: on a
+    wide field no crop is padded, and it takes red cells next to a white cell for white cells.
+    """
+    return probes["detection_wide"] if wide and "detection_wide" in probes else probes["detection"]
 
 
 def count_outside(detections: list[dict], label: str, min_score: float, cells: list[Box]) -> int:
@@ -141,8 +155,10 @@ def count_cells(
     )
 
 
-def white_cells(cands: list[Candidate], features: np.ndarray, rbc_px: float, probes: dict) -> list[dict]:
-    detection = probes["detection"]
+def white_cells(
+    cands: list[Candidate], features: np.ndarray, rbc_px: float, probes: dict, wide: bool = False
+) -> list[dict]:
+    detection = detection_probe(probes, wide)
     p_wbc = wbc_probability(features, detection)
     kept = merge_kept(cands, p_wbc, float(detection["threshold"]), rbc_px)
     rescued = not kept and len(cands) > 0 and float(p_wbc.max()) >= RESCUE_FLOOR

@@ -131,7 +131,7 @@ The deployed app serves the review page and its API from one URL:
 **https://ravriely--smearlens-app-web.us-east.modal.run**
 
 The page opens on an offline demo, no GPU and no LLM call: one PBC field of the TXL-PBC test split
-(`BNE_59680.jpg`, a neutrophil at 95.8 %, so it sits in the review queue), the backend output on it
+(`BNE_59680.jpg`, a neutrophil at 87.2 %, so it sits in the review queue), the backend output on it
 (`web/sample.json`) and a recorded run of the review agent on that output (`web/sample-review.json`).
 To analyse your own image, click **Access token**, paste the token you were given, then drop a JPG,
 PNG or WebP field of view (12 MB and 4096×4096 px at most). The token stays in the browser
@@ -145,12 +145,14 @@ handle stitched mosaics, so the fields are never assembled. The page then adds t
 report: the differential over every white cell of every field, the red cell and platelet counts per
 field on average, and one review list across the fields (a thumbnail strip, or the arrow keys, opens
 each field). The agent reviews the whole slide through `POST /api/review-slide`, with at most 14 steps
-and 6 second opinions. The ready-to-click example is 20 fields of the PBC test split, with a left shift: 8 neutrophils,
-4 lymphocytes, 3 immature granulocytes, 2 monocytes, 1 eosinophil, 1 basophil and 1 erythroblast
-(`web/slide/`, picked and recorded by `scripts/slide_demo.py pick-pbc`). The 20 white cells are typed
-right, so the differential is exact. The agent flags the immature granulocytes and the erythroblast
-for review. Analysis takes about 25 s with a warm GPU (about 110 s from cold), and the review about
-80 s for 34k Baseten tokens.
+and 6 second opinions. The ready-to-click example is 19 fields of the PBC test split with a left shift
+(7 neutrophils, 4 lymphocytes, 3 immature granulocytes, 2 monocytes, 1 eosinophil, 1 basophil, 1 erythroblast)
+and one myeloblast of the Munich test split (field 06, `MYO_0029` of AML-Cytomorphology_LMU, CC BY 3.0,
+credited in the page footer). It is in `web/slide/`, picked and recorded by
+`scripts/slide_demo.py pick-pbc --blast`. 19 of the 20 labelled cells are typed right: one immature
+granulocyte reads as a lymphocyte at 52 %, below the cutoff, so it is in the review list. The agent puts
+the suspected blast first in its review list, then the immature granulocytes and the erythroblast.
+The recorded analysis took 58 s (the first field from cold), and the review 79 s for 36k Baseten tokens.
 
 Cell numbers are the same everywhere: the badges on the image, the review list and the agent report
 count white cells from 1, in the order of the backend output (field after field on a slide),

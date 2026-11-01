@@ -1,6 +1,6 @@
 {
   "model": "meta-models/muse-spark-open-1026",
-  "report": "### Sample adequacy\nOnly 1 field was scanned with 1 white cell counted and 14 red cells and 0 platelets estimated. This is well below the 100 cells needed for a reliable differential and below the 20-cell threshold for comparison to ranges. The differential below is therefore only indicative and the count is too small for range interpretation.\n\n### Differential\nAutomated count: 1 neutrophil (100% of 1 white cell). No comparison to reference ranges is made due to the low cell number; a larger sample is needed.\n\n### Review list\nThe automated review queue contains 1 cell. Flagged for priority opening:\n- Cell 1 (neutrophil, confidence 0.96) \u2014 single cell on slide marked for review, agreement on second opinion but requires human confirmation.\nNo change to counts was made; second opinion is for highlighting, not correction.\n\n### Limits\nSecond opinion is a generalist (65% on single cells, weak on IG/erythroblasts) vs classifier 97.6%; disagreements prompt human review only. Red cells undercounted on crowded fields \u2014 count indicative. Reference ranges are indicative adult ranges; lab ranges prevail.\n",
+  "report": "**Sample adequacy:** 1 field analysed, 1 white cell counted \u2014 too few for a differential (under 20 and under 100 cells). Indicative counts: 14 red cells, 0 platelets.\n\n**Differential:** 1 neutrophil (100% of counted cells). With only 1 cell the differential is only indicative and cannot be compared to reference ranges.\n\n**Review list:** 1 cell in the review queue.\n- Cell 1 (neutrophil, confidence 0.87) \u2014 flagged for verification.\n\n**Limits:** Second-opinion model is generalist (65% on single cells, weaker on IG/erythroblasts) vs classifier 97.6%; red cells undercounted on crowded fields; reference ranges are indicative; blast class from single lab \u2014 suspected blasts are to review only.\n",
   "accepted": true,
   "summary": {
     "fields": 1,
@@ -17,21 +17,27 @@
       "ig": 0.0,
       "lymphocyte": 0.0,
       "monocyte": 0.0,
-      "neutrophil": 100.0
+      "neutrophil": 100.0,
+      "blast": 0.0
     },
     "outside_reference_ranges": null,
     "marked_for_review": 1,
+    "uncertain_detections": 0,
+    "suspected_blasts": 0,
     "marked_for_review_by_type": {
       "neutrophil": 1
     },
     "below_confidence_0.7": 0,
     "red_cells": 14,
     "platelets": 0,
+    "red_cells_per_field": 14.0,
+    "platelets_per_field": 0.0,
     "second_opinion_budget": 3,
     "known_limits": [
       "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
       "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
-      "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+      "Reference ranges are indicative adult ranges; the lab's own ranges prevail.",
+      "Blast class learnt from one lab only (Munich, experiment 19): 97 % of blasts found there, 3 % of other cells wrongly called blast. A suspected blast is a cell to look at, not a finding."
     ]
   },
   "flags": [
@@ -45,9 +51,9 @@
         250.9
       ],
       "type": "neutrophil",
-      "confidence": 0.9578,
+      "confidence": 0.8716,
       "priority": "normal",
-      "reason": "single cell on slide marked for review - requires human confirmation"
+      "reason": "marked for review - please verify neutrophil"
     }
   ],
   "second_opinions": [
@@ -61,10 +67,10 @@
         250.9
       ],
       "classifier": "neutrophil",
-      "confidence": 0.9578,
+      "confidence": 0.8716,
       "second_opinion": "neutrophil",
       "agrees": true,
-      "reasoning": "The central cell shows a dense bilobed/band-shaped nucleus with pale cytoplasm containing fine pink-purple neutrophilic granules.\n\nLABEL: neutrophil"
+      "reasoning": "The central cell shows a kidney/bilobed segmented nucleus with clumped chromatin and pale cytoplasm containing fine pink-purple neutrophilic granules consistent with a mature granulocyte.\n\nLABEL: neutrophil"
     }
   ],
   "steps": [
@@ -86,21 +92,27 @@
           "ig": 0.0,
           "lymphocyte": 0.0,
           "monocyte": 0.0,
-          "neutrophil": 100.0
+          "neutrophil": 100.0,
+          "blast": 0.0
         },
         "outside_reference_ranges": null,
         "marked_for_review": 1,
+        "uncertain_detections": 0,
+        "suspected_blasts": 0,
         "marked_for_review_by_type": {
           "neutrophil": 1
         },
         "below_confidence_0.7": 0,
         "red_cells": 14,
         "platelets": 0,
+        "red_cells_per_field": 14.0,
+        "platelets_per_field": 0.0,
         "second_opinion_budget": 3,
         "known_limits": [
           "The second opinion model is a generalist: 65 % right on single PBC cells, weak on ig and erythroblasts (experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
           "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
-          "Reference ranges are indicative adult ranges; the lab's own ranges prevail."
+          "Reference ranges are indicative adult ranges; the lab's own ranges prevail.",
+          "Blast class learnt from one lab only (Munich, experiment 19): 97 % of blasts found there, 3 % of other cells wrongly called blast. A suspected blast is a cell to look at, not a finding."
         ]
       }
     },
@@ -138,6 +150,10 @@
           "erythroblast": [
             0,
             0
+          ],
+          "blast": [
+            0,
+            0
           ]
         }
       }
@@ -154,8 +170,9 @@
             "cell_id": 1,
             "field": "sample.jpg",
             "type": "neutrophil",
-            "confidence": 0.9578,
-            "needs_review": true
+            "confidence": 0.8716,
+            "needs_review": true,
+            "uncertain_detection": false
           }
         ]
       }
@@ -169,7 +186,7 @@
         "cell_id": 1,
         "classifier": "neutrophil",
         "label": "neutrophil",
-        "reasoning": "The central cell shows a dense bilobed/band-shaped nucleus with pale cytoplasm containing fine pink-purple neutrophilic granules.\n\nLABEL: neutrophil"
+        "reasoning": "The central cell shows a kidney/bilobed segmented nucleus with clumped chromatin and pale cytoplasm containing fine pink-purple neutrophilic granules consistent with a mature granulocyte.\n\nLABEL: neutrophil"
       }
     },
     {
@@ -177,7 +194,7 @@
       "args": {
         "cell_id": 1,
         "priority": "normal",
-        "reason": "single cell on slide marked for review - requires human confirmation"
+        "reason": "marked for review - please verify neutrophil"
       },
       "result": {
         "flagged": 1,
@@ -187,7 +204,7 @@
     {
       "tool": "submit_report",
       "args": {
-        "report": "### Sample adequacy\nOnly 1 field was scanned with 1 white cell counted and 14 red cells and 0 platelets estimated. This is well below the 100 cells needed for a reliable differential and below the 20-cell threshold for comparison to ranges. The differential below is therefore only indicative and the count is too small for range interpretation.\n\n### Differential\nAutomated count: 1 neutrophil (100% of 1 white cell). No comparison to reference ranges is made due to the low cell number; a larger sample is needed.\n\n### Review list\nThe automated review queue contains 1 cell. Flagged for priority opening:\n- Cell 1 (neutrophil, confidence 0.96) \u2014 single cell on slide marked for review, agreement on second opinion but requires human confirmation.\nNo change to counts was made; second opinion is for highlighting, not correction.\n\n### Limits\nSecond opinion is a generalist (65% on single cells, weak on IG/erythroblasts) vs classifier 97.6%; disagreements prompt human review only. Red cells undercounted on crowded fields \u2014 count indicative. Reference ranges are indicative adult ranges; lab ranges prevail.\n"
+        "report": "**Sample adequacy:** 1 field analysed, 1 white cell counted \u2014 too few for a differential (under 20 and under 100 cells). Indicative counts: 14 red cells, 0 platelets.\n\n**Differential:** 1 neutrophil (100% of counted cells). With only 1 cell the differential is only indicative and cannot be compared to reference ranges.\n\n**Review list:** 1 cell in the review queue.\n- Cell 1 (neutrophil, confidence 0.87) \u2014 flagged for verification.\n\n**Limits:** Second-opinion model is generalist (65% on single cells, weaker on IG/erythroblasts) vs classifier 97.6%; red cells undercounted on crowded fields; reference ranges are indicative; blast class from single lab \u2014 suspected blasts are to review only.\n"
       },
       "result": {
         "accepted": true
@@ -195,14 +212,15 @@
     }
   ],
   "tokens": {
-    "agent_prompt": 10060,
-    "agent_completion": 2356,
-    "agent": 12416,
-    "second_opinions": 2180,
-    "total": 14596
+    "agent_prompt": 11219,
+    "agent_completion": 2857,
+    "agent": 14076,
+    "second_opinions": 1644,
+    "total": 15720
   },
   "llm_calls": 5,
-  "seconds": 19.5,
+  "seconds": 18.8,
   "rejected_reports": 0,
-  "rejected_flags": 0
+  "rejected_flags": 0,
+  "round_trip_s": 19.019
 }

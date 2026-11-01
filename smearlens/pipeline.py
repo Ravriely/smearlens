@@ -7,9 +7,11 @@ from PIL import Image
 from smearlens.datasets import Box
 from smearlens.metrics import contains_center
 
-NUCLEATED = ("basophil", "eosinophil", "erythroblast", "ig", "lymphocyte", "monocyte", "neutrophil")
-CANDIDATE_CLASSES = NUCLEATED + ("platelet", "not_wbc")
-PRIORITY = ("ig", "erythroblast", "basophil")
+PBC_TYPES = ("basophil", "eosinophil", "erythroblast", "ig", "lymphocyte", "monocyte", "neutrophil")
+BLAST = "blast"
+NUCLEATED = PBC_TYPES + (BLAST,)
+CANDIDATE_CLASSES = PBC_TYPES + ("platelet", "not_wbc")
+PRIORITY = (BLAST, "ig", "erythroblast", "basophil")
 
 PBC_PREFIXES = {
     "BA": "basophil",
@@ -89,14 +91,18 @@ def review_flags(cells: list[Candidate]) -> list[str]:
     return flags
 
 
-def probe_predict(features, probe, temperature: float = 1.0) -> list[tuple[str, float]]:
+def probe_probs(features, probe, temperature: float = 1.0):
     import numpy as np
 
     x = (np.asarray(features, dtype=np.float32) - probe["mean"]) / probe["std"]
     logits = (x @ probe["weight"].T + probe["bias"]) / temperature
     probs = np.exp(logits - logits.max(1, keepdims=True))
-    probs /= probs.sum(1, keepdims=True)
-    return [(str(probe["classes"][i]), float(p[i])) for i, p in zip(logits.argmax(1), probs)]
+    return probs / probs.sum(1, keepdims=True)
+
+
+def probe_predict(features, probe, temperature: float = 1.0) -> list[tuple[str, float]]:
+    probs = probe_probs(features, probe, temperature)
+    return [(str(probe["classes"][i]), float(p[i])) for i, p in zip(probs.argmax(1), probs)]
 
 
 def probe_labels(features, probe) -> list[str]:

@@ -5,7 +5,7 @@ import numpy as np
 
 from smearlens.datasets import Box
 from smearlens.metrics import center_distance, contains_center
-from smearlens.pipeline import Candidate, dedupe, differential, probe_predict, rbc_scale
+from smearlens.pipeline import BLAST, Candidate, dedupe, differential, probe_probs, rbc_scale
 
 PROMPTS = (
     ("WBC", "cell with a large purple nucleus"),
@@ -105,12 +105,19 @@ def wbc_probability(features: np.ndarray, probe: dict) -> np.ndarray:
 def load_probes(
     detection: Path, types: Path, coverage: Path, lmu_eval: Path, detection_wide: Path | None = None
 ) -> dict:
+    """A type probe file that carries its own temperature, review cutoff and blast threshold (note 19)
+    overrides the values of notes 10 and 11."""
+    type_probe = dict(np.load(types))
     probes = {
         "detection": dict(np.load(detection)),
-        "type": dict(np.load(types)),
-        "temperature": json.loads(coverage.read_text())["temperature"],
-        "review_cutoff": json.loads(lmu_eval.read_text())["review_cutoff_from_pbc_10pct"],
+        "type": type_probe,
+        "temperature": float(type_probe.pop("temperature", json.loads(coverage.read_text())["temperature"])),
+        "review_cutoff": float(
+            type_probe.pop("review_cutoff", json.loads(lmu_eval.read_text())["review_cutoff_from_pbc_10pct"])
+        ),
     }
+    if "blast_threshold" in type_probe:
+        probes["blast_threshold"] = float(type_probe.pop("blast_threshold"))
     if detection_wide is not None:
         probes["detection_wide"] = dict(np.load(detection_wide))
     return probes
@@ -166,18 +173,34 @@ def white_cells(
         kept = [cands[int(np.argmax(p_wbc))].box]
     index = {c.box: i for i, c in enumerate(cands)}
     rows = [index[b] for b in kept]
-    types = probe_predict(features[rows], probes["type"], probes["temperature"]) if rows else []
+    types = cell_types(features[rows], probes) if rows else []
     return [
         {
             "box": [round(v, 1) for v in (b.x0, b.y0, b.x1, b.y1)],
             "p_wbc": round(float(p_wbc[i]), 5),
             "type": label,
             "confidence": round(confidence, 4),
-            "needs_review": rescued or confidence < probes["review_cutoff"],
+            "needs_review": rescued or label == BLAST or confidence < probes["review_cutoff"],
             "uncertain_detection": rescued,
+            "suspected_blast": label == BLAST,
         }
         for b, i, (label, confidence) in zip(kept, rows, types)
     ]
+
+
+def cell_types(features: np.ndarray, probes: dict) -> list[tuple[str, float]]:
+    """Type and confidence of each cell. With a blast class, a cell whose blast probability reaches the
+    threshold of note 19 is a suspected blast, even when another type has a higher probability."""
+    probs = probe_probs(features, probes["type"], probes["temperature"])
+    classes = [str(c) for c in probes["type"]["classes"]]
+    blast = classes.index(BLAST) if BLAST in classes and "blast_threshold" in probes else None
+    out = []
+    for p in probs:
+        if blast is not None and p[blast] >= probes["blast_threshold"]:
+            out.append((BLAST, float(p[blast])))
+        else:
+            out.append((classes[int(p.argmax())], float(p.max())))
+    return out
 
 
 def report(size: tuple[int, int], detections: list[dict], rbc_px: float, cells: list[dict], timing: dict) -> dict:

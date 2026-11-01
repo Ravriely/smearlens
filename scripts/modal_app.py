@@ -27,7 +27,7 @@ REPO = Path(__file__).parent.parent
 REMOTE = "/root/smearlens"
 PROBES = {
     "detection": REPO / "models" / "detection_probe.npz",
-    "types": REPO / "models" / "type_probe.npz",
+    "types": REPO / "models" / "type_probe_blast.npz",
     "coverage": REPO / "docs" / "experiments" / "10-review-coverage.json",
     "lmu_eval": REPO / "docs" / "experiments" / "11-lmu-external.json",
     "detection_wide": REPO / "models" / "detection_probe_wide.npz",

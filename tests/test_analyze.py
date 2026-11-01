@@ -4,6 +4,7 @@ import numpy as np
 
 from smearlens.analyze import (
     candidates_for,
+    cell_types,
     count_cells,
     count_outside,
     detection_probe,
@@ -171,3 +172,41 @@ def test_windows_overlap_and_cores_cover_each_point_once():
     assert (window.x0, window.y0, window.x1, window.y1) == (0.0, 0.0, 60.0, 48.0)
     for x, y in [(0, 0), (49.9, 39.9), (50, 40), (99, 79), (100, 80)]:
         assert sum(in_core([x, y, x, y], core, size) for _, core in plans) == 1
+
+
+def blast_probes():
+    found = probes()
+    found["type"] = {"mean": np.zeros(2), "std": np.ones(2), "weight": np.array([[5.0, 0.0], [0.0, 0.0], [0.0, 5.0]]),
+                     "bias": np.zeros(3), "classes": np.array(["neutrophil", "lymphocyte", "blast"])}
+    found["blast_threshold"] = 0.3
+    return found
+
+
+def test_cell_types_call_a_blast_above_the_threshold_even_when_another_type_wins():
+    types = cell_types(np.array([[1.0, 0.0], [0.6, 0.5], [0.0, 1.0]]), blast_probes())
+    assert [t for t, _ in types] == ["neutrophil", "blast", "blast"]
+    assert types[1][1] < 0.5
+
+
+def test_cell_types_without_threshold_keep_the_argmax():
+    found = blast_probes()
+    del found["blast_threshold"]
+    assert [t for t, _ in cell_types(np.array([[0.6, 0.5]]), found)] == ["neutrophil"]
+
+
+def test_white_cells_send_every_suspected_blast_to_review():
+    found = blast_probes()
+    found["review_cutoff"] = 0.0
+    cells = white_cells([cand(0, 0, 40, 40)], np.array([[1.0, 2.0]]), rbc_px=30, probes=found)
+    assert cells[0]["type"] == "blast" and cells[0]["suspected_blast"] is True and cells[0]["needs_review"] is True
+
+
+def test_load_probes_prefers_the_values_stored_in_the_type_probe(tmp_path):
+    np.savez(tmp_path / "d.npz", weight=np.ones(2), bias=0.0, mean=np.zeros(2), std=np.ones(2), threshold=0.5)
+    np.savez(tmp_path / "t.npz", weight=np.ones((3, 2)), bias=np.zeros(3), mean=np.zeros(2), std=np.ones(2),
+             classes=np.array(["a", "b", "blast"]), temperature=1.1, review_cutoff=0.9, blast_threshold=0.3)
+    (tmp_path / "c.json").write_text(json.dumps({"temperature": 0.8}))
+    (tmp_path / "l.json").write_text(json.dumps({"review_cutoff_from_pbc_10pct": 0.96}))
+    loaded = load_probes(tmp_path / "d.npz", tmp_path / "t.npz", tmp_path / "c.json", tmp_path / "l.json")
+    assert (loaded["temperature"], loaded["review_cutoff"], loaded["blast_threshold"]) == (1.1, 0.9, 0.3)
+    assert set(loaded["type"]) == {"weight", "bias", "mean", "std", "classes"}

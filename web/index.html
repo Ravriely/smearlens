@@ -24,6 +24,7 @@
   --t-basophil: #36479a;
   --t-ig: #2b8a5f;
   --t-erythroblast: #b23a7a;
+  --t-blast: #9b1c1c;
   --t-platelet: #6b7280;
   --ok: #2b7a4b;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
@@ -50,6 +51,7 @@
     --t-basophil: #7b8cf0;
     --t-ig: #52c795;
     --t-erythroblast: #e873b2;
+    --t-blast: #ff4d4d;
     --t-platelet: #a3a9b5;
     --ok: #5fcf8f;
   }
@@ -368,7 +370,7 @@ const T = {
     analysingField: (k, n) => `Analysing field ${k} of ${n}…`,
     loadTextSlide: "Each field is analysed on its own, one after the other: the slide is never stitched. The first field after a pause waits for the GPU to start, about 45 s.",
     rbcField: "Red cells / field", pltField: "Platelets / field",
-    revhintSlide: (c) => `All fields of the slide. Cells below the ${c} % confidence cutoff. Click a thumbnail to open its field.`,
+    revhintSlide: (c) => `All fields of the slide. Suspected blasts first, then cells below the ${c} % confidence cutoff. Click a thumbnail to open its field.`,
     agentRecordedSlide: "Recorded run on this slide",
     agentWaitSlide: "It reads the slide counts, asks a second opinion on the doubtful cells, flags what to open first and writes the slide report. About 1 to 3 min.",
     formula: "Differential count", review: "To review", agent: "Agent report",
@@ -381,10 +383,10 @@ const T = {
     agentMeta: (r) => `${r.llm_calls} model calls · ${r.second_opinions.length} second opinions · ${r.flags.length} flags · ${r.seconds.toFixed(0)} s`,
     cells: "white cells", wbc: "White cells", rbc: "Red cells", plt: "Platelets",
     legendReview: "Dashed: to review", conf: "confidence", proposed: "proposed",
-    revhint: (c) => `Types shown are the proposed ones. Cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
+    revhint: (c) => `Types shown are the proposed ones. Suspected blasts first, then cells below the ${c} % confidence cutoff, calibrated on 2,560 PBC cells. Hover a thumbnail to find it on the image.`,
     revnone: "No cell below the confidence cutoff.",
     nCells: (n) => `${n} cell${n === 1 ? "" : "s"}`,
-    types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast", platelet: "platelet" },
+    types: { neutrophil: "neutrophil", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "eosinophil", basophil: "basophil", ig: "immature gran.", erythroblast: "erythroblast", blast: "suspected blast", platelet: "platelet" },
     file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1)} s`,
     sending: "Sending the image…", analysing: "Analysing on the GPU…", waking: "Waking up the GPU…",
     loadText: "The first image after a pause waits for the GPU to start, about 45 s. The next ones take a few seconds.",
@@ -404,7 +406,7 @@ const T = {
       other: (s) => `Unexpected answer from the backend (HTTP ${s}).`
     },
     retry: "Try again", setKey: "Enter the token", fieldErr: (k, name) => `Field ${k} (${name}): `,
-    disclaimer: "Decision-support tool, not a diagnosis. It does not detect blasts: it flags them for review. Every count is a draft for a biologist to validate."
+    disclaimer: "Decision-support tool, not a diagnosis. A suspected blast is a cell to review first, never a finding. Every count is a draft for a biologist to validate."
   },
   fr: {
     tagline: "Revue de frottis", lang: "EN",
@@ -420,7 +422,7 @@ const T = {
     analysingField: (k, n) => `Analyse du champ ${k} sur ${n}…`,
     loadTextSlide: "Chaque champ est analysé seul, l'un après l'autre : la lame n'est jamais assemblée. Le premier champ après une pause attend le démarrage du GPU, environ 45 s.",
     rbcField: "Glob. rouges / champ", pltField: "Plaquettes / champ",
-    revhintSlide: (c) => `Tous les champs de la lame. Cellules sous le seuil de confiance de ${c} %. Clique une vignette pour ouvrir son champ.`,
+    revhintSlide: (c) => `Tous les champs de la lame. Blastes suspectés d'abord, puis cellules sous le seuil de confiance de ${c} %. Clique une vignette pour ouvrir son champ.`,
     agentRecordedSlide: "Exécution enregistrée sur cette lame",
     agentWaitSlide: "Il lit les comptes de la lame, demande un second avis sur les cellules douteuses, signale celles à ouvrir en premier et rédige le compte rendu de lame. Compter 1 à 3 min.",
     formula: "Formule leucocytaire", review: "À revoir", agent: "Compte rendu de l'agent",
@@ -433,10 +435,10 @@ const T = {
     agentMeta: (r) => `${r.llm_calls} appels au modèle · ${r.second_opinions.length} seconds avis · ${r.flags.length} signalements · ${r.seconds.toFixed(0)} s`,
     cells: "globules blancs", wbc: "Globules blancs", rbc: "Globules rouges", plt: "Plaquettes",
     legendReview: "Pointillés : à revoir", conf: "confiance", proposed: "proposé",
-    revhint: (c) => `Types proposés. Cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
+    revhint: (c) => `Types proposés. Blastes suspectés d'abord, puis cellules sous le seuil de confiance de ${c} %, calibré sur 2 560 cellules PBC. Survole une vignette pour la retrouver sur l'image.`,
     revnone: "Aucune cellule sous le seuil de confiance.",
     nCells: (n) => `${n} cellule${n > 1 ? "s" : ""}`,
-    types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste", platelet: "plaquette" },
+    types: { neutrophil: "neutrophile", lymphocyte: "lymphocyte", monocyte: "monocyte", eosinophil: "éosinophile", basophil: "basophile", ig: "gran. immature", erythroblast: "érythroblaste", blast: "blaste suspecté", platelet: "plaquette" },
     file: (j) => `${j.name} · ${j.image.width}×${j.image.height} · ${(j.round_trip_s ?? j.timing_s.total).toFixed(1).replace(".", ",")} s`,
     sending: "Envoi de l'image…", analysing: "Analyse sur le GPU…", waking: "Réveil du GPU…",
     loadText: "La première image après une pause attend le démarrage du GPU, environ 45 s. Les suivantes prennent quelques secondes.",
@@ -456,10 +458,10 @@ const T = {
       other: (s) => `Réponse inattendue du backend (HTTP ${s}).`
     },
     retry: "Réessayer", setKey: "Saisir le jeton", fieldErr: (k, name) => `Champ ${k} (${name}) : `,
-    disclaimer: "Outil d'aide, pas un diagnostic. Il ne détecte pas les blastes : il les signale en revue. Chaque décompte est un brouillon à valider par un biologiste."
+    disclaimer: "Outil d'aide, pas un diagnostic. Un blaste suspecté est une cellule à revoir en premier, jamais une conclusion. Chaque décompte est un brouillon à valider par un biologiste."
   }
 };
-const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "platelet"];
+const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "blast", "platelet"];
 const DEFAULT_CUTOFF = 0.9598;
 const MAX_BYTES = 12 * 1024 * 1024;
 const MAX_FIELDS = 20;
@@ -643,6 +645,7 @@ function render() {
 
   const revs = [];
   fields.forEach((g, fk) => g.a.white_cells.forEach((c, i) => c.needs_review && revs.push([fk, i])));
+  revs.sort((a, b) => (fields[b[0]].a.white_cells[b[1]].type === "blast") - (fields[a[0]].a.white_cells[a[1]].type === "blast"));
   $("revn").textContent = revs.length ? `${revs.length} / ${agg.wbc}` : "0";
   $("rlist").classList.toggle("dense", revs.length > 2);
   $("rlist").replaceChildren(...(revs.length ? revs.map(([fk, i]) => {

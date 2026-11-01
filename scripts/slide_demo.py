@@ -2,12 +2,13 @@
 
     uv run python scripts/pbc_slide.py fields --splits test --out runs/slide-pbc/truth-test.json
     uv run python scripts/slide_demo.py pick runs/slide-pbc/truth-test.json
-    uv run python scripts/slide_demo.py pick-pbc data/pbc/splits.csv
+    uv run python scripts/slide_demo.py pick-pbc data/pbc/splits.csv --blast MYO_0029.png
     SMEARLENS_WEB_TOKEN=... uv run python scripts/slide_demo.py record
 
 `pick` copies a few TXL-PBC test fields (PBC source) into web/slide/. `pick-pbc` copies 20 fields of the PBC
 test split instead, with a differential that has a left shift (immature granulocytes, one erythroblast), so the
-slide report has something to flag. `record` sends each field to
+slide report has something to flag. `--blast` swaps one neutrophil for a myeloblast of the Munich test
+split (AML-Cytomorphology_LMU, CC BY 3.0), so the example also shows a suspected blast. `record` sends each field to
 POST /api/analyze, one at a time as the page does, then all of them to POST /api/review-slide, and
 writes web/slide/slide.json and web/slide/review.json, which the page shows as the offline example.
 """
@@ -39,7 +40,7 @@ def pick(truth: list[dict], mix: dict[str, int]) -> list[dict]:
     return sorted(chosen, key=lambda t: Path(t["path"]).name)
 
 
-def pick_pbc(splits: Path, mix: dict[str, int], seed: int = 0) -> list[dict]:
+def pick_pbc(splits: Path, mix: dict[str, int], seed: int = 0, extra: tuple[dict, ...] = ()) -> list[dict]:
     with splits.open() as f:
         rows = [r for r in csv.DictReader(f) if r["split"] == "test"]
     rng = random.Random(seed)
@@ -47,6 +48,7 @@ def pick_pbc(splits: Path, mix: dict[str, int], seed: int = 0) -> list[dict]:
     for kind, n in mix.items():
         paths = sorted(r["path"] for r in rows if r["label"] == kind)
         chosen += [{"path": str(splits.parent.parent / p), "type": kind} for p in rng.sample(paths, n)]
+    chosen += extra
     rng.shuffle(chosen)
     return chosen
 
@@ -107,6 +109,7 @@ def main() -> None:
     pick_pbc_cmd = sub.add_parser("pick-pbc")
     pick_pbc_cmd.add_argument("splits", type=Path, help="splits.csv of scripts/prepare_pbc.py")
     pick_pbc_cmd.add_argument("--seed", type=int, default=0)
+    pick_pbc_cmd.add_argument("--blast", type=Path, help="a Munich myeloblast image of the test split")
     record_cmd = sub.add_parser("record")
     record_cmd.add_argument("--api", default=API)
     args = parser.parse_args()
@@ -118,7 +121,11 @@ def main() -> None:
         if args.command == "pick":
             picked = pick(json.loads(args.truth.read_text()), MIX)
         else:
-            picked = pick_pbc(args.splits, RICH_MIX, args.seed)
+            mix, extra = RICH_MIX, ()
+            if args.blast:
+                mix = {**RICH_MIX, "neutrophil": RICH_MIX["neutrophil"] - 1}
+                extra = ({"path": str(args.blast), "type": "blast"},)
+            picked = pick_pbc(args.splits, mix, args.seed, extra)
         fields = []
         for i, t in enumerate(picked, 1):
             name = f"field-{i:02d}{Path(t['path']).suffix}"

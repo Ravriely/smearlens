@@ -257,6 +257,7 @@ footer {
   color: var(--ink-2); font-size: 12.5px; padding: 8px 28px; display: flex; align-items: center; gap: 10px;
 }
 footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
+footer .credits { margin-left: auto; opacity: .75; }
 
 @media (max-width: 1100px) {
   main { grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-template-areas: "viewer viewer" "formula review" "agent agent"; }
@@ -273,6 +274,9 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
   .row { grid-template-columns: 12px 1fr auto 58px; }
   footer { position: static; padding: 8px 16px; font-size: 12px; align-items: flex-start; }
   footer svg { margin-top: 2px; }
+  footer { flex-wrap: wrap; }
+  footer [data-i=disclaimer] { flex: 1 1 0; }
+  footer .credits { flex-basis: 100%; margin-left: 25px; }
 }
 </style>
 </head>
@@ -351,6 +355,7 @@ footer svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 <footer>
   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.6v.1" stroke-linecap="round"/></svg>
   <span data-i="disclaimer"></span>
+  <span data-i="credits" class="credits"></span>
 </footer>
 
 <script>
@@ -406,7 +411,8 @@ const T = {
       other: (s) => `Unexpected answer from the backend (HTTP ${s}).`
     },
     retry: "Try again", setKey: "Enter the token", fieldErr: (k, name) => `Field ${k} (${name}): `,
-    disclaimer: "Decision-support tool, not a diagnosis. A suspected blast is a cell to review first, never a finding. Every count is a draft for a biologist to validate."
+    disclaimer: "Decision-support tool, not a diagnosis. A suspected blast is a cell to review first, never a finding. Every count is a draft for a biologist to validate.",
+    credits: "Example images: PBC (Acevedo et al., 2020, CC BY 4.0); one slide field from AML-Cytomorphology_LMU (Matek et al., TCIA, 2019, CC BY 3.0)."
   },
   fr: {
     tagline: "Revue de frottis", lang: "EN",
@@ -458,7 +464,8 @@ const T = {
       other: (s) => `Réponse inattendue du backend (HTTP ${s}).`
     },
     retry: "Réessayer", setKey: "Saisir le jeton", fieldErr: (k, name) => `Champ ${k} (${name}) : `,
-    disclaimer: "Outil d'aide, pas un diagnostic. Un blaste suspecté est une cellule à revoir en premier, jamais une conclusion. Chaque décompte est un brouillon à valider par un biologiste."
+    disclaimer: "Outil d'aide, pas un diagnostic. Un blaste suspecté est une cellule à revoir en premier, jamais une conclusion. Chaque décompte est un brouillon à valider par un biologiste.",
+    credits: "Images d'exemple : PBC (Acevedo et al., 2020, CC BY 4.0) ; un champ de la lame issu d'AML-Cytomorphology_LMU (Matek et al., TCIA, 2019, CC BY 3.0)."
   }
 };
 const ORDER = ["neutrophil", "lymphocyte", "monocyte", "eosinophil", "basophil", "ig", "erythroblast", "blast", "platelet"];

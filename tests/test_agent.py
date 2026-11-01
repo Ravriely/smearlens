@@ -157,3 +157,24 @@ def test_summary_skips_reference_ranges_on_a_tiny_count():
     assert few.summary()["outside_reference_ranges"] is None
     enough = SlideReviewer(cells(*["neutrophil"] * 20), fields=1, second_opinion=lambda c: {})
     assert set(enough.summary()["outside_reference_ranges"]) == {"neutrophil", "lymphocyte", "monocyte", "eosinophil"}
+
+
+def test_check_report_catches_disease_names_and_acronyms_but_not_plain_words():
+    assert check_report("Blasts point to AML (acute myeloid leukaemia)") == ["acute myeloid", "aml", "leukaemia"]
+    assert check_report("Suspicion de LAM") == ["lam"]
+    assert check_report("3 suspected blasts, to review. All cells were counted; all good.") == []
+
+
+def test_suspected_blasts_are_flagged_high_before_the_agent_runs():
+    reviewer = SlideReviewer(cells("neutrophil", "blast", confidence=0.6, needs_review=True), 1, lambda c: {})
+    assert [(f["cell_id"], f["priority"], f["reason"]) for f in reviewer.review.flags] == [
+        (1, "high", "suspected blast, to review")
+    ]
+    assert reviewer.tool("flag_cell", {"cell_id": 1, "priority": "high", "reason": "x"})["note"] == "already on the review list"
+    summary = reviewer.tool("get_slide_summary", {})
+    assert summary["suspected_blasts"] == 1 and summary["differential_percent"]["blast"] == 50.0
+
+
+def test_any_blast_is_outside_the_reference_range():
+    assert "blast" in out_of_range(differential(cells(*["neutrophil"] * 19, "blast")))
+    assert "blast" not in out_of_range(differential(cells("neutrophil")))

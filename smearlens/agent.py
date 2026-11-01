@@ -14,7 +14,7 @@ from PIL import Image
 
 from smearlens.datasets import Box
 from smearlens.muse import ENDPOINT, MODEL
-from smearlens.pipeline import CANDIDATE_CLASSES, NUCLEATED, PROMPT, crop
+from smearlens.pipeline import BLAST, CANDIDATE_CLASSES, NUCLEATED, PROMPT, crop
 
 # Indicative adult ranges, relative counts per 100 white cells. Each lab uses its own.
 REFERENCE_RANGES = {
@@ -25,7 +25,9 @@ REFERENCE_RANGES = {
     "basophil": (0, 2),
     "ig": (0, 1),
     "erythroblast": (0, 0),
+    "blast": (0, 0),
 }
+BLAST_REASON = "suspected blast, to review"
 MIN_CELLS_FOR_DIFFERENTIAL = 100
 MIN_CELLS_FOR_RANGES = 20
 LOW_CONFIDENCE = 0.7
@@ -36,13 +38,18 @@ KNOWN_LIMITS = [
     "(experiment 01). The classifier is 97.6 % right on the same data (experiment 05).",
     "Red cells are undercounted on crowded fields (experiment 14); the red cell count is indicative.",
     "Reference ranges are indicative adult ranges; the lab's own ranges prevail.",
+    "Blast class learnt from one lab only (Munich, experiment 19): 97 % of blasts found there, 3 % of other "
+    "cells wrongly called blast. A suspected blast is a cell to look at, not a finding.",
 ]
 
 FORBIDDEN = re.compile(
     r"\b(diagnos\w*|leuk(a)?emi\w*|lymphoma\w*|myelodysplas\w*|infection\w*|sepsis|malignan\w*|cancer\w*|"
-    r"treat(ment)?\w*|prescri\w*|medication\w*|therap\w*)\b",
+    r"treat(ment)?\w*|prescri\w*|medication\w*|therap\w*|"
+    r"acute\s+(myeloid|lymphoblastic|monocytic)\w*|myeloid\s+neoplas\w*|blast\s+crisis)\b",
     re.IGNORECASE,
 )
+# Disease acronyms, case-sensitive so that "all" or "lam" in plain English still pass.
+FORBIDDEN_ACRONYMS = re.compile(r"\b(AML|ALL|CML|CLL|MDS|LAM|LAL|LMC|LLC|SMD)\b")
 
 SYSTEM = """You are the review assistant of SmearLens, a lab workflow tool for peripheral blood smears.
 Your reader is the lab biologist who validates the slide. Your job is to prepare the review:
@@ -66,6 +73,10 @@ Rules:
 - Say clearly when fewer than 100 white cells were counted: the differential is then only indicative.
   Below 20 white cells, outside_reference_ranges is null: do not compare with the reference ranges at all,
   just say the count is too small for that. Never quote tool field names in the report.
+- A cell of type blast is a suspected blast. It is already on the review list with priority high and the
+  reason "suspected blast, to review". Name it only that way: never a disease, never an interpretation
+  of what blasts mean. The second opinion model has no blast class, so its answer on such a cell is not
+  evidence either way. Put the suspected blasts first in the review list of the report.
 - A cell with uncertain_detection was kept only because the field had no sure white cell: it may not be
   a white cell at all. Say so in the review list, and flag it.
 - If most types are outside the reference ranges, say the overall pattern is unusual and that slide
@@ -188,7 +199,8 @@ def out_of_range(diff: dict[str, float]) -> list[str]:
 
 
 def check_report(report: str) -> list[str]:
-    return sorted({m.group(0).lower() for m in FORBIDDEN.finditer(report)})
+    found = [m.group(0) for regex in (FORBIDDEN, FORBIDDEN_ACRONYMS) for m in regex.finditer(report)]
+    return sorted({f.lower() for f in found})
 
 
 def cells_from_reports(reports: Sequence[dict], names: Sequence[str]) -> list[Cell]:
@@ -239,6 +251,12 @@ class SlideReviewer:
         self.max_steps = max_steps
         self.max_second_opinions = max_second_opinions
         self.review = Review()
+        for cell in cells:
+            if cell.label == BLAST:
+                self.review.flags.append(
+                    {"cell_id": cell.id, "field": cell.field, "box": cell.box, "type": cell.label,
+                     "confidence": cell.confidence, "priority": "high", "reason": BLAST_REASON}
+                )
 
     def summary(self) -> dict:
         cells = list(self.cells.values())
@@ -253,6 +271,7 @@ class SlideReviewer:
             "outside_reference_ranges": out_of_range(diff) if len(cells) >= MIN_CELLS_FOR_RANGES else None,
             "marked_for_review": sum(c.needs_review for c in cells),
             "uncertain_detections": sum(c.uncertain_detection for c in cells),
+            "suspected_blasts": sum(c.label == BLAST for c in cells),
             "marked_for_review_by_type": dict(Counter(c.label for c in cells if c.needs_review)),
             "below_confidence_0.7": sum(c.confidence < LOW_CONFIDENCE for c in cells),
             "red_cells": self.counts.get("red_cells"),

@@ -18,11 +18,13 @@ Built for the Meta AI Developer Hackathon 2026 (Indie track).
 2. **Keep the white cells and type them.** Each candidate is cropped at the scale of the red cells
    around it and embedded by the frozen vision encoder of **Muse Glimmer**. Two linear probes on these
    features say whether it is a white cell ([09](docs/experiments/09-detection-probe.md)) and which
-   type it is ([05](docs/experiments/05-glimmer-linear-probe.md)). On a wide field, the white cell probe is
+   type it is ([05](docs/experiments/05-glimmer-linear-probe.md)): one of the 8 PBC types, or
+   "suspected blast", a ninth class learnt from Munich cells ([19](docs/experiments/19-blasts.md)). On a wide field, the white cell probe is
    one trained on wide fields ([18](docs/experiments/18-wide-field-white-cells.md)). No LLM call per cell.
-3. **Send the doubtful cells to review.** The type probe is calibrated: cells below a 96 % confidence
-   cutoff go to a review queue ([10](docs/experiments/10-review-coverage.md)), as do cells kept with
-   an uncertain detection ([16](docs/experiments/16-empty-field-rescue.md)).
+3. **Send the doubtful cells to review.** Every suspected blast goes first. The type probe is
+   calibrated: cells below a 92 % confidence cutoff go to the review queue
+   ([10](docs/experiments/10-review-coverage.md), [19](docs/experiments/19-blasts.md)), as do cells
+   kept with an uncertain detection ([16](docs/experiments/16-empty-field-rescue.md)).
 4. **Prepare the review.** A **Muse Spark** agent with six tools reads the counts, asks a second
    opinion on the doubtful cells, flags the ones to open first and writes a short slide report, with
    a guardrail against diagnostic wording ([07](docs/experiments/07-review-agent.md),
@@ -42,6 +44,11 @@ agent report out, in a few seconds plus about 40 s for the agent. Main numbers:
 - Review: checking the 10 % least sure cells leaves 0.3 % errors ([10](docs/experiments/10-review-coverage.md)).
 - External lab (Munich, never seen): 83.7 % zero-shot, 71 % of myeloblasts, a type the probe never
   saw, sent to review ([11](docs/experiments/11-external-lab-munich.md)).
+- Suspected blasts: with a ninth class learnt from Munich, 97 % of Munich test blasts are named
+  "suspected blast" and put first (88 % of these flags right), PBC unchanged (97.7 %) and no blast
+  flag on 2,560 normal PBC cells ([19](docs/experiments/19-blasts.md)). Blasts all come from one lab
+  and the split has no patient ID, so this recall is optimistic. A suspected blast is a cell to
+  review, never a finding.
 - Known weak spots: white cell detection on pale BCDD images (worse on wide fields), red cells
   undercounted on crowded PBC fields. Each experiment page lists its limits.
 
@@ -67,6 +74,7 @@ agent report out, in a few seconds plus about 40 s for the agent. Main numbers:
 | [16](docs/experiments/16-empty-field-rescue.md) | Keep the best candidate of a field with no sure white cell, as a cell to review | WBC F1 0.798 → 0.815, count error 0.40 → 0.27 per test field, empty fields 12 → 1; lowering the threshold everywhere loses |
 | [17](docs/experiments/17-wide-field-tiling.md) | Wide fields (2 × 2 mosaics of test fields): count red cells and platelets on tiles | Red cells found 431 → 1013 of 1124 (PBC 0 → 529 of 601), error 36.5 → 7.9 per image; white cells unchanged; single fields never tiled |
 | [18](docs/experiments/18-wide-field-white-cells.md) | Wide fields: why the white cell probe adds false cells, and a probe trained on wide fields | Mosaic WBC F1 0.725 → 0.811 (precision 0.63 → 0.86, recall 0.85 → 0.77), BCDD recall falls; fusion rules on windows win 0.01 to 0.03 on val; single fields unchanged |
+| [19](docs/experiments/19-blasts.md) | Ninth "suspected blast" class (Munich myeloblasts + monoblasts) in the type probe | Munich test blasts: recall 72 → 97 %, precision 36 → 88 % (vs the review queue); PBC 97.6 → 97.7 %, 0 blast flags on PBC; blasts-only training learns "Munich = blast" (71 % false flags) |
 
 ## Quick start
 
@@ -155,7 +163,8 @@ reference ranges: a percentage over a handful of cells is not worth it.
 The API is `POST /api/analyze` with the image as the raw body and the token in the
 `x-smearlens-token` header; it returns the JSON of `smearlens/analyze.py:report` plus
 `review_cutoff`, `round_trip_s` and `candidate_boxes` (every SAM candidate with its detection
-probability, to see why a cell was kept or dropped):
+probability, to see why a cell was kept or dropped). Each white cell carries `suspected_blast` (always
+with `needs_review`):
 
 ```bash
 curl -X POST --data-binary @field.jpg -H "content-type: image/jpeg" \

@@ -147,12 +147,13 @@ field on average, and one review list across the fields (a thumbnail strip, or t
 each field). The agent reviews the whole slide through `POST /api/review-slide`, with at most 14 steps
 and 6 second opinions. The ready-to-click example is 19 fields of the PBC test split with a left shift
 (7 neutrophils, 4 lymphocytes, 3 immature granulocytes, 2 monocytes, 1 eosinophil, 1 basophil, 1 erythroblast)
-and one myeloblast of the Munich test split (field 06, `MYO_0029` of AML-Cytomorphology_LMU, CC BY 3.0,
+and one myeloblast of the Munich test split (field 14, `MYO_0029` of AML-Cytomorphology_LMU, CC BY 3.0,
 credited in the page footer). It is in `web/slide/`, picked and recorded by
-`scripts/slide_demo.py pick-pbc --blast`. 19 of the 20 labelled cells are typed right: one immature
-granulocyte reads as a lymphocyte at 52 %, below the cutoff, so it is in the review list. The agent puts
-the suspected blast first in its review list, then the immature granulocytes and the erythroblast.
-The recorded analysis took 58 s (the first field from cold), and the review 79 s for 36k Baseten tokens.
+`scripts/slide_demo.py pick-pbc --seed 1 --blast`. The 20 white cells are typed right, so the
+differential is exact (seed 0 was left out: two crenated red cells of one field are counted as white
+cells). The agent puts the suspected blast first in its review list, then the immature granulocytes
+and the erythroblast. The recorded analysis took 69 s (the first field from cold), and the review
+85 s for 41k Baseten tokens.
 
 Cell numbers are the same everywhere: the badges on the image, the review list and the agent report
 count white cells from 1, in the order of the backend output (field after field on a slide),

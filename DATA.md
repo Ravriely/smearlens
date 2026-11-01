@@ -39,5 +39,5 @@ The filter is `ALLOWED_SOURCES` in `smearlens/datasets.py`.
   https://huggingface.co/datasets/draaslan/blood-cell-detection (MIT).
 - Matek C., Schwarz S., Marr C., Spiekermann K. *A single-cell morphological dataset of
   leukocytes from AML patients and non-malignant controls.* The Cancer Imaging Archive, 2019.
-  doi:10.7937/tcia.2019.36f5o9ld (CC BY 3.0). Field 06 of the example slide is `MYO_0029`, converted
+  doi:10.7937/tcia.2019.36f5o9ld (CC BY 3.0). Field 14 of the example slide is `MYO_0029`, converted
   from TIFF to PNG, otherwise unchanged.

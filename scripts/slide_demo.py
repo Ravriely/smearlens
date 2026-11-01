@@ -2,7 +2,7 @@
 
     uv run python scripts/pbc_slide.py fields --splits test --out runs/slide-pbc/truth-test.json
     uv run python scripts/slide_demo.py pick runs/slide-pbc/truth-test.json
-    uv run python scripts/slide_demo.py pick-pbc data/pbc/splits.csv --blast MYO_0029.png
+    uv run python scripts/slide_demo.py pick-pbc data/pbc/splits.csv --seed 1 --blast MYO_0029.png
     SMEARLENS_WEB_TOKEN=... uv run python scripts/slide_demo.py record
 
 `pick` copies a few TXL-PBC test fields (PBC source) into web/slide/. `pick-pbc` copies 20 fields of the PBC

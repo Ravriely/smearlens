@@ -1,0 +1,10 @@
+model,pbc_test_accuracy,pbc_test_called_blast,pbc_shifted_accuracy,pbc_shifted_called_blast,munich_known_accuracy,munich_known_balanced,munich_known_sent_to_review_pct,blast_detector,blast_recall,myeloblast_recall,monoblast_recall,blast_precision,non_blast_flagged_pct
+current,0.9762,0,0.9738,0,0.8362,0.7347,28.6,review_list,0.7238,0.7278,0.2,0.3554,28.69
+pbc8_retrained,0.9762,0,0.9742,0,0.8359,0.7357,28.5,review_list,0.7223,0.7263,0.2,0.3555,28.62
+adapted8,0.9777,0,0.9758,0,0.9684,0.8401,8.9,review_list,0.431,0.4327,0.2,0.5117,8.99
+blast9_blasts_only,0.9773,0,0.973,0,0.2897,0.1273,1.4,review_list,0.0,0.0,0.0,0.0,1.36
+blast9_blasts_only,0.9773,0,0.973,0,0.2897,0.1273,1.4,called_blast,1.0,1.0,1.0,0.2354,71.01
+blast9_blasts_only,0.9773,0,0.973,0,0.2897,0.1273,1.4,called_blast_or_review,1.0,1.0,1.0,0.234,71.54
+blast9,0.9773,0,0.9734,0,0.9542,0.8277,12.7,review_list,0.1988,0.1942,0.8,0.2544,12.74
+blast9,0.9773,0,0.9734,0,0.9542,0.8277,12.7,called_blast,0.956,0.9602,0.4,0.9078,2.12
+blast9,0.9773,0,0.9734,0,0.9542,0.8277,12.7,called_blast_or_review,0.9939,0.9939,1.0,0.6226,13.17

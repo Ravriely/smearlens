@@ -1,0 +1,371 @@
+{
+ "sample": {
+  "cells": [
+   [
+    "neutrophil",
+    0.8716,
+    true,
+    false
+   ]
+  ],
+  "review_cutoff": 0.9159
+ },
+ "slide": {
+  "typed_on_field": 20,
+  "fields": 20,
+  "blast_calls": 0,
+  "detail": [
+   {
+    "name": "field-01.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9999,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-02.jpg",
+    "truth": "basophil",
+    "cells": [
+     [
+      "basophil",
+      0.9999,
+      true,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-03.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      1.0,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-04.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9894,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-05.jpg",
+    "truth": "monocyte",
+    "cells": [
+     [
+      "monocyte",
+      0.9951,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-06.jpg",
+    "truth": "monocyte",
+    "cells": [
+     [
+      "monocyte",
+      0.9853,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-07.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9991,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-08.jpg",
+    "truth": "ig",
+    "cells": [
+     [
+      "ig",
+      0.9978,
+      true,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-09.jpg",
+    "truth": "ig",
+    "cells": [
+     [
+      "ig",
+      0.9731,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-10.jpg",
+    "truth": "lymphocyte",
+    "cells": [
+     [
+      "lymphocyte",
+      0.9545,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-11.jpg",
+    "truth": "lymphocyte",
+    "cells": [
+     [
+      "lymphocyte",
+      0.9943,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-12.jpg",
+    "truth": "ig",
+    "cells": [
+     [
+      "ig",
+      0.9993,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-13.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9414,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-14.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9997,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-15.jpg",
+    "truth": "lymphocyte",
+    "cells": [
+     [
+      "lymphocyte",
+      0.9953,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-16.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9639,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-17.jpg",
+    "truth": "lymphocyte",
+    "cells": [
+     [
+      "lymphocyte",
+      0.9993,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-18.jpg",
+    "truth": "eosinophil",
+    "cells": [
+     [
+      "eosinophil",
+      0.9999,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-19.jpg",
+    "truth": "neutrophil",
+    "cells": [
+     [
+      "neutrophil",
+      0.9883,
+      false,
+      false
+     ]
+    ]
+   },
+   {
+    "name": "field-20.jpg",
+    "truth": "erythroblast",
+    "cells": [
+     [
+      "erythroblast",
+      1.0,
+      false,
+      false
+     ]
+    ]
+   }
+  ]
+ },
+ "munich_test": [
+  {
+   "file": "MYO/MYO_0004.tiff",
+   "cells": [
+    [
+     "blast",
+     0.6134,
+     true,
+     true
+    ]
+   ]
+  },
+  {
+   "file": "MYO/MYO_0006.tiff",
+   "cells": [
+    [
+     "blast",
+     0.9842,
+     true,
+     true
+    ]
+   ]
+  },
+  {
+   "file": "MYO/MYO_0007.tiff",
+   "cells": []
+  },
+  {
+   "file": "MYO/MYO_0011.tiff",
+   "cells": [
+    [
+     "blast",
+     0.8551,
+     true,
+     true
+    ]
+   ]
+  },
+  {
+   "file": "MOB/MOB_0009.tiff",
+   "cells": [
+    [
+     "blast",
+     0.4836,
+     true,
+     true
+    ]
+   ]
+  },
+  {
+   "file": "LYT/LYT_0007.tiff",
+   "cells": [
+    [
+     "lymphocyte",
+     0.9997,
+     false,
+     false
+    ]
+   ]
+  },
+  {
+   "file": "NGS/NGS_0001.tiff",
+   "cells": [
+    [
+     "neutrophil",
+     0.9997,
+     true,
+     false
+    ]
+   ]
+  },
+  {
+   "file": "MON/MON_0001.tiff",
+   "cells": [
+    [
+     "monocyte",
+     1.0,
+     false,
+     false
+    ]
+   ]
+  }
+ ],
+ "review": {
+  "file": "MYO_0004.png",
+  "flags": [
+   {
+    "cell_id": 1,
+    "field": "MYO_0004.png",
+    "box": [
+     118.9,
+     138.0,
+     331.6,
+     347.7
+    ],
+    "type": "blast",
+    "confidence": 0.6134,
+    "priority": "high",
+    "reason": "suspected blast, to review"
+   }
+  ],
+  "report": "### Sample adequacy\n1 field analysed, 1 white cell counted. Count is too small for a differential; any percentages are only indicative. Red cells: 9 total (~9.0/field, indicative); platelets: 0/field.\n\n### Differential\nOnly 1 white cell: 1 suspected blast (100% of counted white cells). With fewer than 20 white cells no comparison with reference ranges is possible.\n\n### Review list\nReview queue: 1 cell in total.\n- **Flagged for priority review (high):** Cell 1 (field MYO_0004.png) \u2014 suspected blast, to review \u2014 classifier confidence 61.3%. A second opinion was asked (returned monocyte) but the second-opinion model has no blast class, so its answer is not evidence either way; human review required.\n\n### Limits\nSecond-opinion model is a generalist (65% correct, weak on immature cells) vs classifier 97.6% on same data. Blast class learned from one lab: 97% blasts found, 3% other cells wrongly called blast. Red cell counts are indicative on crowded fields.\n",
+  "accepted": true,
+  "tokens": {
+   "agent_prompt": 11185,
+   "agent_completion": 3093,
+   "agent": 14278,
+   "second_opinions": 1191,
+   "total": 15469
+  }
+ }
+}
